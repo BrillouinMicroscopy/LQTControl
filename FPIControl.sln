@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FPIControl", "FPIControl.vcxproj", "{DB653017-A984-35AB-B851-8A555650205B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FPIControl", "FPIControl.vcxproj", "{2E3E19B6-919A-354A-9F30-E745F3332A5B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DB653017-A984-35AB-B851-8A555650205B}.Debug|x64.ActiveCfg = Debug|x64
-		{DB653017-A984-35AB-B851-8A555650205B}.Debug|x64.Build.0 = Debug|x64
-		{DB653017-A984-35AB-B851-8A555650205B}.Release|x64.ActiveCfg = Release|x64
-		{DB653017-A984-35AB-B851-8A555650205B}.Release|x64.Build.0 = Release|x64
+		{2E3E19B6-919A-354A-9F30-E745F3332A5B}.Debug|x64.ActiveCfg = Debug|x64
+		{2E3E19B6-919A-354A-9F30-E745F3332A5B}.Debug|x64.Build.0 = Debug|x64
+		{2E3E19B6-919A-354A-9F30-E745F3332A5B}.Release|x64.ActiveCfg = Release|x64
+		{2E3E19B6-919A-354A-9F30-E745F3332A5B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
