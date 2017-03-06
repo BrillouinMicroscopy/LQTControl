@@ -37,9 +37,6 @@ Thumbs.db
 /.qmake.cache
 /.qmake.stash
 
-# qtcreator generated files
-*.pro.user*
-
 # xemacs temporary files
 *.flc
 
@@ -78,7 +75,6 @@ Thumbs.db
 
 # User-specific files
 *.suo
-*.user
 *.userosscache
 *.sln.docstates
 
@@ -157,7 +153,6 @@ ipch/
 *.opensdf
 *.sdf
 *.cachefile
-*.VC.db
 *.VC.VC.opendb
 
 # Visual Studio profiler
