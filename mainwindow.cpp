@@ -33,11 +33,9 @@ MainWindow::MainWindow(QWidget *parent) :
     //![3]
 
     //![4]
-    QtCharts::QChartView *chartView = new QtCharts::QChartView(chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
+    ui->plotAxes->setChart(chart);
+    ui->plotAxes->setRenderHint(QPainter::Antialiasing);
     //![4]
-
-    ui->verticalLayout->addWidget(chartView);
 }
 
 MainWindow::~MainWindow()
