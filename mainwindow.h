@@ -17,9 +17,11 @@ public:
 
 private slots:
     void on_pushButton_clicked();
+    void processOneThing();
 
 private:
     Ui::MainWindow *ui;
+
 };
 
 #endif // MAINWINDOW_H

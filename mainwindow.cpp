@@ -1,9 +1,16 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QtWidgets>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMainWindow>
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
+#include <cstdlib>
+#include <iostream>
+#include <ctime>
+#include <string>
+
+QtCharts::QLineSeries *series = new QtCharts::QLineSeries();
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -12,10 +19,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     //![1]
-    QtCharts::QLineSeries *series = new QtCharts::QLineSeries();
+    //*series = new QtCharts::QLineSeries();
     //![1]
 
     //![2]
+    series->setUseOpenGL(true);
     series->append(0, 6);
     series->append(2, 4);
     series->append(3, 8);
@@ -29,6 +37,8 @@ MainWindow::MainWindow(QWidget *parent) :
     chart->legend()->hide();
     chart->addSeries(series);
     chart->createDefaultAxes();
+    chart->axisX()->setRange(0, 1024);
+    chart->axisY()->setRange(-1, 4);
     chart->setTitle("Simple line chart example");
     //![3]
 
@@ -43,7 +53,33 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::processOneThing() {
+
+    int colCount = 1024;
+    QVector<QPointF> points;
+    points.reserve(colCount);
+    for (int j(0); j < colCount; j++) {
+        qreal x(0);
+        qreal y(0);
+        // data with sin + random component
+        y = qSin(3.14159265358979 / 50 * j) + 0.5 + (qreal) rand() / (qreal) RAND_MAX;
+        x = j;
+        points.append(QPointF(x, y));
+    }
+
+    series->replace(points);
+
+    //std::string myString("Hello World");
+    //std::cout << "* Debug " << myString << std::endl;
+}
+
 void MainWindow::on_pushButton_clicked()
 {
     ui->label_3->setText(QString::number(123));
+
+    MainWindow::processOneThing();
+
+    QTimer *timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(processOneThing()));
+    timer->start(16);
 }
