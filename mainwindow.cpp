@@ -40,6 +40,7 @@ MainWindow::MainWindow(QWidget *parent) :
     chart->axisX()->setRange(0, 1024);
     chart->axisY()->setRange(-1, 4);
     chart->setTitle("Simple line chart example");
+    chart->layout()->setContentsMargins(0, 0, 0, 0);
     //![3]
 
     //![4]
@@ -73,7 +74,7 @@ void MainWindow::processOneThing() {
     //std::cout << "* Debug " << myString << std::endl;
 }
 
-void MainWindow::on_pushButton_clicked()
+void MainWindow::on_playButton_clicked()
 {
     ui->label_3->setText(QString::number(123));
 
@@ -81,5 +82,5 @@ void MainWindow::on_pushButton_clicked()
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(processOneThing()));
-    timer->start(16);
+    timer->start(20);
 }
