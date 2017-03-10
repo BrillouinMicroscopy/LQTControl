@@ -13,7 +13,7 @@ INCLUDEPATH += . \
     . \
     $(QTDIR)/mkspecs/win32-msvc2015 \
     ./GeneratedFiles
-LIBS += -lshell32
+LIBS += -lshell32 -luser32
 DEPENDPATH += .
 MOC_DIR += ./GeneratedFiles/debug
 OBJECTS_DIR += debug
