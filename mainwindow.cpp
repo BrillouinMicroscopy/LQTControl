@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "daq.h"
 #include "ui_mainwindow.h"
 #include <QtWidgets>
 #include <QtWidgets/QApplication>
@@ -18,21 +19,19 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    //![1]
-    //*series = new QtCharts::QLineSeries();
-    //![1]
+	daq d;
 
-    //![2]
+	QWidget::connect(&timer, &QTimer::timeout,
+		this, &MainWindow::processOneThing);
+
+	new QtCharts::QLineSeries();
+
+	int colCount = 1024;
+	QVector<QPointF> points = d.acquire(colCount);
+	
     series->setUseOpenGL(true);
-    series->append(0, 6);
-    series->append(2, 4);
-    series->append(3, 8);
-    series->append(7, 4);
-    series->append(10, 5);
-    *series << QPointF(11, 1) << QPointF(13, 3) << QPointF(17, 6) << QPointF(18, 3) << QPointF(20, 2);
-    //![2]
+	series->replace(points);
 
-    //![3]
     QtCharts::QChart *chart = new QtCharts::QChart();
     chart->legend()->hide();
     chart->addSeries(series);
@@ -41,12 +40,9 @@ MainWindow::MainWindow(QWidget *parent) :
     chart->axisY()->setRange(-1, 4);
     chart->setTitle("Simple line chart example");
     chart->layout()->setContentsMargins(0, 0, 0, 0);
-    //![3]
 
-    //![4]
     ui->plotAxes->setChart(chart);
     ui->plotAxes->setRenderHint(QPainter::Antialiasing);
-    //![4]
 }
 
 MainWindow::~MainWindow()
@@ -56,31 +52,22 @@ MainWindow::~MainWindow()
 
 void MainWindow::processOneThing() {
 
+	daq d;
+
     int colCount = 1024;
-    QVector<QPointF> points;
-    points.reserve(colCount);
-    for (int j(0); j < colCount; j++) {
-        qreal x(0);
-        qreal y(0);
-        // data with sin + random component
-        y = qSin(3.14159265358979 / 50 * j) + 0.5 + (qreal) rand() / (qreal) RAND_MAX;
-        x = j;
-        points.append(QPointF(x, y));
-    }
+    QVector<QPointF> points = d.acquire(colCount);
 
     series->replace(points);
-
-    //std::string myString("Hello World");
-    //std::cout << "* Debug " << myString << std::endl;
 }
 
 void MainWindow::on_playButton_clicked()
 {
-    ui->label_3->setText(QString::number(123));
-
-    MainWindow::processOneThing();
-
-    QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(processOneThing()));
-    timer->start(20);
+	if (timer.isActive()) {
+		timer.stop();
+		ui->playButton->setText(QString("Play"));
+	}
+	else {
+		timer.start(20);
+		ui->playButton->setText(QString("Stop"));
+	}
 }

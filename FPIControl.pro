@@ -19,7 +19,9 @@ MOC_DIR += ./GeneratedFiles/debug
 OBJECTS_DIR += debug
 UI_DIR += ./GeneratedFiles
 RCC_DIR += ./GeneratedFiles
-HEADERS += ./mainwindow.h
+HEADERS += ./mainwindow.h \
+    daq.h
 SOURCES += ./main.cpp \
-    ./mainwindow.cpp
+    ./mainwindow.cpp \
+    daq.cpp
 FORMS += ./mainwindow.ui
