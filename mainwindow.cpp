@@ -71,3 +71,13 @@ void MainWindow::on_playButton_clicked()
 		ui->playButton->setText(QString("Stop"));
 	}
 }
+
+void MainWindow::on_selectDisplay_activated(const QString &text) {
+	ui->label_3->setText(text);
+}
+
+void MainWindow::on_actionConnect_triggered() {
+	ui->label_3->setText("Connecting");
+	daq d;
+	d.connect();
+}

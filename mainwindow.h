@@ -18,7 +18,9 @@ public:
 
 private slots:
     void on_playButton_clicked();
+	void on_selectDisplay_activated(const QString &text);
     void processOneThing();
+	void on_actionConnect_triggered();
 
 private:
     Ui::MainWindow *ui;

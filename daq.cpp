@@ -3,6 +3,9 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMainWindow>
 
+/* Definitions of PS2000 driver routines */
+#include "ps2000.h"
+
 daq::daq(QObject *parent) :
 	QObject(parent)
 {
@@ -20,4 +23,8 @@ QVector<QPointF> daq::acquire(int colCount) {
 		points.append(QPointF(x, y));
 	}
 	return points;
+}
+
+void daq::connect() {
+	unitOpened.handle = ps2000_open_unit();
 }
