@@ -76,10 +76,25 @@ void MainWindow::on_selectDisplay_activated(const QString &text) {
 
 void MainWindow::on_actionConnect_triggered() {
 	ui->label_3->setText("Connecting");
-	d.connect();
+	bool connected = d.connect();
+	if (connected) {
+		ui->actionConnect->setEnabled(false);
+		ui->actionDisconnect->setEnabled(true);
+	}
+	else {
+		ui->actionConnect->setEnabled(true);
+		ui->actionDisconnect->setEnabled(false);
+	}
 }
 
 void MainWindow::on_actionDisconnect_triggered() {
 	ui->label_3->setText("Disconnecting");
-	d.disconnect();
+	bool connected = d.disconnect();
+	if (connected) {
+		ui->actionConnect->setEnabled(false);
+		ui->actionDisconnect->setEnabled(true);
+	}  else {
+		ui->actionConnect->setEnabled(true);
+		ui->actionDisconnect->setEnabled(false);
+	}
 }

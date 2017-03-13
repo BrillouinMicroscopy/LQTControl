@@ -104,8 +104,8 @@ public:
 	explicit daq(QObject *parent = 0);
 	QVector<QPointF>  acquire(int colCount);
 	UNIT_MODEL unitOpened;
-	void connect();
-	void disconnect();
+	bool connect();
+	bool disconnect();
 
 private slots:
 
