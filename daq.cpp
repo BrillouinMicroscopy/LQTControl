@@ -26,5 +26,14 @@ QVector<QPointF> daq::acquire(int colCount) {
 }
 
 void daq::connect() {
-	unitOpened.handle = ps2000_open_unit();
+	if (!unitOpened.handle) {
+		unitOpened.handle = ps2000_open_unit();
+	}
+}
+
+void daq::disconnect() {
+	if (unitOpened.handle) {
+		ps2000_close_unit(unitOpened.handle);
+		unitOpened.handle = NULL;
+	}
 }

@@ -105,6 +105,7 @@ public:
 	QVector<QPointF>  acquire(int colCount);
 	UNIT_MODEL unitOpened;
 	void connect();
+	void disconnect();
 
 private slots:
 

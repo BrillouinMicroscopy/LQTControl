@@ -21,6 +21,7 @@ private slots:
 	void on_selectDisplay_activated(const QString &text);
     void processOneThing();
 	void on_actionConnect_triggered();
+	void on_actionDisconnect_triggered();
 
 private:
     Ui::MainWindow *ui;

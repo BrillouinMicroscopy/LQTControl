@@ -13,13 +13,13 @@
 
 QtCharts::QLineSeries *series = new QtCharts::QLineSeries();
 
+daq d;
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
-	daq d;
 
 	QWidget::connect(&timer, &QTimer::timeout,
 		this, &MainWindow::processOneThing);
@@ -52,8 +52,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::processOneThing() {
 
-	daq d;
-
     int colCount = 1024;
     QVector<QPointF> points = d.acquire(colCount);
 
@@ -78,6 +76,10 @@ void MainWindow::on_selectDisplay_activated(const QString &text) {
 
 void MainWindow::on_actionConnect_triggered() {
 	ui->label_3->setText("Connecting");
-	daq d;
 	d.connect();
+}
+
+void MainWindow::on_actionDisconnect_triggered() {
+	ui->label_3->setText("Disconnecting");
+	d.disconnect();
 }
