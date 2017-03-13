@@ -17,8 +17,8 @@ daq d;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
-{
+    ui(new Ui::MainWindow) {
+
     ui->setupUi(this);
 
 	QWidget::connect(&timer, &QTimer::timeout,
@@ -45,8 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->plotAxes->setRenderHint(QPainter::Antialiasing);
 }
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow() {
     delete ui;
 }
 
@@ -58,13 +57,11 @@ void MainWindow::processOneThing() {
     series->replace(points);
 }
 
-void MainWindow::on_playButton_clicked()
-{
+void MainWindow::on_playButton_clicked() {
 	if (timer.isActive()) {
 		timer.stop();
 		ui->playButton->setText(QString("Play"));
-	}
-	else {
+	} else {
 		timer.start(20);
 		ui->playButton->setText(QString("Stop"));
 	}
@@ -80,8 +77,7 @@ void MainWindow::on_actionConnect_triggered() {
 	if (connected) {
 		ui->actionConnect->setEnabled(false);
 		ui->actionDisconnect->setEnabled(true);
-	}
-	else {
+	} else {
 		ui->actionConnect->setEnabled(true);
 		ui->actionDisconnect->setEnabled(false);
 	}

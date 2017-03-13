@@ -6,8 +6,7 @@
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 //    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     #ifdef Q_OS_WIN

@@ -25,8 +25,7 @@ typedef enum {
 	MODEL_PS2205A = 0xA205
 } MODEL_TYPE;
 
-typedef struct
-{
+typedef struct {
 	PS2000_THRESHOLD_DIRECTION	channelA;
 	PS2000_THRESHOLD_DIRECTION	channelB;
 	PS2000_THRESHOLD_DIRECTION	channelC;
@@ -34,8 +33,7 @@ typedef struct
 	PS2000_THRESHOLD_DIRECTION	ext;
 } DIRECTIONS;
 
-typedef struct
-{
+typedef struct {
 	PS2000_PWQ_CONDITIONS			*	conditions;
 	int16_t							nConditions;
 	PS2000_THRESHOLD_DIRECTION		direction;
@@ -52,8 +50,7 @@ typedef struct
 	float delay;
 } SIMPLE;
 
-typedef struct
-{
+typedef struct {
 	int16_t hysteresis;
 	DIRECTIONS directions;
 	int16_t nProperties;
@@ -66,8 +63,7 @@ typedef struct
 } ADVANCED;
 
 
-typedef struct
-{
+typedef struct {
 	SIMPLE simple;
 	ADVANCED advanced;
 } TRIGGER_CHANNEL;
@@ -96,20 +92,19 @@ typedef struct {
 	int16_t			awgBufferSize;
 } UNIT_MODEL;
 
-class daq : public QObject
-{
+class daq : public QObject {
 	Q_OBJECT
 
-public:
-	explicit daq(QObject *parent = 0);
-	QVector<QPointF>  acquire(int colCount);
-	UNIT_MODEL unitOpened;
-	bool connect();
-	bool disconnect();
+	public:
+		explicit daq(QObject *parent = 0);
+		QVector<QPointF>  acquire(int colCount);
+		UNIT_MODEL unitOpened;
+		bool connect();
+		bool disconnect();
 
-private slots:
+	private slots:
 
-private:
+	private:
 
 };
 

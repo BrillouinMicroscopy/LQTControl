@@ -7,8 +7,7 @@
 #include "ps2000.h"
 
 daq::daq(QObject *parent) :
-	QObject(parent)
-{
+	QObject(parent) {
 }
 
 QVector<QPointF> daq::acquire(int colCount) {
