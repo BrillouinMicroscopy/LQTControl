@@ -26,14 +26,6 @@ class daq : public QObject {
 	private slots:
 
 	private:
-		static void __stdcall ps2000FastStreamingReady3(
-			int16_t **overviewBuffers,
-			int16_t   overflow,
-			uint32_t  triggeredAt,
-			int16_t   triggered,
-			int16_t   auto_stop,
-			uint32_t  nValues
-		);
 		static void __stdcall ps2000FastStreamingReady2(
 			int16_t **overviewBuffers,
 			int16_t   overflow,

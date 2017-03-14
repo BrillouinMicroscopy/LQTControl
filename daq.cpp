@@ -225,7 +225,7 @@ void daq::acquire2(void) {
 	/* From here on, we can get data whenever we want...*/
 
 	while (!_kbhit() && !unitOpened.trigger.advanced.autoStop && !g_appBufferFull) {
-		ps2000_get_streaming_last_values(unitOpened.handle, ps2000FastStreamingReady2);
+		ps2000_get_streaming_last_values(unitOpened.handle, &daq::ps2000FastStreamingReady2);
 
 		if (nPreviousValues != unitOpened.trigger.advanced.totalSamples) {
 			sample_count = unitOpened.trigger.advanced.totalSamples - nPreviousValues;
