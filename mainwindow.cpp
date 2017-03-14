@@ -69,15 +69,15 @@ void MainWindow::on_playButton_clicked() {
 }
 
 void MainWindow::on_selectDisplay_activated(const QString &text) {
-	ui->label_3->setText(text);
+	ui->statusBar->showMessage(text, 2000);
 }
 
 void MainWindow::on_actionConnect_triggered() {
-	ui->label_3->setText("Connecting");
 	bool connected = d.connect();
 	if (connected) {
 		ui->actionConnect->setEnabled(false);
 		ui->actionDisconnect->setEnabled(true);
+		ui->statusBar->showMessage("Successfully connected", 2000);
 	} else {
 		ui->actionConnect->setEnabled(true);
 		ui->actionDisconnect->setEnabled(false);
@@ -85,7 +85,6 @@ void MainWindow::on_actionConnect_triggered() {
 }
 
 void MainWindow::on_actionDisconnect_triggered() {
-	ui->label_3->setText("Disconnecting");
 	bool connected = d.disconnect();
 	if (connected) {
 		ui->actionConnect->setEnabled(false);
@@ -93,5 +92,6 @@ void MainWindow::on_actionDisconnect_triggered() {
 	}  else {
 		ui->actionConnect->setEnabled(true);
 		ui->actionDisconnect->setEnabled(false);
+		ui->statusBar->showMessage("Successfully disconnected", 2000);
 	}
 }
