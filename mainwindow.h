@@ -21,6 +21,7 @@ private slots:
     void processOneThing();
 	void on_actionConnect_triggered();
 	void on_actionDisconnect_triggered();
+	void on_scanButton_clicked();
 
 private:
     Ui::MainWindow *ui;

@@ -22,6 +22,7 @@ class daq : public QObject {
 		bool connect();
 		bool disconnect();
 		void acquire2();
+		void set_sig_gen();
 
 	private slots:
 

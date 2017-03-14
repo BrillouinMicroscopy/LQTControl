@@ -95,3 +95,7 @@ void MainWindow::on_actionDisconnect_triggered() {
 		ui->statusBar->showMessage("Successfully disconnected", 2000);
 	}
 }
+
+void MainWindow::on_scanButton_clicked() {
+	d.set_sig_gen();
+}

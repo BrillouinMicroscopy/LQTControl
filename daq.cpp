@@ -605,3 +605,40 @@ void daq::get_info(void) {
 		unitOpened.noOfChannels = SINGLE_CH_SCOPE;
 	}
 }
+
+void daq::set_sig_gen() {
+	int16_t waveform = 0;
+	int32_t frequency = 1000;
+
+	/*
+	printf("Enter frequency in Hz: "); // Ask user to enter signal frequency;
+	do {
+		scanf_s("%lu", &frequency);
+	} while (frequency < 1000 || frequency > PS2000_MAX_SIGGEN_FREQ);
+
+	printf("Signal generator On");
+	printf("Enter type of waveform (0..9 or 99)\n");
+	printf("0:\tSINE\n");
+	printf("1:\tSQUARE\n");
+	printf("2:\tTRIANGLE\n");
+	printf("3:\tRAMP UP\n");
+	printf("4:\tRAMP DOWN\n");
+
+	do {
+		scanf_s("%hd", &waveform);
+	} while (waveform < 0 || waveform >= PS2000_DC_VOLTAGE);
+	*/
+
+	ps2000_set_sig_gen_built_in(
+		unitOpened.handle,				// handle of the oscilloscope
+		0,								// offsetVoltage in microvolt
+		1000000,						// peak to peak voltage in microvolt
+		(PS2000_WAVE_TYPE)waveform,		// type of waveform
+		(float)frequency,				// startFrequency in Hertz
+		(float)frequency,				// stopFrequency in Hertz
+		0,								// increment
+		0,								// dwellTime, time in seconds between frequency changes in sweep mode
+		PS2000_UPDOWN,					// sweepType
+		0								// sweeps, number of times to sweep the frequency
+	);
+}
