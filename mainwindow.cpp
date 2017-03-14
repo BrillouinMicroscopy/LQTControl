@@ -58,6 +58,7 @@ void MainWindow::processOneThing() {
 }
 
 void MainWindow::on_playButton_clicked() {
+	d.acquire2();
 	if (timer.isActive()) {
 		timer.stop();
 		ui->playButton->setText(QString("Play"));
