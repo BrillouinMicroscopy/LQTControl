@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QtCore/QObject>
+#include <QtWidgets>
 
 #include "ps2000.h"
 
@@ -18,11 +19,15 @@ class daq : public QObject {
 
 	public:
 		explicit daq(QObject *parent = 0);
-		QVector<QPointF> acquire(int colCount);
+		bool startStopAcquisition();
+		void acquire();
+		QVector<QPointF> getData();
+		QVector<QPointF> getBuffer();
 		bool connect();
 		bool disconnect();
 		void acquire2();
 		void set_sig_gen();
+		void set_trigger_advanced();
 
 	private slots:
 
@@ -45,6 +50,9 @@ class daq : public QObject {
 		);
 		void set_defaults(void);
 		void get_info(void);
+		QTimer timer;
+		int colCount = 1024;
+		QVector<QPointF> points;
 };
 
 #endif // DAQ_H

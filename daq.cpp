@@ -124,20 +124,54 @@ int32_t input_ranges[PS2000_MAX_RANGES] = { 10, 20, 50, 100, 200, 500, 1000, 200
 
 daq::daq(QObject *parent) :
 	QObject(parent) {
+
+	QWidget::connect(&timer, &QTimer::timeout,
+		this, &daq::acquire);
+	points.reserve(colCount);
+	daq::acquire();
 }
 
-QVector<QPointF> daq::acquire(int colCount) {
-	QVector<QPointF> points;
-	points.reserve(colCount);
+bool daq::startStopAcquisition() {
+	if (timer.isActive()) {
+		timer.stop();
+		return false;
+	} else {
+		timer.start(20);
+		return true;
+	}
+}
+
+void daq::acquire() {
+	QVector<QPointF> tmp;
+	tmp.reserve(colCount);
 	for (int j(0); j < colCount; j++) {
 		qreal x(0);
 		qreal y(0);
 		// data with sin + random component
 		y = qSin(3.14159265358979 / 50 * j) + 0.5 + (qreal)rand() / (qreal)RAND_MAX;
 		x = j;
-		points.append(QPointF(x, y));
+		tmp.append(QPointF(x, y));
 	}
+	points = tmp;
+}
+
+QVector<QPointF> daq::getData() {
 	return points;
+}
+
+QVector<QPointF> daq::getBuffer() {
+	int ch = 0;
+	QVector<QPointF> data;
+	data.reserve(unitOpened.trigger.advanced.totalSamples);
+	double voltage;
+
+	//for (int j = 0; j < 1000; j++) {
+	for (uint32_t j = 0; j < 8000; j++) {
+		voltage = adc_to_mv(bufferInfo.appBuffers[ch * 2][j], unitOpened.channelSettings[ch].range) / double(1000) + (qreal)rand() / (qreal)RAND_MAX;
+		data.append(QPointF(j, voltage));
+	}
+
+	return data;
 }
 
 /****************************************************************************
@@ -174,8 +208,25 @@ void daq::acquire2(void) {
 	set_defaults();
 
 	// Simple trigger, 500mV, rising
-	ok = ps2000_set_trigger(unitOpened.handle, PS2000_CHANNEL_A,
-		mv_to_adc(500, unitOpened.channelSettings[PS2000_CHANNEL_A].range), PS2000_RISING, 0, 0);
+	/*ok = ps2000_set_trigger(
+		unitOpened.handle,
+		PS2000_CHANNEL_A,
+		mv_to_adc(500, unitOpened.channelSettings[PS2000_CHANNEL_A].range),
+		PS2000_RISING,
+		0,
+		0
+	);*/
+
+	ps2000_set_trigger(
+		unitOpened.handle,
+		PS2000_NONE,
+		0,
+		0,
+		0,
+		0
+	);
+
+	//set_trigger_advanced();
 
 	unitOpened.trigger.advanced.autoStop = 0;
 	unitOpened.trigger.advanced.totalSamples = 0;
@@ -289,7 +340,7 @@ void daq::acquire2(void) {
 	// Free buffers
 	for (ch = 0; ch < unitOpened.noOfChannels; ch++) {
 		if (unitOpened.channelSettings[ch].enabled) {
-			free(bufferInfo.appBuffers[ch * 2]);
+			//free(bufferInfo.appBuffers[ch * 2]);
 		}
 	}
 
@@ -412,6 +463,10 @@ bool daq::connect() {
 		get_info();
 
 		timebase = 0;
+
+		daq::set_sig_gen();
+
+		daq::acquire2();
 
 		if (!unitOpened.handle) {
 			return false;
@@ -641,4 +696,84 @@ void daq::set_sig_gen() {
 		PS2000_UPDOWN,					// sweepType
 		0								// sweeps, number of times to sweep the frequency
 	);
+}
+
+void daq::set_trigger_advanced(void) {
+	int16_t ok = 0;
+	int16_t auto_trigger_ms = 0;
+
+	// to trigger of more than one channel set this parameter to 2 or more
+	// each condition can only have on parameter set to PS2000_CONDITION_TRUE or PS2000_CONDITION_FALSE
+	// if more than on condition is set then it will trigger off condition one, or condition two etc.
+	unitOpened.trigger.advanced.nProperties = 1;
+	// set the trigger channel to channel A by using PS2000_CONDITION_TRUE
+	unitOpened.trigger.advanced.conditions = (PS2000_TRIGGER_CONDITIONS*)malloc(sizeof(PS2000_TRIGGER_CONDITIONS) * unitOpened.trigger.advanced.nProperties);
+	unitOpened.trigger.advanced.conditions->channelA = PS2000_CONDITION_TRUE;
+	unitOpened.trigger.advanced.conditions->channelB = PS2000_CONDITION_DONT_CARE;
+	unitOpened.trigger.advanced.conditions->channelC = PS2000_CONDITION_DONT_CARE;
+	unitOpened.trigger.advanced.conditions->channelD = PS2000_CONDITION_DONT_CARE;
+	unitOpened.trigger.advanced.conditions->external = PS2000_CONDITION_DONT_CARE;
+	unitOpened.trigger.advanced.conditions->pulseWidthQualifier = PS2000_CONDITION_DONT_CARE;
+
+	// set channel A to rising
+	// the remainder will be ignored as only a condition is set for channel A
+	unitOpened.trigger.advanced.directions.channelA = PS2000_ADV_RISING;
+	unitOpened.trigger.advanced.directions.channelB = PS2000_ADV_RISING;
+	unitOpened.trigger.advanced.directions.channelC = PS2000_ADV_RISING;
+	unitOpened.trigger.advanced.directions.channelD = PS2000_ADV_RISING;
+	unitOpened.trigger.advanced.directions.ext = PS2000_ADV_RISING;
+
+
+	unitOpened.trigger.advanced.channelProperties = (PS2000_TRIGGER_CHANNEL_PROPERTIES*)malloc(sizeof(PS2000_TRIGGER_CHANNEL_PROPERTIES) * unitOpened.trigger.advanced.nProperties);
+	// there is one property for each condition
+	// set channel A
+	// trigger level 1500 adc counts the trigger point will vary depending on the voltage range
+	// hysterisis 4096 adc counts  
+	unitOpened.trigger.advanced.channelProperties->channel = (int16_t)PS2000_CHANNEL_A;
+	unitOpened.trigger.advanced.channelProperties->thresholdMajor = 1500;
+	// not used in level triggering, should be set when in window mode
+	unitOpened.trigger.advanced.channelProperties->thresholdMinor = 0;
+	// used in level triggering, not used when in window mode
+	unitOpened.trigger.advanced.channelProperties->hysteresis = (int16_t)4096;
+	unitOpened.trigger.advanced.channelProperties->thresholdMode = PS2000_LEVEL;
+
+	ok = ps2000SetAdvTriggerChannelConditions(unitOpened.handle, unitOpened.trigger.advanced.conditions, unitOpened.trigger.advanced.nProperties);
+
+	ok = ps2000SetAdvTriggerChannelDirections(unitOpened.handle,
+		unitOpened.trigger.advanced.directions.channelA,
+		unitOpened.trigger.advanced.directions.channelB,
+		unitOpened.trigger.advanced.directions.channelC,
+		unitOpened.trigger.advanced.directions.channelD,
+		unitOpened.trigger.advanced.directions.ext);
+
+	ok = ps2000SetAdvTriggerChannelProperties(unitOpened.handle,
+		unitOpened.trigger.advanced.channelProperties,
+		unitOpened.trigger.advanced.nProperties,
+		auto_trigger_ms);
+
+
+	// remove comments to try triggering with a pulse width qualifier
+	// add a condition for the pulse width eg. in addition to the channel A or as a replacement
+	//unitOpened.trigger.advanced.pwq.conditions = malloc (sizeof (PS2000_PWQ_CONDITIONS));
+	//unitOpened.trigger.advanced.pwq.conditions->channelA = PS2000_CONDITION_TRUE;
+	//unitOpened.trigger.advanced.pwq.conditions->channelB = PS2000_CONDITION_DONT_CARE;
+	//unitOpened.trigger.advanced.pwq.conditions->channelC = PS2000_CONDITION_DONT_CARE;
+	//unitOpened.trigger.advanced.pwq.conditions->channelD = PS2000_CONDITION_DONT_CARE;
+	//unitOpened.trigger.advanced.pwq.conditions->external = PS2000_CONDITION_DONT_CARE;
+	//unitOpened.trigger.advanced.pwq.nConditions = 1;
+
+	//unitOpened.trigger.advanced.pwq.direction = PS2000_RISING;
+	//unitOpened.trigger.advanced.pwq.type = PS2000_PW_TYPE_LESS_THAN;
+	//// used when type	PS2000_PW_TYPE_IN_RANGE,	PS2000_PW_TYPE_OUT_OF_RANGE
+	//unitOpened.trigger.advanced.pwq.lower = 0;
+	//unitOpened.trigger.advanced.pwq.upper = 10000;
+	//ps2000SetPulseWidthQualifier (unitOpened.handle,
+	//															unitOpened.trigger.advanced.pwq.conditions,
+	//															unitOpened.trigger.advanced.pwq.nConditions, 
+	//															unitOpened.trigger.advanced.pwq.direction,
+	//															unitOpened.trigger.advanced.pwq.lower,
+	//															unitOpened.trigger.advanced.pwq.upper,
+	//															unitOpened.trigger.advanced.pwq.type);
+
+	ok = ps2000SetAdvTriggerDelay(unitOpened.handle, 0, -10);
 }

@@ -6,14 +6,13 @@
 #include <QtWidgets/QMainWindow>
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
+#include <QtCharts/QChart>
 #include <cstdlib>
 #include <iostream>
 #include <ctime>
 #include <string>
 
-QtCharts::QLineSeries *series = new QtCharts::QLineSeries();
 
-daq d;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -22,17 +21,15 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
 	QWidget::connect(&timer, &QTimer::timeout,
-		this, &MainWindow::processOneThing);
+		this, &MainWindow::updatePlot);
 
-	new QtCharts::QLineSeries();
-
-	int colCount = 1024;
-	QVector<QPointF> points = d.acquire(colCount);
+	QVector<QPointF> points = d.getData();
 	
+	series = new QtCharts::QLineSeries();
     series->setUseOpenGL(true);
 	series->replace(points);
-
-    QtCharts::QChart *chart = new QtCharts::QChart();
+	
+	chart = new QtCharts::QChart();
     chart->legend()->hide();
     chart->addSeries(series);
     chart->createDefaultAxes();
@@ -49,16 +46,22 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::processOneThing() {
+void MainWindow::on_acquisitionButton_clicked() {
+	bool running = d.startStopAcquisition();
+	if (running) {
+		ui->acquisitionButton->setText(QString("Stop"));
+	} else {
+		ui->acquisitionButton->setText(QString("Acquire"));
+	}
+}
 
-    int colCount = 1024;
-    QVector<QPointF> points = d.acquire(colCount);
-
+void MainWindow::updatePlot() {
+    QVector<QPointF> points = d.getBuffer();
     series->replace(points);
+	chart->axisX()->setRange(0, points.length());
 }
 
 void MainWindow::on_playButton_clicked() {
-	d.acquire2();
 	if (timer.isActive()) {
 		timer.stop();
 		ui->playButton->setText(QString("Play"));

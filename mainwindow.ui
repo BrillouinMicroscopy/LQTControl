@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1289</width>
-    <height>950</height>
+    <height>933</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -53,11 +53,11 @@
          <x>0</x>
          <y>0</y>
          <width>288</width>
-         <height>861</height>
+         <height>844</height>
         </rect>
        </property>
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -65,16 +65,16 @@
        <property name="minimumSize">
         <size>
          <width>250</width>
-         <height>500</height>
+         <height>840</height>
         </size>
        </property>
        <widget class="QGroupBox" name="groupBox">
         <property name="geometry">
          <rect>
-          <x>9</x>
-          <y>9</y>
+          <x>10</x>
+          <y>370</y>
           <width>250</width>
-          <height>251</height>
+          <height>250</height>
          </rect>
         </property>
         <property name="title">
@@ -103,7 +103,7 @@
           </rect>
          </property>
          <property name="text">
-          <string>Lower Value [V]</string>
+          <string>Amplitude [V]</string>
          </property>
         </widget>
         <widget class="QLabel" name="label_2">
@@ -116,7 +116,7 @@
           </rect>
          </property>
          <property name="text">
-          <string>Upper Value [V]</string>
+          <string>Offset [V]</string>
          </property>
         </widget>
         <widget class="QLineEdit" name="lineEdit">
@@ -214,17 +214,22 @@
          </property>
          <item>
           <property name="text">
-           <string>sine</string>
+           <string>Sine</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>saw tooth</string>
+           <string>Ramp Up</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>ramp</string>
+           <string>Ramp Down</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>DC Voltage</string>
           </property>
          </item>
         </widget>
@@ -233,9 +238,9 @@
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>270</y>
+          <y>630</y>
           <width>250</width>
-          <height>201</height>
+          <height>200</height>
          </rect>
         </property>
         <property name="title">
@@ -333,6 +338,332 @@
          </property>
         </widget>
        </widget>
+       <widget class="QGroupBox" name="groupBox_3">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>250</width>
+          <height>350</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Acquisition</string>
+        </property>
+        <widget class="QPushButton" name="acquisitionButton">
+         <property name="geometry">
+          <rect>
+           <x>130</x>
+           <y>305</y>
+           <width>110</width>
+           <height>34</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Acquire</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_14">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>30</y>
+           <width>131</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Sample rate</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_15">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>70</y>
+           <width>131</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>No. samples</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="lineEdit_10">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>30</y>
+           <width>90</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="lineEdit_11">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>70</y>
+           <width>90</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>100</y>
+           <width>231</width>
+           <height>95</height>
+          </rect>
+         </property>
+         <property name="title">
+          <string>Detector signal</string>
+         </property>
+         <widget class="QLabel" name="label_17">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>131</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Voltage range</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_18">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>60</y>
+            <width>131</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Coupling</string>
+          </property>
+         </widget>
+         <widget class="QComboBox" name="comboBox">
+          <property name="geometry">
+           <rect>
+            <x>140</x>
+            <y>60</y>
+            <width>90</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <item>
+           <property name="text">
+            <string>AC</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>DC</string>
+           </property>
+          </item>
+         </widget>
+         <widget class="QComboBox" name="comboBox_5">
+          <property name="geometry">
+           <rect>
+            <x>120</x>
+            <y>20</y>
+            <width>110</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <item>
+           <property name="text">
+            <string>Off</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Auto</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>±50 mV</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>±100 mV</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>±200 mV</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>±500 mV</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>±1 V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>±2 V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>±5 V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>±10 V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>±20 V</string>
+           </property>
+          </item>
+         </widget>
+        </widget>
+        <widget class="QGroupBox" name="groupBox_5">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>200</y>
+           <width>231</width>
+           <height>95</height>
+          </rect>
+         </property>
+         <property name="title">
+          <string>Reference signal</string>
+         </property>
+         <widget class="QLabel" name="label_21">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>131</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Voltage range</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_22">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>60</y>
+            <width>131</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Coupling</string>
+          </property>
+         </widget>
+         <widget class="QComboBox" name="comboBox_4">
+          <property name="geometry">
+           <rect>
+            <x>140</x>
+            <y>60</y>
+            <width>90</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <item>
+           <property name="text">
+            <string>AC</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>DC</string>
+           </property>
+          </item>
+         </widget>
+         <widget class="QComboBox" name="comboBox_6">
+          <property name="geometry">
+           <rect>
+            <x>120</x>
+            <y>20</y>
+            <width>110</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <item>
+           <property name="text">
+            <string>Off</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Auto</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>±50 mV</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>±100 mV</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>±200 mV</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>±500 mV</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>±1 V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>±2 V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>±5 V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>±10 V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>±20 V</string>
+           </property>
+          </item>
+         </widget>
+        </widget>
+       </widget>
       </widget>
      </widget>
     </item>
@@ -388,22 +719,22 @@
             </property>
             <item>
              <property name="text">
-              <string>detector signal</string>
+              <string>Detector signal</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>reference signal</string>
+              <string>Reference signal</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>error signal</string>
+              <string>Error signal</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>piezo voltage</string>
+              <string>Piezo voltage</string>
              </property>
             </item>
            </widget>
