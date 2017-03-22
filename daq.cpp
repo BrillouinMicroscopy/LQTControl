@@ -5,7 +5,6 @@
 
 /* Definitions of PS2000 driver routines */
 #include "ps2000.h"
-#include <conio.h>
 
 int16_t		values_a[BUFFER_SIZE]; // block mode buffer, Channel A
 int16_t		values_b[BUFFER_SIZE]; // block mode buffer, Channel B
@@ -200,11 +199,6 @@ void daq::acquire2(void) {
 	uint32_t	overviewBufferSize = BUFFER_SIZE_STREAMING;
 	uint32_t	sample_count;
 
-	printf("Collect streaming...\n");
-	printf("Data is written to disk file (fast_streaming_trig_data2.txt)\n");
-	printf("Press a key to start\n");
-	_getch();
-
 	set_defaults();
 
 	// Simple trigger, 500mV, rising
@@ -268,11 +262,9 @@ void daq::acquire2(void) {
 		overviewBufferSize		// size of the overview buffer
 	);
 
-	printf("OK: %d\n", ok);
-
 	/* From here on, we can get data whenever we want...*/
 
-	while (!_kbhit() && !unitOpened.trigger.advanced.autoStop && !g_appBufferFull) {
+	while (!unitOpened.trigger.advanced.autoStop && !g_appBufferFull) {
 
 		ps2000_get_streaming_last_values(
 			unitOpened.handle,				// handle, handle of the oscilloscope
@@ -282,27 +274,16 @@ void daq::acquire2(void) {
 		if (nPreviousValues != unitOpened.trigger.advanced.totalSamples) {
 			sample_count = unitOpened.trigger.advanced.totalSamples - nPreviousValues;
 
-			//Printing to console can take up resources
-			//printf ("Values collected: %ld, Total samples: %ld ", sample_count, unitOpened.trigger.advanced.totalSamples);
-
-			/*if(g_triggered)
-			{
-			printf("Triggered at index: %lu, overall %lu", g_triggeredAt, nPreviousValues + g_triggeredAt);
-			}*/
-
 			nPreviousValues = unitOpened.trigger.advanced.totalSamples;
-			//printf("\n");
 
 			if (g_appBufferFull) {
+				// Application buffer full - stopping data collection
 				unitOpened.trigger.advanced.totalSamples = appBufferSize;
-				printf("\nApplication buffer full - stopping data collection.\n");
 			}
 		}
 	}
 
 	ps2000_stop(unitOpened.handle);
-
-	printf("\nCollected %lu samples. Writing to file...\n", unitOpened.trigger.advanced.totalSamples);
 
 	fopen_s(&fp, "fast_streaming_trig_data2.txt", "w");
 
@@ -330,11 +311,9 @@ void daq::acquire2(void) {
 
 			fprintf(fp, "\n");
 		} else {
-			printf("Cannot open the file fast_streaming_trig_data2.txt for writing.\n");
+			// Cannot open the file fast_streaming_trig_data2.txt for writing.
 		}
 	}
-
-	printf("Writing to file complete.\n");
 
 	fclose(fp);
 
@@ -343,10 +322,6 @@ void daq::acquire2(void) {
 		if (unitOpened.channelSettings[ch].enabled) {
 			//free(bufferInfo.appBuffers[ch * 2]);
 		}
-	}
-
-	if (_kbhit()) {
-		_getch();
 	}
 }
 
