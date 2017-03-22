@@ -208,25 +208,14 @@ void daq::acquire2(void) {
 	set_defaults();
 
 	// Simple trigger, 500mV, rising
-	/*ok = ps2000_set_trigger(
-		unitOpened.handle,
-		PS2000_CHANNEL_A,
-		mv_to_adc(500, unitOpened.channelSettings[PS2000_CHANNEL_A].range),
-		PS2000_RISING,
-		0,
-		0
-	);*/
-
-	ps2000_set_trigger(
-		unitOpened.handle,
-		PS2000_NONE,
-		0,
-		0,
-		0,
-		0
+	ok = ps2000_set_trigger(
+		unitOpened.handle,														// handle of the oscilloscope
+		PS2000_CHANNEL_A,														// source where to look for a trigger
+		mv_to_adc(500, unitOpened.channelSettings[PS2000_CHANNEL_A].range),		// trigger threshold
+		PS2000_RISING,															// direction, rising or falling
+		0,																		// delay
+		0																		// the delay in ms
 	);
-
-	//set_trigger_advanced();
 
 	unitOpened.trigger.advanced.autoStop = 0;
 	unitOpened.trigger.advanced.totalSamples = 0;
@@ -269,14 +258,26 @@ void daq::acquire2(void) {
 	* returned by the ps2000_get_timebase function to work out the most appropriate sampling interval to use. As these are low memory
 	* devices, the fastest sampling intervals may result in lost data.
 	*/
-	ok = ps2000_run_streaming_ns(unitOpened.handle, 1, PS2000_US, NUM_STREAMING_SAMPLES, 1, 1, overviewBufferSize); // No aggregation
+	ok = ps2000_run_streaming_ns(
+		unitOpened.handle,		// handle, handle of the oscilloscope
+		1,						// sample_interval, sample interval in time_units
+		PS2000_US,				// time_units, units in which sample_interval is measured
+		NUM_STREAMING_SAMPLES,	// max_samples, maximum number of samples
+		1,						// auto_stop, boolean to indicate if streaming should stop when max_samples is reached
+		1,						// noOfSamplesPerAggregate, number of samples the driver will merge
+		overviewBufferSize		// size of the overview buffer
+	);
 
 	printf("OK: %d\n", ok);
 
 	/* From here on, we can get data whenever we want...*/
 
 	while (!_kbhit() && !unitOpened.trigger.advanced.autoStop && !g_appBufferFull) {
-		ps2000_get_streaming_last_values(unitOpened.handle, &daq::ps2000FastStreamingReady2);
+
+		ps2000_get_streaming_last_values(
+			unitOpened.handle,				// handle, handle of the oscilloscope
+			&daq::ps2000FastStreamingReady2 // pointer to callback function to receive data
+		);
 
 		if (nPreviousValues != unitOpened.trigger.advanced.totalSamples) {
 			sample_count = unitOpened.trigger.advanced.totalSamples - nPreviousValues;
