@@ -17,8 +17,6 @@ int16_t		timebase = 8;
 
 int16_t		g_overflow = 0;
 
-int32_t		g_runs = 0;
-
 // Streaming data parameters
 int16_t		g_triggered = 0;
 uint32_t	g_triggeredAt = 0;
@@ -139,7 +137,7 @@ bool daq::startStopAcquisition() {
 		return false;
 	} else {
 		daq::startStreaming();
-		timer.start(100);
+		timer.start(20);
 		return true;
 	}
 	return true;
@@ -182,19 +180,9 @@ QVector<QPointF> daq::getBuffer() {
 }
 
 /****************************************************************************
+* startStreaming
 *
-* collect_fast_streaming_triggered2
-*
-* Demonstates how to retrieve data from the device while it is collecting
-* streaming data. This data is not aggregated.
-*
-* Data is collected into an application buffer specified for a channel. If
-* the maximum size of the application buffer has been reached, the
-* application will stop collecting data.
-*
-* Ensure minimal processes are running on the PC to reduce risk of lost data
-* values.
-*
+* Starts the streaming of data
 ****************************************************************************/
 void daq::startStreaming(void) {
 	//uint32_t	i;
@@ -203,19 +191,17 @@ void daq::startStreaming(void) {
 	//int16_t		ch;
 	//uint32_t	nPreviousValues = 0;
 	//double		startTime = 0.0;
-	uint32_t	appBufferSize = (int)(NUM_STREAMING_SAMPLES * 1.5);
+	uint32_t	appBufferSize = (int)(50000);
 	//uint32_t	overviewBufferSize = BUFFER_SIZE_STREAMING;
 	//uint32_t	sample_count;
 
 	set_defaults();
 
-	g_runs = 0;
-
 	// Simple trigger, 500mV, rising
 	ok = ps2000_set_trigger(
 		unitOpened.handle,														// handle of the oscilloscope
 		PS2000_CHANNEL_A,														// source where to look for a trigger
-		mv_to_adc(500, unitOpened.channelSettings[PS2000_CHANNEL_A].range),		// trigger threshold
+		mv_to_adc(0, unitOpened.channelSettings[PS2000_CHANNEL_A].range),		// trigger threshold
 		PS2000_RISING,															// direction, rising or falling
 		0,																		// delay
 		0																		// the delay in ms
@@ -247,13 +233,6 @@ void daq::startStreaming(void) {
 		bufferInfo.bufferSizes[PS2000_CHANNEL_B * 2] = appBufferSize;
 	}
 
-	/* Collect data at 10us intervals
-	* 100000 points with an aggregation of 100 : 1
-	*	Auto stop after the 100000 samples
-	*  Start it collecting,
-	*/
-	//ok = ps2000_run_streaming_ns ( unitOpened.handle, 10, PS2000_US, NUM_STREAMING_SAMPLES, 1, 100, overviewBufferSize );
-
 	/* Collect data at 1us intervals
 	* 1000000 points after trigger with 0 aggregation
 	* Auto stop after the 1000000 samples
@@ -269,85 +248,48 @@ void daq::startStreaming(void) {
 		NUM_STREAMING_SAMPLES,	// max_samples, maximum number of samples
 		0,						// auto_stop, boolean to indicate if streaming should stop when max_samples is reached
 		1,						// noOfSamplesPerAggregate, number of samples the driver will merge
-		100000		// size of the overview buffer
+		50000		// size of the overview buffer
 	);
 	/* From here on, we can get data whenever we want...*/
 }
 
-
 void daq::collectStreamingData() {
-	uint32_t	nPreviousValues = 0;
-	//double		startTime = 0.0;
-	uint32_t	appBufferSize = (int)(NUM_STREAMING_SAMPLES * 1.5);
-	uint32_t	sample_count;
 
-	if (!unitOpened.trigger.advanced.autoStop && !g_appBufferFull) {
+	unitOpened.trigger.advanced.autoStop = 0;
+	unitOpened.trigger.advanced.totalSamples = 0;
+	unitOpened.trigger.advanced.triggered = 0;
 
-		//Sleep(0);
+	//Reset global values
+	g_nValues = 0;
+	g_triggered = 0;
+	g_triggeredAt = 0;
+	g_startIndex = 0;
+	g_prevStartIndex = 0;
+	g_appBufferFull = 0;
 
+	while (!unitOpened.trigger.advanced.autoStop && !g_appBufferFull) {
 		ps2000_get_streaming_last_values(
 			unitOpened.handle,				// handle, handle of the oscilloscope
 			&daq::ps2000FastStreamingReady2 // pointer to callback function to receive data
 		);
 	}
+}
 
-		//if (nPreviousValues != unitOpened.trigger.advanced.totalSamples) {
-		//	sample_count = unitOpened.trigger.advanced.totalSamples - nPreviousValues;
-
-		//	nPreviousValues = unitOpened.trigger.advanced.totalSamples;
-
-		//	if (g_appBufferFull) {
-		//		// Application buffer full - stopping data collection
-		//		unitOpened.trigger.advanced.totalSamples = appBufferSize;
-		//	}
-		//}
-	//}
-
-	//g_runs = g_runs + 1;
-
-	/*/
-	fopen_s(&fp, "fast_streaming_trig_data2.txt", "w");
-
-	fprintf(fp, "For each of the %d Channels, results shown are....\n", unitOpened.noOfChannels);
-	fprintf(fp, "Channel ADC Count & mV\n\n");
-
-	for (ch = 0; ch < unitOpened.noOfChannels; ch++) {
-		if (unitOpened.channelSettings[ch].enabled) {
-			fprintf(fp, "Ch%C   Max ADC    Max mV   ", (char)('A' + ch));
-		}
-	}
-
-	fprintf(fp, "\n");
-
-	for (i = 0; i < unitOpened.trigger.advanced.totalSamples; i++) {
-		if (fp != NULL) {
-			for (ch = 0; ch < unitOpened.noOfChannels; ch++) {
-				if (unitOpened.channelSettings[ch].enabled) {
-					fprintf(fp, "%4C, %7d, %7d, ",
-						'A' + ch,
-						bufferInfo.appBuffers[ch * 2][i],
-						adc_to_mv(bufferInfo.appBuffers[ch * 2][i], unitOpened.channelSettings[ch].range));
-				}
-			}
-
-			fprintf(fp, "\n");
-		} else {
-			// Cannot open the file fast_streaming_trig_data2.txt for writing.
-		}
-	}
-
-	fclose(fp);
-
+/****************************************************************************
+* stopStreaming
+*
+* Stops the streaming of data
+****************************************************************************/
+void daq::stopStreaming() {
+	int16_t		ch;
+	ps2000_stop(unitOpened.handle);
+	
 	// Free buffers
 	for (ch = 0; ch < unitOpened.noOfChannels; ch++) {
 		if (unitOpened.channelSettings[ch].enabled) {
-			//free(bufferInfo.appBuffers[ch * 2]);
+			free(bufferInfo.appBuffers[ch * 2]);
 		}
-	}*/
-}
-
-void daq::stopStreaming() {
-	ps2000_stop(unitOpened.handle);
+	}
 }
 
 /****************************************************************************
@@ -417,18 +359,18 @@ void  __stdcall daq::ps2000FastStreamingReady2(
 	if (nValues > 0 && g_appBufferFull == 0) {
 		for (channel = (int16_t)PS2000_CHANNEL_A; channel < DUAL_SCOPE; channel++) {
 			if (bufferInfo.unit.channelSettings[channel].enabled) {
-				//if (unitOpened.trigger.advanced.totalSamples <= bufferInfo.bufferSizes[channel * 2] && !g_appBufferFull) {
+				if (unitOpened.trigger.advanced.totalSamples <= bufferInfo.bufferSizes[channel * 2] && !g_appBufferFull) {
 					g_nValues = nValues;
-				//} else if (g_startIndex < bufferInfo.bufferSizes[channel * 2]) {
-				//	g_nValues = bufferInfo.bufferSizes[channel * 2] - (g_startIndex + 1);			// Only copy data into application buffer up to end
-				//	unitOpened.trigger.advanced.totalSamples = bufferInfo.bufferSizes[channel * 2];	// Total samples limited to application buffer
-				//	g_appBufferFull = 1;
-				//} else {
-				//	// g_startIndex might be >= buffer length
-				//	g_nValues = 0;
-				//	unitOpened.trigger.advanced.totalSamples = bufferInfo.bufferSizes[channel * 2];
-				//	g_appBufferFull = 1;
-				//}
+				} else if (g_startIndex < bufferInfo.bufferSizes[channel * 2]) {
+					g_nValues = bufferInfo.bufferSizes[channel * 2] - (g_startIndex + 1);			// Only copy data into application buffer up to end
+					unitOpened.trigger.advanced.totalSamples = bufferInfo.bufferSizes[channel * 2];	// Total samples limited to application buffer
+					g_appBufferFull = 1;
+				} else {
+					// g_startIndex might be >= buffer length
+					g_nValues = 0;
+					unitOpened.trigger.advanced.totalSamples = bufferInfo.bufferSizes[channel * 2];
+					g_appBufferFull = 1;
+				}
 
 				// Copy data...
 
@@ -453,11 +395,9 @@ void  __stdcall daq::ps2000FastStreamingReady2(
 			}
 		}
 
-		//g_prevStartIndex = g_startIndex;
-		//g_startIndex = unitOpened.trigger.advanced.totalSamples;
+		g_prevStartIndex = g_startIndex;
+		g_startIndex = unitOpened.trigger.advanced.totalSamples;
 	}
-
-	g_runs++;
 }
 
 bool daq::connect() {
@@ -663,7 +603,7 @@ void daq::get_info(void) {
 
 void daq::set_sig_gen() {
 	int16_t waveform = 0;
-	int32_t frequency = 1000;
+	int32_t frequency = 100;
 
 	/*
 	printf("Enter frequency in Hz: "); // Ask user to enter signal frequency;
@@ -687,7 +627,7 @@ void daq::set_sig_gen() {
 	ps2000_set_sig_gen_built_in(
 		unitOpened.handle,				// handle of the oscilloscope
 		0,								// offsetVoltage in microvolt
-		1000000,						// peak to peak voltage in microvolt
+		2000000,						// peak to peak voltage in microvolt
 		(PS2000_WAVE_TYPE)waveform,		// type of waveform
 		(float)frequency,				// startFrequency in Hertz
 		(float)frequency,				// stopFrequency in Hertz
@@ -750,7 +690,6 @@ void daq::set_trigger_advanced(void) {
 		unitOpened.trigger.advanced.channelProperties,
 		unitOpened.trigger.advanced.nProperties,
 		auto_trigger_ms);
-
 
 	// remove comments to try triggering with a pulse width qualifier
 	// add a condition for the pulse width eg. in addition to the channel A or as a replacement
