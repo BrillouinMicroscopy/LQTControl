@@ -9,7 +9,7 @@
 
 #define BUFFER_SIZE 	1024
 #define BUFFER_SIZE_STREAMING 50000		// Overview buffer size
-#define NUM_STREAMING_SAMPLES 1000000	// Number of streaming samples to collect
+#define NUM_STREAMING_SAMPLES 100000	// Number of streaming samples to collect
 #define MAX_CHANNELS 4
 #define SINGLE_CH_SCOPE 1				// Single channel scope
 #define DUAL_SCOPE 2					// Dual channel scope
@@ -25,7 +25,9 @@ class daq : public QObject {
 		QVector<QPointF> getBuffer();
 		bool connect();
 		bool disconnect();
-		void acquire2();
+		void startStreaming();
+		void collectStreamingData();
+		void stopStreaming();
 		void set_sig_gen();
 		void set_trigger_advanced();
 

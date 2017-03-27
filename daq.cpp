@@ -17,6 +17,8 @@ int16_t		timebase = 8;
 
 int16_t		g_overflow = 0;
 
+int32_t		g_runs = 0;
+
 // Streaming data parameters
 int16_t		g_triggered = 0;
 uint32_t	g_triggeredAt = 0;
@@ -125,7 +127,7 @@ daq::daq(QObject *parent) :
 	QObject(parent) {
 
 	QWidget::connect(&timer, &QTimer::timeout,
-		this, &daq::acquire);
+		this, &daq::collectStreamingData);
 	points.reserve(colCount);
 	daq::acquire();
 }
@@ -133,11 +135,14 @@ daq::daq(QObject *parent) :
 bool daq::startStopAcquisition() {
 	if (timer.isActive()) {
 		timer.stop();
+		daq::stopStreaming();
 		return false;
 	} else {
-		timer.start(20);
+		daq::startStreaming();
+		timer.start(100);
 		return true;
 	}
+	return true;
 }
 
 void daq::acquire() {
@@ -155,18 +160,21 @@ void daq::acquire() {
 }
 
 QVector<QPointF> daq::getData() {
+	daq::acquire();
 	return points;
 }
 
 QVector<QPointF> daq::getBuffer() {
 	int ch = 0;
 	QVector<QPointF> data;
-	data.reserve(unitOpened.trigger.advanced.totalSamples);
+	//data.reserve(unitOpened.trigger.advanced.totalSamples);
+	data.reserve(50000);
 	double voltage;
 
-	//for (int j = 0; j < 1000; j++) {
-	for (uint32_t j = 0; j < 8000; j++) {
-		voltage = adc_to_mv(bufferInfo.appBuffers[ch * 2][j], unitOpened.channelSettings[ch].range) / double(1000) + (qreal)rand() / (qreal)RAND_MAX;
+	for (int j = 0; j < 50000; j++) {
+	//for (uint32_t j = 0; j < unitOpened.trigger.advanced.totalSamples; j++) {
+		//voltage = adc_to_mv(bufferInfo.appBuffers[ch * 2][j], unitOpened.channelSettings[ch].range) / double(1000) + (qreal)rand() / (qreal)RAND_MAX;
+		voltage = adc_to_mv(bufferInfo.appBuffers[ch * 2][j], unitOpened.channelSettings[ch].range) / double(1000);
 		data.append(QPointF(j, voltage));
 	}
 
@@ -188,18 +196,20 @@ QVector<QPointF> daq::getBuffer() {
 * values.
 *
 ****************************************************************************/
-void daq::acquire2(void) {
-	uint32_t	i;
-	FILE 		*fp;
+void daq::startStreaming(void) {
+	//uint32_t	i;
+	//FILE 		*fp;
 	int32_t 	ok;
-	int16_t		ch;
-	uint32_t	nPreviousValues = 0;
+	//int16_t		ch;
+	//uint32_t	nPreviousValues = 0;
 	//double		startTime = 0.0;
 	uint32_t	appBufferSize = (int)(NUM_STREAMING_SAMPLES * 1.5);
-	uint32_t	overviewBufferSize = BUFFER_SIZE_STREAMING;
-	uint32_t	sample_count;
+	//uint32_t	overviewBufferSize = BUFFER_SIZE_STREAMING;
+	//uint32_t	sample_count;
 
 	set_defaults();
+
+	g_runs = 0;
 
 	// Simple trigger, 500mV, rising
 	ok = ps2000_set_trigger(
@@ -254,37 +264,48 @@ void daq::acquire2(void) {
 	*/
 	ok = ps2000_run_streaming_ns(
 		unitOpened.handle,		// handle, handle of the oscilloscope
-		1,						// sample_interval, sample interval in time_units
+		2,						// sample_interval, sample interval in time_units
 		PS2000_US,				// time_units, units in which sample_interval is measured
 		NUM_STREAMING_SAMPLES,	// max_samples, maximum number of samples
-		1,						// auto_stop, boolean to indicate if streaming should stop when max_samples is reached
+		0,						// auto_stop, boolean to indicate if streaming should stop when max_samples is reached
 		1,						// noOfSamplesPerAggregate, number of samples the driver will merge
-		overviewBufferSize		// size of the overview buffer
+		100000		// size of the overview buffer
 	);
-
 	/* From here on, we can get data whenever we want...*/
+}
 
-	while (!unitOpened.trigger.advanced.autoStop && !g_appBufferFull) {
+
+void daq::collectStreamingData() {
+	uint32_t	nPreviousValues = 0;
+	//double		startTime = 0.0;
+	uint32_t	appBufferSize = (int)(NUM_STREAMING_SAMPLES * 1.5);
+	uint32_t	sample_count;
+
+	if (!unitOpened.trigger.advanced.autoStop && !g_appBufferFull) {
+
+		//Sleep(0);
 
 		ps2000_get_streaming_last_values(
 			unitOpened.handle,				// handle, handle of the oscilloscope
 			&daq::ps2000FastStreamingReady2 // pointer to callback function to receive data
 		);
-
-		if (nPreviousValues != unitOpened.trigger.advanced.totalSamples) {
-			sample_count = unitOpened.trigger.advanced.totalSamples - nPreviousValues;
-
-			nPreviousValues = unitOpened.trigger.advanced.totalSamples;
-
-			if (g_appBufferFull) {
-				// Application buffer full - stopping data collection
-				unitOpened.trigger.advanced.totalSamples = appBufferSize;
-			}
-		}
 	}
 
-	ps2000_stop(unitOpened.handle);
+		//if (nPreviousValues != unitOpened.trigger.advanced.totalSamples) {
+		//	sample_count = unitOpened.trigger.advanced.totalSamples - nPreviousValues;
 
+		//	nPreviousValues = unitOpened.trigger.advanced.totalSamples;
+
+		//	if (g_appBufferFull) {
+		//		// Application buffer full - stopping data collection
+		//		unitOpened.trigger.advanced.totalSamples = appBufferSize;
+		//	}
+		//}
+	//}
+
+	//g_runs = g_runs + 1;
+
+	/*/
 	fopen_s(&fp, "fast_streaming_trig_data2.txt", "w");
 
 	fprintf(fp, "For each of the %d Channels, results shown are....\n", unitOpened.noOfChannels);
@@ -322,7 +343,11 @@ void daq::acquire2(void) {
 		if (unitOpened.channelSettings[ch].enabled) {
 			//free(bufferInfo.appBuffers[ch * 2]);
 		}
-	}
+	}*/
+}
+
+void daq::stopStreaming() {
+	ps2000_stop(unitOpened.handle);
 }
 
 /****************************************************************************
@@ -378,6 +403,7 @@ void  __stdcall daq::ps2000FastStreamingReady2(
 	int16_t		auto_stop,
 	uint32_t	nValues
 ) {
+
 	int16_t channel = 0;
 
 	unitOpened.trigger.advanced.totalSamples += nValues;
@@ -391,18 +417,18 @@ void  __stdcall daq::ps2000FastStreamingReady2(
 	if (nValues > 0 && g_appBufferFull == 0) {
 		for (channel = (int16_t)PS2000_CHANNEL_A; channel < DUAL_SCOPE; channel++) {
 			if (bufferInfo.unit.channelSettings[channel].enabled) {
-				if (unitOpened.trigger.advanced.totalSamples <= bufferInfo.bufferSizes[channel * 2] && !g_appBufferFull) {
+				//if (unitOpened.trigger.advanced.totalSamples <= bufferInfo.bufferSizes[channel * 2] && !g_appBufferFull) {
 					g_nValues = nValues;
-				} else if (g_startIndex < bufferInfo.bufferSizes[channel * 2]) {
-					g_nValues = bufferInfo.bufferSizes[channel * 2] - (g_startIndex + 1);			// Only copy data into application buffer up to end
-					unitOpened.trigger.advanced.totalSamples = bufferInfo.bufferSizes[channel * 2];	// Total samples limited to application buffer
-					g_appBufferFull = 1;
-				} else {
-					// g_startIndex might be >= buffer length
-					g_nValues = 0;
-					unitOpened.trigger.advanced.totalSamples = bufferInfo.bufferSizes[channel * 2];
-					g_appBufferFull = 1;
-				}
+				//} else if (g_startIndex < bufferInfo.bufferSizes[channel * 2]) {
+				//	g_nValues = bufferInfo.bufferSizes[channel * 2] - (g_startIndex + 1);			// Only copy data into application buffer up to end
+				//	unitOpened.trigger.advanced.totalSamples = bufferInfo.bufferSizes[channel * 2];	// Total samples limited to application buffer
+				//	g_appBufferFull = 1;
+				//} else {
+				//	// g_startIndex might be >= buffer length
+				//	g_nValues = 0;
+				//	unitOpened.trigger.advanced.totalSamples = bufferInfo.bufferSizes[channel * 2];
+				//	g_appBufferFull = 1;
+				//}
 
 				// Copy data...
 
@@ -427,9 +453,11 @@ void  __stdcall daq::ps2000FastStreamingReady2(
 			}
 		}
 
-		g_prevStartIndex = g_startIndex;
-		g_startIndex = unitOpened.trigger.advanced.totalSamples;
+		//g_prevStartIndex = g_startIndex;
+		//g_startIndex = unitOpened.trigger.advanced.totalSamples;
 	}
+
+	g_runs++;
 }
 
 bool daq::connect() {
@@ -439,10 +467,6 @@ bool daq::connect() {
 		get_info();
 
 		timebase = 0;
-
-		daq::set_sig_gen();
-
-		daq::acquire2();
 
 		if (!unitOpened.handle) {
 			return false;
