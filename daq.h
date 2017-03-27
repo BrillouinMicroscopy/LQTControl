@@ -22,7 +22,7 @@ class daq : public QObject {
 		bool startStopAcquisition();
 		void acquire();
 		QVector<QPointF> getData();
-		QVector<QPointF> getBuffer();
+		QVector<QPointF> getBuffer(int ch);
 		bool connect();
 		bool disconnect();
 		void startStreaming();

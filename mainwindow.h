@@ -21,7 +21,7 @@ public:
 
 private slots:
     void on_playButton_clicked();
-	void on_selectDisplay_activated(const QString &text);
+	void on_selectDisplay_activated(const int index);
     void updatePlot();
 	void on_acquisitionButton_clicked();
 	void on_actionConnect_triggered();
@@ -34,6 +34,7 @@ private:
 	QtCharts::QLineSeries *series;
 	QtCharts::QChart *chart;
 	daq d;
+	int channel = 0;				// selection of the oscilloscope channel
 };
 
 #endif // MAINWINDOW_H

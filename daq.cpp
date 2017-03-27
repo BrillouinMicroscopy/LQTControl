@@ -162,8 +162,7 @@ QVector<QPointF> daq::getData() {
 	return points;
 }
 
-QVector<QPointF> daq::getBuffer() {
-	int ch = 0;
+QVector<QPointF> daq::getBuffer(int ch) {
 	QVector<QPointF> data;
 	//data.reserve(unitOpened.trigger.advanced.totalSamples);
 	data.reserve(50000);

@@ -56,7 +56,7 @@ void MainWindow::on_acquisitionButton_clicked() {
 }
 
 void MainWindow::updatePlot() {
-    QVector<QPointF> points = d.getBuffer();
+    QVector<QPointF> points = d.getBuffer(channel);
     series->replace(points);
 	chart->axisX()->setRange(0, points.length());
 }
@@ -71,8 +71,15 @@ void MainWindow::on_playButton_clicked() {
 	}
 }
 
-void MainWindow::on_selectDisplay_activated(const QString &text) {
-	ui->statusBar->showMessage(text, 2000);
+void MainWindow::on_selectDisplay_activated(const int index) {
+	switch (index) {
+		case 0:
+		case 1:
+			channel = index;
+			break;
+	}
+/*
+	ui->statusBar->showMessage(text, 2000);*/
 }
 
 void MainWindow::on_actionConnect_triggered() {
