@@ -14,6 +14,13 @@
 #define SINGLE_CH_SCOPE 1				// Single channel scope
 #define DUAL_SCOPE 2					// Dual channel scope
 
+typedef struct {
+	int32_t amplitude = 2e6;		// peak to peak voltage in microvolt
+	int32_t offset = 0;				// 
+	int16_t waveform = 1;			// type of waveform
+	int32_t frequency = 100;
+} SCAN_PARAMETERS;
+
 class daq : public QObject {
 	Q_OBJECT
 
@@ -30,6 +37,8 @@ class daq : public QObject {
 		void stopStreaming();
 		void set_sig_gen();
 		void set_trigger_advanced();
+		SCAN_PARAMETERS getScanParameters();
+		void setScanParameters(int type, int value);
 
 	private slots:
 

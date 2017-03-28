@@ -40,6 +40,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->plotAxes->setChart(chart);
     ui->plotAxes->setRenderHint(QPainter::Antialiasing);
+
+	SCAN_PARAMETERS scanParameters = d.getScanParameters();
+	ui->scanAmplitude->setValue(scanParameters.amplitude / double(1e6));
+	ui->scanOffset->setValue(scanParameters.offset / double(1e6));
+	ui->scanFrequency->setValue(scanParameters.frequency / double(1e6));
+	ui->scanWaveform->setCurrentIndex(scanParameters.waveform);
 }
 
 MainWindow::~MainWindow() {
@@ -78,8 +84,10 @@ void MainWindow::on_selectDisplay_activated(const int index) {
 			channel = index;
 			break;
 	}
-/*
-	ui->statusBar->showMessage(text, 2000);*/
+}
+
+void MainWindow::on_scanWaveform_activated(const int index) {
+	d.setScanParameters(3, index);
 }
 
 void MainWindow::on_actionConnect_triggered() {

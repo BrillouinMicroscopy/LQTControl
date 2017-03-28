@@ -54,8 +54,7 @@ typedef struct {
 	PS2000_PULSE_WIDTH_TYPE			type;
 } PULSE_WIDTH_QUALIFIER;
 
-typedef struct
-{
+typedef struct {
 	PS2000_CHANNEL channel;
 	float threshold;
 	int16_t direction;
@@ -73,7 +72,6 @@ typedef struct {
 	int16_t autoStop;
 	int16_t triggered;
 } ADVANCED;
-
 
 typedef struct {
 	SIMPLE simple;
@@ -106,12 +104,13 @@ typedef struct {
 
 // Struct to help with retrieving data into 
 // application buffers in streaming data capture
-typedef struct
-{
+typedef struct {
 	UNIT_MODEL unit;
 	int16_t *appBuffers[DUAL_SCOPE * 2];
 	uint32_t bufferSizes[PS2000_MAX_CHANNELS];
 } BUFFER_INFO;
+
+SCAN_PARAMETERS scanParameters;
 
 UNIT_MODEL unitOpened;
 
@@ -141,6 +140,21 @@ bool daq::startStopAcquisition() {
 		return true;
 	}
 	return true;
+}
+
+SCAN_PARAMETERS daq::getScanParameters() {
+	return scanParameters;
+}
+
+void daq::setScanParameters(int type, int value) {
+	switch (type) {
+		case 0:
+			//scanParameters.amplitude = value;
+			break;
+		case 3:
+			scanParameters.waveform = value;
+			break;
+	}
 }
 
 void daq::acquire() {
@@ -601,40 +615,20 @@ void daq::get_info(void) {
 }
 
 void daq::set_sig_gen() {
-	int16_t waveform = 0;
-	int32_t frequency = 100;
-
-	/*
-	printf("Enter frequency in Hz: "); // Ask user to enter signal frequency;
-	do {
-		scanf_s("%lu", &frequency);
-	} while (frequency < 1000 || frequency > PS2000_MAX_SIGGEN_FREQ);
-
-	printf("Signal generator On");
-	printf("Enter type of waveform (0..9 or 99)\n");
-	printf("0:\tSINE\n");
-	printf("1:\tSQUARE\n");
-	printf("2:\tTRIANGLE\n");
-	printf("3:\tRAMP UP\n");
-	printf("4:\tRAMP DOWN\n");
-
-	do {
-		scanf_s("%hd", &waveform);
-	} while (waveform < 0 || waveform >= PS2000_DC_VOLTAGE);
-	*/
 
 	ps2000_set_sig_gen_built_in(
 		unitOpened.handle,				// handle of the oscilloscope
-		0,								// offsetVoltage in microvolt
-		2000000,						// peak to peak voltage in microvolt
-		(PS2000_WAVE_TYPE)waveform,		// type of waveform
-		(float)frequency,				// startFrequency in Hertz
-		(float)frequency,				// stopFrequency in Hertz
+		scanParameters.offset,			// offsetVoltage in microvolt
+		scanParameters.amplitude,		// peak to peak voltage in microvolt
+		(PS2000_WAVE_TYPE) scanParameters.waveform,	// type of waveform
+		(float) scanParameters.frequency,	// startFrequency in Hertz
+		(float) scanParameters.frequency,	// stopFrequency in Hertz
 		0,								// increment
 		0,								// dwellTime, time in seconds between frequency changes in sweep mode
 		PS2000_UPDOWN,					// sweepType
 		0								// sweeps, number of times to sweep the frequency
 	);
+
 }
 
 void daq::set_trigger_advanced(void) {
