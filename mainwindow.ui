@@ -19,7 +19,7 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2">
     <item>
-     <widget class="QScrollArea" name="scrollArea">
+     <widget class="QScrollArea" name="settingsArea">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>0</horstretch>
@@ -68,7 +68,7 @@
          <height>840</height>
         </size>
        </property>
-       <widget class="QGroupBox" name="groupBox">
+       <widget class="QGroupBox" name="ScanBox">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -93,7 +93,7 @@
           <string>Scan</string>
          </property>
         </widget>
-        <widget class="QLabel" name="label">
+        <widget class="QLabel" name="scanAmplitudeLabel">
          <property name="geometry">
           <rect>
            <x>10</x>
@@ -106,7 +106,7 @@
           <string>Amplitude [V]</string>
          </property>
         </widget>
-        <widget class="QLabel" name="label_2">
+        <widget class="QLabel" name="scanOffsetLabel">
          <property name="geometry">
           <rect>
            <x>10</x>
@@ -119,20 +119,7 @@
           <string>Offset [V]</string>
          </property>
         </widget>
-        <widget class="QLabel" name="label_3">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>200</y>
-           <width>68</width>
-           <height>25</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Test</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_4">
+        <widget class="QLabel" name="scanFrequencyLabel">
          <property name="geometry">
           <rect>
            <x>10</x>
@@ -145,7 +132,7 @@
           <string>Frequency [Hz]</string>
          </property>
         </widget>
-        <widget class="QLabel" name="label_8">
+        <widget class="QLabel" name="scanWaveformLabel">
          <property name="geometry">
           <rect>
            <x>10</x>
@@ -259,7 +246,7 @@
          </property>
         </widget>
        </widget>
-       <widget class="QGroupBox" name="groupBox_2">
+       <widget class="QGroupBox" name="LockingBox">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -271,7 +258,7 @@
         <property name="title">
          <string>Locking</string>
         </property>
-        <widget class="QLabel" name="label_5">
+        <widget class="QLabel" name="derivativeLabel">
          <property name="geometry">
           <rect>
            <x>10</x>
@@ -284,7 +271,7 @@
           <string>D</string>
          </property>
         </widget>
-        <widget class="QLabel" name="label_6">
+        <widget class="QLabel" name="proportionalLabel">
          <property name="geometry">
           <rect>
            <x>10</x>
@@ -297,7 +284,7 @@
           <string>P</string>
          </property>
         </widget>
-        <widget class="QLabel" name="label_7">
+        <widget class="QLabel" name="integralLabel">
          <property name="geometry">
           <rect>
            <x>10</x>
@@ -308,45 +295,6 @@
          </property>
          <property name="text">
           <string>I</string>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="lineEdit_4">
-         <property name="geometry">
-          <rect>
-           <x>150</x>
-           <y>30</y>
-           <width>91</width>
-           <height>25</height>
-          </rect>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="lineEdit_5">
-         <property name="geometry">
-          <rect>
-           <x>150</x>
-           <y>70</y>
-           <width>91</width>
-           <height>25</height>
-          </rect>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="lineEdit_6">
-         <property name="geometry">
-          <rect>
-           <x>150</x>
-           <y>110</y>
-           <width>91</width>
-           <height>25</height>
-          </rect>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
          </property>
         </widget>
         <widget class="QPushButton" name="lockButton">
@@ -362,8 +310,47 @@
           <string>Lock</string>
          </property>
         </widget>
+        <widget class="QDoubleSpinBox" name="proportionalTerm">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>28</y>
+           <width>91</width>
+           <height>30</height>
+          </rect>
+         </property>
+         <property name="singleStep">
+          <double>0.500000000000000</double>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="integralTerm">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>68</y>
+           <width>91</width>
+           <height>30</height>
+          </rect>
+         </property>
+         <property name="singleStep">
+          <double>0.500000000000000</double>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="derivativeTerm">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>108</y>
+           <width>91</width>
+           <height>30</height>
+          </rect>
+         </property>
+         <property name="singleStep">
+          <double>0.500000000000000</double>
+         </property>
+        </widget>
        </widget>
-       <widget class="QGroupBox" name="groupBox_3">
+       <widget class="QGroupBox" name="AcquisitionBox">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -388,7 +375,7 @@
           <string>Acquire</string>
          </property>
         </widget>
-        <widget class="QLabel" name="label_14">
+        <widget class="QLabel" name="sampleRateLabel">
          <property name="geometry">
           <rect>
            <x>10</x>
@@ -401,7 +388,7 @@
           <string>Sample rate</string>
          </property>
         </widget>
-        <widget class="QLabel" name="label_15">
+        <widget class="QLabel" name="sampleNumberLabel">
          <property name="geometry">
           <rect>
            <x>10</x>
@@ -411,36 +398,10 @@
           </rect>
          </property>
          <property name="text">
-          <string>No. samples</string>
+          <string>Sample number</string>
          </property>
         </widget>
-        <widget class="QLineEdit" name="lineEdit_10">
-         <property name="geometry">
-          <rect>
-           <x>150</x>
-           <y>30</y>
-           <width>90</width>
-           <height>25</height>
-          </rect>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="lineEdit_11">
-         <property name="geometry">
-          <rect>
-           <x>150</x>
-           <y>70</y>
-           <width>90</width>
-           <height>25</height>
-          </rect>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-        <widget class="QGroupBox" name="groupBox_4">
+        <widget class="QGroupBox" name="chA">
          <property name="geometry">
           <rect>
            <x>10</x>
@@ -452,7 +413,7 @@
          <property name="title">
           <string>Detector signal</string>
          </property>
-         <widget class="QLabel" name="label_17">
+         <widget class="QLabel" name="chARangeLabel">
           <property name="geometry">
            <rect>
             <x>10</x>
@@ -465,7 +426,7 @@
            <string>Voltage range</string>
           </property>
          </widget>
-         <widget class="QLabel" name="label_18">
+         <widget class="QLabel" name="chACouplingLabel">
           <property name="geometry">
            <rect>
             <x>10</x>
@@ -478,7 +439,7 @@
            <string>Coupling</string>
           </property>
          </widget>
-         <widget class="QComboBox" name="comboBox">
+         <widget class="QComboBox" name="chACoupling">
           <property name="geometry">
            <rect>
             <x>140</x>
@@ -498,7 +459,7 @@
            </property>
           </item>
          </widget>
-         <widget class="QComboBox" name="comboBox_5">
+         <widget class="QComboBox" name="chARange">
           <property name="geometry">
            <rect>
             <x>120</x>
@@ -564,7 +525,7 @@
           </item>
          </widget>
         </widget>
-        <widget class="QGroupBox" name="groupBox_5">
+        <widget class="QGroupBox" name="chB">
          <property name="geometry">
           <rect>
            <x>10</x>
@@ -576,7 +537,7 @@
          <property name="title">
           <string>Reference signal</string>
          </property>
-         <widget class="QLabel" name="label_21">
+         <widget class="QLabel" name="chBRangeLabel">
           <property name="geometry">
            <rect>
             <x>10</x>
@@ -589,7 +550,7 @@
            <string>Voltage range</string>
           </property>
          </widget>
-         <widget class="QLabel" name="label_22">
+         <widget class="QLabel" name="chBCouplingLabel">
           <property name="geometry">
            <rect>
             <x>10</x>
@@ -602,7 +563,7 @@
            <string>Coupling</string>
           </property>
          </widget>
-         <widget class="QComboBox" name="comboBox_4">
+         <widget class="QComboBox" name="chBCoupling">
           <property name="geometry">
            <rect>
             <x>140</x>
@@ -622,7 +583,7 @@
            </property>
           </item>
          </widget>
-         <widget class="QComboBox" name="comboBox_6">
+         <widget class="QComboBox" name="chBRange">
           <property name="geometry">
            <rect>
             <x>120</x>
@@ -688,12 +649,41 @@
           </item>
          </widget>
         </widget>
+        <widget class="QDoubleSpinBox" name="sampleRate">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>28</y>
+           <width>91</width>
+           <height>30</height>
+          </rect>
+         </property>
+         <property name="singleStep">
+          <double>0.500000000000000</double>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="sampleNumber">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>68</y>
+           <width>91</width>
+           <height>30</height>
+          </rect>
+         </property>
+         <property name="decimals">
+          <number>0</number>
+         </property>
+         <property name="singleStep">
+          <double>1.000000000000000</double>
+         </property>
+        </widget>
        </widget>
       </widget>
      </widget>
     </item>
     <item>
-     <widget class="QWidget" name="widget_3" native="true">
+     <widget class="QWidget" name="plottingArea" native="true">
       <property name="minimumSize">
        <size>
         <width>700</width>
