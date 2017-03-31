@@ -110,8 +110,6 @@ typedef struct {
 	uint32_t bufferSizes[PS2000_MAX_CHANNELS];
 } BUFFER_INFO;
 
-SCAN_PARAMETERS scanParameters;
-
 UNIT_MODEL unitOpened;
 
 BUFFER_INFO bufferInfo;
@@ -169,6 +167,35 @@ void daq::acquire() {
 		tmp.append(QPointF(x, y));
 	}
 	points = tmp;
+}
+
+void daq::scanManual() {
+	scanResults.voltages.reserve(scanParameters.steps);
+	scanResults.intensity.reserve(scanParameters.steps);
+	// generate voltage values
+	for (int j(0); j < scanParameters.steps; j++) {
+		// create voltages, store in array
+		scanResults.voltages.push_back(j*scanParameters.amplitude/scanParameters.steps - scanParameters.offset);
+
+		// set voltages as DC value on the signal generator
+		ps2000_set_sig_gen_built_in(
+			unitOpened.handle,		// handle of the oscilloscope
+			0,						// offsetVoltage in microvolt
+			scanResults.voltages[j],// peak to peak voltage in microvolt
+			(PS2000_WAVE_TYPE) 0 ,	// type of waveform
+			(float) 0,				// startFrequency in Hertz
+			(float) 0,				// stopFrequency in Hertz
+			0,						// increment
+			0,						// dwellTime, time in seconds between frequency changes in sweep mode
+			PS2000_UPDOWN,			// sweepType
+			0						// sweeps, number of times to sweep the frequency
+		);
+
+		// acquire detector and reference signal, store and process it
+		scanResults.intensity.push_back(2 * j / scanParameters.steps);
+	}
+	// reset signal generator to start values
+	daq::set_sig_gen();
 }
 
 QVector<QPointF> daq::getData() {

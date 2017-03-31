@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1289</width>
-    <height>933</height>
+    <height>966</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -53,7 +53,7 @@
          <x>0</x>
          <y>0</y>
          <width>288</width>
-         <height>844</height>
+         <height>877</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -65,7 +65,7 @@
        <property name="minimumSize">
         <size>
          <width>250</width>
-         <height>840</height>
+         <height>870</height>
         </size>
        </property>
        <widget class="QGroupBox" name="ScanBox">
@@ -74,7 +74,7 @@
           <x>10</x>
           <y>370</y>
           <width>250</width>
-          <height>250</height>
+          <height>291</height>
          </rect>
         </property>
         <property name="title">
@@ -84,13 +84,13 @@
          <property name="geometry">
           <rect>
            <x>130</x>
-           <y>200</y>
+           <y>240</y>
            <width>110</width>
            <height>34</height>
           </rect>
          </property>
          <property name="text">
-          <string>Scan</string>
+          <string>Continuous</string>
          </property>
         </widget>
         <widget class="QLabel" name="scanAmplitudeLabel">
@@ -160,6 +160,9 @@
            <height>34</height>
           </size>
          </property>
+         <property name="currentIndex">
+          <number>3</number>
+         </property>
          <item>
           <property name="text">
            <string>Sine</string>
@@ -196,7 +199,7 @@
           <rect>
            <x>150</x>
            <y>28</y>
-           <width>91</width>
+           <width>90</width>
            <height>30</height>
           </rect>
          </property>
@@ -209,7 +212,7 @@
           <rect>
            <x>150</x>
            <y>68</y>
-           <width>91</width>
+           <width>90</width>
            <height>30</height>
           </rect>
          </property>
@@ -228,7 +231,7 @@
           <rect>
            <x>150</x>
            <y>108</y>
-           <width>91</width>
+           <width>90</width>
            <height>30</height>
           </rect>
          </property>
@@ -245,12 +248,63 @@
           <double>1.000000000000000</double>
          </property>
         </widget>
+        <widget class="QPushButton" name="scanButtonManual">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>240</y>
+           <width>110</width>
+           <height>34</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Manual</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="scanSteps">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>193</y>
+           <width>90</width>
+           <height>30</height>
+          </rect>
+         </property>
+         <property name="decimals">
+          <number>0</number>
+         </property>
+         <property name="minimum">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>1000.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>1.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>100.000000000000000</double>
+         </property>
+        </widget>
+        <widget class="QLabel" name="scanStepsLabel">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>195</y>
+           <width>131</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Steps</string>
+         </property>
+        </widget>
        </widget>
        <widget class="QGroupBox" name="LockingBox">
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>630</y>
+          <y>670</y>
           <width>250</width>
           <height>200</height>
          </rect>
@@ -315,7 +369,7 @@
           <rect>
            <x>150</x>
            <y>28</y>
-           <width>91</width>
+           <width>90</width>
            <height>30</height>
           </rect>
          </property>
@@ -328,7 +382,7 @@
           <rect>
            <x>150</x>
            <y>68</y>
-           <width>91</width>
+           <width>90</width>
            <height>30</height>
           </rect>
          </property>
@@ -341,7 +395,7 @@
           <rect>
            <x>150</x>
            <y>108</y>
-           <width>91</width>
+           <width>90</width>
            <height>30</height>
           </rect>
          </property>
@@ -654,7 +708,7 @@
           <rect>
            <x>150</x>
            <y>28</y>
-           <width>91</width>
+           <width>90</width>
            <height>30</height>
           </rect>
          </property>
@@ -667,7 +721,7 @@
           <rect>
            <x>150</x>
            <y>68</y>
-           <width>91</width>
+           <width>90</width>
            <height>30</height>
           </rect>
          </property>

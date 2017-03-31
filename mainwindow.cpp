@@ -77,6 +77,10 @@ void MainWindow::on_playButton_clicked() {
 	}
 }
 
+void MainWindow::on_scanButtonManual_clicked() {
+	d.scanManual();
+}
+
 void MainWindow::on_selectDisplay_activated(const int index) {
 	switch (index) {
 		case 0:
