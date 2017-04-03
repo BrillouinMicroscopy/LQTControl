@@ -34,6 +34,7 @@ private:
     Ui::MainWindow *ui;
 	QTimer timer;
 	QtCharts::QLineSeries *series;
+	QtCharts::QLineSeries *series2;
 	QtCharts::QChart *chart;
 	daq d;
 	int channel = 0;				// selection of the oscilloscope channel

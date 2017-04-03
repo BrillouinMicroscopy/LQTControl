@@ -22,14 +22,20 @@ MainWindow::MainWindow(QWidget *parent) :
 		this, &MainWindow::updatePlot);
 
 	QVector<QPointF> points = d.getData();
+	QVector<QPointF> points2 = d.getData();
 	
 	series = new QtCharts::QLineSeries();
     series->setUseOpenGL(true);
 	series->replace(points);
+
+	series2 = new QtCharts::QLineSeries();
+	series2->setUseOpenGL(true);
+	series2->replace(points2);
 	
 	chart = new QtCharts::QChart();
     chart->legend()->hide();
     chart->addSeries(series);
+	chart->addSeries(series2);
     chart->createDefaultAxes();
     chart->axisX()->setRange(0, 1024);
     chart->axisY()->setRange(-1, 4);
@@ -65,7 +71,8 @@ void MainWindow::updatePlot() {
 		QVector<QPointF> data;
 		data.reserve(scanResults.nrSteps);
 		for (int j(0); j < scanResults.nrSteps; j++) {
-			data.append(QPointF(scanResults.voltages[j] / double(1e6), scanResults.intensity[j] / double(1e3)));
+			//data.append(QPointF(scanResults.voltages[j] / double(1e6), scanResults.intensity[j] / double(1e3)));
+			data.append(QPointF(scanResults.voltages[j] / double(1e6), std::real(scanResults.amplitudes.A1[j]) / double(1e3)));
 		}
 		series->replace(data);
 		chart->axisX()->setRange(0, 2);

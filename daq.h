@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ps2000.h"
+#include "DFT.h"
 
 #define BUFFER_SIZE 	8000
 #define BUFFER_SIZE_STREAMING 50000		// Overview buffer size
@@ -20,15 +21,15 @@ typedef struct {
 	int32_t offset = 0;				// 
 	int16_t waveform = 3;			// type of waveform
 	int32_t frequency = 100;		// frequency of the scan
-	int32_t	nrSteps = 50;			// number of steps for the manual scan
+	int32_t	nrSteps = 100;			// number of steps for the manual scan
 } SCAN_PARAMETERS;
 
 typedef struct {
 	int32_t nrSteps;
 	std::vector<int32_t> voltages;	// [µV] output voltage (<int32_t> is sufficient for this)
 	std::vector<int32_t> intensity;	// [µV] measured intensity (<int32_t> is fine)
-	std::vector<double> A1;			//		amplitude of the first harmonic
-	std::vector<double> A2;			//		amplitude of the second harmonic
+	AMPLITUDES amplitudes;			// amplitudes of the first and second harmonic
+	std::vector<int32_t> quotients;	// quotients of the amplitudes of the first and second harmonic
 } SCAN_RESULTS;
 
 class daq : public QObject {
@@ -79,6 +80,8 @@ class daq : public QObject {
 		SCAN_PARAMETERS scanParameters;
 		SCAN_RESULTS scanResults;
 		double mean(std::vector<int>);
+		double mean(std::vector<double>);
+		std::complex<double> mean(std::vector<std::complex<double>>);
 };
 
 #endif // DAQ_H

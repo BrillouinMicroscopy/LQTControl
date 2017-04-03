@@ -1,4 +1,6 @@
 #include "daq.h"
+#include "FPI.h"
+#include "DFT.h"
 #include <QtWidgets>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMainWindow>
@@ -117,6 +119,9 @@ BUFFER_INFO bufferInfo;
 
 int32_t input_ranges[PS2000_MAX_RANGES] = { 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000 };
 
+FPI fpi;
+DFT dft;
+
 daq::daq(QObject *parent) :
 	QObject(parent) {
 
@@ -169,10 +174,12 @@ void daq::acquire() {
 }
 
 void daq::scanManual() {
-	scanParameters.nrSteps = 10;
 	scanResults.nrSteps = scanParameters.nrSteps;
 	scanResults.voltages.resize(scanParameters.nrSteps);
 	scanResults.intensity.resize(scanParameters.nrSteps);
+	scanResults.amplitudes.A1.resize(scanParameters.nrSteps);
+	scanResults.amplitudes.A2.resize(scanParameters.nrSteps);
+	scanResults.quotients.resize(scanParameters.nrSteps);
 
 	int16_t 	auto_trigger_ms = 0;
 	int32_t 	time_interval;
@@ -183,6 +190,8 @@ void daq::scanManual() {
 	int32_t 	time_indisposed_ms;
 	int16_t		ch = 0;
 	timebase = 0;
+
+	std::vector<double> frequencies = fpi.getFrequencies(no_of_samples);
 
 	int32_t times[BUFFER_SIZE];
 
@@ -272,7 +281,25 @@ void daq::scanManual() {
 		// acquire detector and reference signal, store and process it
 
 		// calculate mean voltage
-		scanResults.intensity[j] = daq::mean(values[0]);
+		//scanResults.intensity[j] = daq::mean(values[0]);
+
+		// simulation of FPI
+		std::vector<double> tau;
+		tau.resize(no_of_samples);
+		for (int kk(0); kk < frequencies.size(); kk++) {
+			tau[kk] = 1e3*fpi.tau(frequencies[kk], scanResults.voltages[j] / double(1e6));
+		}
+		scanResults.intensity[j] = mean(tau);
+
+		double fa = 4e6;	// sampling frequency
+		double fm = 5000;	// [Hz] modulation frequency
+
+		AMPLITUDES amplitudes = dft.getAmplitudes(tau, fa, fm);
+
+		scanResults.amplitudes.A1[j] = mean(amplitudes.A1);
+		scanResults.amplitudes.A2[j] = mean(amplitudes.A2);
+
+		scanResults.quotients[j] = std::real(scanResults.amplitudes.A1[j]) / std::real(scanResults.amplitudes.A2[j]);
 	}
 
 	// reset signal generator to start values
@@ -285,6 +312,14 @@ QVector<QPointF> daq::getData() {
 }
 
 double daq::mean(std::vector<int> vector) {
+	return std::accumulate(std::begin(vector), std::end(vector), 0.0) / vector.size();
+}
+
+double daq::mean(std::vector<double> vector) {
+	return std::accumulate(std::begin(vector), std::end(vector), 0.0) / vector.size();
+}
+
+std::complex<double> daq::mean(std::vector<std::complex<double>> vector) {
 	return std::accumulate(std::begin(vector), std::end(vector), 0.0) / vector.size();
 }
 
