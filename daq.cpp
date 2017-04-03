@@ -100,6 +100,7 @@ typedef struct {
 	int16_t			hasEts;
 	int16_t			hasSignalGenerator;
 	int16_t			awgBufferSize;
+	int16_t			bufferSize;
 } UNIT_MODEL;
 
 // Struct to help with retrieving data into 
@@ -113,8 +114,6 @@ typedef struct {
 UNIT_MODEL unitOpened;
 
 BUFFER_INFO bufferInfo;
-
-int32_t times[BUFFER_SIZE];
 
 int32_t input_ranges[PS2000_MAX_RANGES] = { 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000 };
 
@@ -170,18 +169,55 @@ void daq::acquire() {
 }
 
 void daq::scanManual() {
-	scanResults.voltages.reserve(scanParameters.steps);
-	scanResults.intensity.reserve(scanParameters.steps);
+	scanParameters.nrSteps = 10;
+	scanResults.nrSteps = scanParameters.nrSteps;
+	scanResults.voltages.resize(scanParameters.nrSteps);
+	scanResults.intensity.resize(scanParameters.nrSteps);
+
+	int16_t 	auto_trigger_ms = 0;
+	int32_t 	time_interval;
+	int16_t 	time_units;
+	int16_t 	oversample;
+	int32_t 	no_of_samples = BUFFER_SIZE;
+	int32_t 	max_samples;
+	int32_t 	time_indisposed_ms;
+	int16_t		ch = 0;
+	timebase = 0;
+
+	int32_t times[BUFFER_SIZE];
+
+	// initialize the ADC
+	set_defaults();
+
+	/* Trigger disabled */
+	ps2000_set_trigger(unitOpened.handle, PS2000_NONE, 0, PS2000_RISING, 0, auto_trigger_ms);
+
+	/*  find the maximum number of samples, the time interval (in time_units),
+	*		 the most suitable time units, and the maximum oversample at the current timebase
+	*/
+	oversample = 1;
+	while (!ps2000_get_timebase(
+		unitOpened.handle,
+		timebase,
+		no_of_samples,
+		&time_interval,
+		&time_units,
+		oversample,
+		&max_samples)
+	) {
+		timebase++;
+	};
+
 	// generate voltage values
-	for (int j(0); j < scanParameters.steps; j++) {
+	for (int j(0); j < scanResults.nrSteps; j++) {
 		// create voltages, store in array
-		scanResults.voltages.push_back(j*scanParameters.amplitude/scanParameters.steps - scanParameters.offset);
+		scanResults.voltages[j] = j*scanParameters.amplitude / (scanParameters.nrSteps - 1) - scanParameters.offset;
 
 		// set voltages as DC value on the signal generator
 		ps2000_set_sig_gen_built_in(
 			unitOpened.handle,		// handle of the oscilloscope
-			0,						// offsetVoltage in microvolt
-			scanResults.voltages[j],// peak to peak voltage in microvolt
+			scanResults.voltages[j],// offsetVoltage in microvolt
+			0,						// peak to peak voltage in microvolt
 			(PS2000_WAVE_TYPE) 0 ,	// type of waveform
 			(float) 0,				// startFrequency in Hertz
 			(float) 0,				// stopFrequency in Hertz
@@ -191,9 +227,54 @@ void daq::scanManual() {
 			0						// sweeps, number of times to sweep the frequency
 		);
 
+		/* Start collecting data,
+		*  wait for completion */
+		ps2000_run_block(
+			unitOpened.handle,
+			no_of_samples,
+			timebase,
+			oversample,
+			&time_indisposed_ms
+		);
+
+		while (!ps2000_ready(unitOpened.handle)) {
+			Sleep(10);
+		}
+
+		ps2000_stop(unitOpened.handle);
+
+		/* Should be done now...
+		*  get the times (in nanoseconds)
+		*  and the values (in ADC counts)
+		*/
+		ps2000_get_times_and_values(
+			unitOpened.handle,
+			times,
+			unitOpened.channelSettings[PS2000_CHANNEL_A].values,
+			unitOpened.channelSettings[PS2000_CHANNEL_B].values,
+			NULL,
+			NULL,
+			&overflow,
+			time_units,
+			no_of_samples
+		);
+
+		// create vector of voltage values
+		std::vector<int32_t> values[PS2000_MAX_CHANNELS];
+		for (int i(0); i < no_of_samples; i++) {
+			for (ch = 0; ch < unitOpened.noOfChannels; ch++) {
+				if (unitOpened.channelSettings[ch].enabled) {
+					values[ch].push_back(adc_to_mv(unitOpened.channelSettings[ch].values[i], unitOpened.channelSettings[ch].range));
+				}
+			}
+		}
+
 		// acquire detector and reference signal, store and process it
-		scanResults.intensity.push_back(2 * j / scanParameters.steps);
+
+		// calculate mean voltage
+		scanResults.intensity[j] = daq::mean(values[0]);
 	}
+
 	// reset signal generator to start values
 	daq::set_sig_gen();
 }
@@ -201,6 +282,14 @@ void daq::scanManual() {
 QVector<QPointF> daq::getData() {
 	daq::acquire();
 	return points;
+}
+
+double daq::mean(std::vector<int> vector) {
+	return std::accumulate(std::begin(vector), std::end(vector), 0.0) / vector.size();
+}
+
+SCAN_RESULTS daq::getScanResults() {
+	return scanResults;
 }
 
 QVector<QPointF> daq::getBuffer(int ch) {
@@ -565,6 +654,7 @@ void daq::get_info(void) {
 				unitOpened.hasSignalGenerator = TRUE;
 				unitOpened.hasEts = TRUE;
 				unitOpened.hasFastStreaming = TRUE;
+				unitOpened.bufferSize = 8000;
 				break;
 
 			case MODEL_PS2204A:
@@ -579,6 +669,7 @@ void daq::get_info(void) {
 				unitOpened.hasEts = TRUE;
 				unitOpened.hasFastStreaming = TRUE;
 				unitOpened.awgBufferSize = 4096;
+				unitOpened.bufferSize = 8000;
 				break;
 
 			case MODEL_PS2205:
@@ -592,6 +683,7 @@ void daq::get_info(void) {
 				unitOpened.hasSignalGenerator = TRUE;
 				unitOpened.hasEts = TRUE;
 				unitOpened.hasFastStreaming = TRUE;
+				unitOpened.bufferSize = 16000;
 				break;
 
 			case MODEL_PS2205A:
@@ -606,6 +698,7 @@ void daq::get_info(void) {
 				unitOpened.hasEts = TRUE;
 				unitOpened.hasFastStreaming = TRUE;
 				unitOpened.awgBufferSize = 4096;
+				unitOpened.bufferSize = 16000;
 				break;
 
 			default:

@@ -8,7 +8,7 @@
 
 #include "ps2000.h"
 
-#define BUFFER_SIZE 	1024
+#define BUFFER_SIZE 	8000
 #define BUFFER_SIZE_STREAMING 50000		// Overview buffer size
 #define NUM_STREAMING_SAMPLES 100000	// Number of streaming samples to collect
 #define MAX_CHANNELS 4
@@ -16,18 +16,19 @@
 #define DUAL_SCOPE 2					// Dual channel scope
 
 typedef struct {
-	int32_t amplitude = 2e6;		// peak to peak voltage in microvolt
+	int32_t amplitude = 2e6;		// [µV] peak to peak voltage
 	int32_t offset = 0;				// 
 	int16_t waveform = 3;			// type of waveform
 	int32_t frequency = 100;		// frequency of the scan
-	int32_t	steps = 100;			// number of steps for the manual scan
+	int32_t	nrSteps = 50;			// number of steps for the manual scan
 } SCAN_PARAMETERS;
 
 typedef struct {
-	std::vector<double> voltages;
-	std::vector<double> intensity;
-	std::vector<double> A1;
-	std::vector<double> A2;
+	int32_t nrSteps;
+	std::vector<int32_t> voltages;	// [µV] output voltage (<int32_t> is sufficient for this)
+	std::vector<int32_t> intensity;	// [µV] measured intensity (<int32_t> is fine)
+	std::vector<double> A1;			//		amplitude of the first harmonic
+	std::vector<double> A2;			//		amplitude of the second harmonic
 } SCAN_RESULTS;
 
 class daq : public QObject {
@@ -49,6 +50,7 @@ class daq : public QObject {
 		SCAN_PARAMETERS getScanParameters();
 		void setScanParameters(int type, int value);
 		void scanManual();
+		SCAN_RESULTS getScanResults();
 
 	private slots:
 
@@ -76,6 +78,7 @@ class daq : public QObject {
 		QVector<QPointF> points;
 		SCAN_PARAMETERS scanParameters;
 		SCAN_RESULTS scanResults;
+		double mean(std::vector<int>);
 };
 
 #endif // DAQ_H

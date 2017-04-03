@@ -12,8 +12,6 @@
 #include <ctime>
 #include <string>
 
-
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow) {
@@ -62,9 +60,22 @@ void MainWindow::on_acquisitionButton_clicked() {
 }
 
 void MainWindow::updatePlot() {
-    QVector<QPointF> points = d.getBuffer(channel);
-    series->replace(points);
-	chart->axisX()->setRange(0, points.length());
+	if (channel == 4) {
+		SCAN_RESULTS scanResults = d.getScanResults();
+		QVector<QPointF> data;
+		data.reserve(scanResults.nrSteps);
+		for (int j(0); j < scanResults.nrSteps; j++) {
+			data.append(QPointF(scanResults.voltages[j] / double(1e6), scanResults.intensity[j] / double(1e3)));
+		}
+		series->replace(data);
+		chart->axisX()->setRange(0, 2);
+		//chart->axisY()->setRange(-0.05, 0.05);
+	}
+	else {
+		QVector<QPointF> points = d.getBuffer(channel);
+		series->replace(points);
+		chart->axisX()->setRange(0, points.length());
+	}
 }
 
 void MainWindow::on_playButton_clicked() {
@@ -85,6 +96,9 @@ void MainWindow::on_selectDisplay_activated(const int index) {
 	switch (index) {
 		case 0:
 		case 1:
+			channel = index;
+			break;
+		case 4:
 			channel = index;
 			break;
 	}
