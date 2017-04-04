@@ -91,45 +91,54 @@ void MainWindow::on_acquisitionButton_clicked() {
 }
 
 void MainWindow::updatePlot() {
-	if (channel == 4) {
-		SCAN_RESULTS scanResults = d.getScanResults();
-		QVector<QPointF> intensity;
-		intensity.reserve(scanResults.nrSteps);
-		QVector<QPointF> A1;
-		A1.reserve(scanResults.nrSteps);
-		QVector<QPointF> A2;
-		A2.reserve(scanResults.nrSteps);
-		QVector<QPointF> quotients;
-		quotients.reserve(scanResults.nrSteps);
-		for (int j(0); j < scanResults.nrSteps; j++) {
-			//data.append(QPointF(scanResults.voltages[j] / double(1e6), scanResults.intensity[j] / double(1e3)));
-			intensity.append(QPointF(scanResults.voltages[j] / double(1e6), scanResults.intensity[j] / double(1e3)));
-			A1.append(QPointF(scanResults.voltages[j] / double(1e6), 5*std::real(scanResults.amplitudes.A1[j]) / double(1e3)));
-			A2.append(QPointF(scanResults.voltages[j] / double(1e6), 5*std::real(scanResults.amplitudes.A2[j]) / double(1e3)));
-			quotients.append(QPointF(scanResults.voltages[j] / double(1e6), 5*scanResults.quotients[j] / double(1e3)));
+	switch (view) {
+		case 0: {
+			QVector<QPointF> points = d.getBuffer(0);
+			plots.series->replace(points);
+			chart->axisX()->setRange(0, points.length());
+
+			plots.series->setVisible(1);
+			plots.intensity->setVisible(0);
+			plots.A1->setVisible(0);
+			plots.A2->setVisible(0);
+			plots.quotients->setVisible(0);
+			break;
 		}
-		plots.intensity->replace(intensity);
-		plots.A1->replace(A1);
-		plots.A2->replace(A2);
-		plots.quotients->replace(quotients);
+		case 1: {
+			break;
+		}
+		case 2: {
+			SCAN_RESULTS scanResults = d.getScanResults();
+			QVector<QPointF> intensity;
+			intensity.reserve(scanResults.nrSteps);
+			QVector<QPointF> A1;
+			A1.reserve(scanResults.nrSteps);
+			QVector<QPointF> A2;
+			A2.reserve(scanResults.nrSteps);
+			QVector<QPointF> quotients;
+			quotients.reserve(scanResults.nrSteps);
+			for (int j(0); j < scanResults.nrSteps; j++) {
+				//data.append(QPointF(scanResults.voltages[j] / double(1e6), scanResults.intensity[j] / double(1e3)));
+				intensity.append(QPointF(scanResults.voltages[j] / double(1e6), scanResults.intensity[j] / double(1e3)));
+				A1.append(QPointF(scanResults.voltages[j] / double(1e6), std::real(scanResults.amplitudes.A1[j]) / double(1e3)));
+				A2.append(QPointF(scanResults.voltages[j] / double(1e6), std::real(scanResults.amplitudes.A2[j]) / double(1e3)));
+				quotients.append(QPointF(scanResults.voltages[j] / double(1e6), scanResults.quotients[j] / double(20.0)));
+			}
+			plots.intensity->replace(intensity);
+			plots.A1->replace(A1);
+			plots.A2->replace(A2);
+			plots.quotients->replace(quotients);
 
-		plots.intensity->setVisible(1);
-		plots.A1->setVisible(1);
-		plots.A2->setVisible(1);
-		plots.quotients->setVisible(1);
+			plots.series->setVisible(0);
+			plots.intensity->setVisible(1);
+			plots.A1->setVisible(1);
+			plots.A2->setVisible(1);
+			plots.quotients->setVisible(1);
 
-		chart->axisX()->setRange(0, 2);
-		chart->axisY()->setRange(-0.4, 1.2);
-	}
-	else {
-		QVector<QPointF> points = d.getBuffer(channel);
-		plots.series->replace(points);
-		chart->axisX()->setRange(0, points.length());
-
-		plots.intensity->setVisible(0);
-		plots.A1->setVisible(0);
-		plots.A2->setVisible(0);
-		plots.quotients->setVisible(0);
+			chart->axisX()->setRange(0, 2);
+			chart->axisY()->setRange(-0.4, 1.2);
+			break;
+		}
 	}
 }
 
@@ -148,15 +157,7 @@ void MainWindow::on_scanButtonManual_clicked() {
 }
 
 void MainWindow::on_selectDisplay_activated(const int index) {
-	switch (index) {
-		case 0:
-		case 1:
-			channel = index;
-			break;
-		case 4:
-			channel = index;
-			break;
-	}
+	view = index;
 }
 
 void MainWindow::on_scanWaveform_activated(const int index) {

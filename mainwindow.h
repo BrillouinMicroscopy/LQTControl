@@ -43,7 +43,7 @@ private:
 	PLOTS plots;
 	QtCharts::QChart *chart;
 	daq d;
-	int channel = 0;				// selection of the oscilloscope channel
+	int view = 0;	// selection of the view
 };
 
 #endif // MAINWINDOW_H

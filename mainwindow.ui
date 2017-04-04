@@ -788,27 +788,17 @@
             </property>
             <item>
              <property name="text">
-              <string>Detector signal</string>
+              <string>Live view</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Reference signal</string>
+              <string>Locking view</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Error signal</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Piezo voltage</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Scan Results</string>
+              <string>Single scan view</string>
              </property>
             </item>
            </widget>
