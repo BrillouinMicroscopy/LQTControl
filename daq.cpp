@@ -295,9 +295,20 @@ void daq::scanManual() {
 		double fm = 5000;	// [Hz] modulation frequency
 
 		AMPLITUDES amplitudes = dft.getAmplitudes(tau, fa, fm);
-
 		scanResults.amplitudes.A1[j] = mean(amplitudes.A1);
 		scanResults.amplitudes.A2[j] = mean(amplitudes.A2);
+
+		// calculate the phase angle of the reference signal
+		AMPLITUDES amplitudes_ref = dft.getAmplitudes(frequencies, fa, fm);
+		std::vector<double> angles;
+		angles.resize(amplitudes_ref.A1.size());
+		for (int kk(0); kk < amplitudes_ref.A1.size(); kk++) {
+			angles[kk] = std::arg(amplitudes_ref.A1[kk]);
+		}
+		double angle = mean(angles);
+
+		scanResults.amplitudes.A1[j] *= exp(-1.0*imaginary*angle);
+		scanResults.amplitudes.A2[j] *= exp(-2.0*imaginary*angle);
 
 		scanResults.quotients[j] = std::real(scanResults.amplitudes.A1[j]) / std::real(scanResults.amplitudes.A2[j]);
 	}

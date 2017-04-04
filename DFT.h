@@ -29,8 +29,8 @@ class DFT {
 				amplitudes.A1[0] += data[j] * e1;
 				amplitudes.A2[0] += data[j] * e2;
 			}
-			amplitudes.A1[0] /= data.size();
-			amplitudes.A2[0] /= data.size();
+			amplitudes.A1[0] = 2.0 * amplitudes.A1[0] / std::complex<double>(data.size(), 0);
+			amplitudes.A2[0] = 2.0 * amplitudes.A2[0] / std::complex<double>(data.size(), 0);
 
 			return amplitudes;
 		};
