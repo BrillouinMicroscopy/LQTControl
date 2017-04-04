@@ -55,6 +55,10 @@ class daq : public QObject {
 
 	private slots:
 
+	signals:
+		void scanDone();
+		void collectedData();
+
 	private:
 		static void __stdcall ps2000FastStreamingReady2(
 			int16_t **overviewBuffers,

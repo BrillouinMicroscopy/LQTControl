@@ -315,6 +315,7 @@ void daq::scanManual() {
 
 	// reset signal generator to start values
 	daq::set_sig_gen();
+	emit scanDone();
 }
 
 QVector<QPointF> daq::getData() {
@@ -448,6 +449,8 @@ void daq::collectStreamingData() {
 			&daq::ps2000FastStreamingReady2 // pointer to callback function to receive data
 		);
 	}
+
+	emit collectedData();
 }
 
 /****************************************************************************

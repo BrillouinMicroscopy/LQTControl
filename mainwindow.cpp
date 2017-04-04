@@ -22,6 +22,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	QWidget::connect(&timer, &QTimer::timeout,
 		this, &MainWindow::updatePlot);
 
+	QWidget::connect(&d, SIGNAL(scanDone()), this, SLOT(updatePlot()));
+	QWidget::connect(&d, SIGNAL(collectedData()), this, SLOT(updatePlot()));
+
 	QVector<QPointF> points = d.getData();
 	QVector<QPointF> points2 = d.getData();
 	
