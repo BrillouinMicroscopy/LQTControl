@@ -320,7 +320,7 @@ double daq::mean(std::vector<double> vector) {
 }
 
 std::complex<double> daq::mean(std::vector<std::complex<double>> vector) {
-	return std::accumulate(std::begin(vector), std::end(vector), 0.0) / vector.size();
+	return std::accumulate(std::begin(vector), std::end(vector), std::complex<double>(0.0,0.0)) / std::complex<double>(vector.size(),0);
 }
 
 SCAN_RESULTS daq::getScanResults() {

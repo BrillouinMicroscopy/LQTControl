@@ -24,18 +24,37 @@ MainWindow::MainWindow(QWidget *parent) :
 	QVector<QPointF> points = d.getData();
 	QVector<QPointF> points2 = d.getData();
 	
-	series = new QtCharts::QLineSeries();
-    series->setUseOpenGL(true);
-	series->replace(points);
+	plots.series = new QtCharts::QLineSeries();
+	plots.series->setUseOpenGL(true);
+	plots.series->replace(points);
 
-	series2 = new QtCharts::QLineSeries();
-	series2->setUseOpenGL(true);
-	series2->replace(points2);
+	plots.intensity = new QtCharts::QLineSeries();
+	plots.intensity->setUseOpenGL(true);
+	plots.intensity->replace(points2);
+	plots.intensity->setVisible(1);
+
+	plots.A1 = new QtCharts::QLineSeries();
+	plots.A1->setUseOpenGL(true);
+	plots.A1->replace(points2);
+	plots.A1->setVisible(1);
+
+	plots.A2 = new QtCharts::QLineSeries();
+	plots.A2->setUseOpenGL(true);
+	plots.A2->replace(points2);
+	plots.A2->setVisible(1);
+
+	plots.quotients = new QtCharts::QLineSeries();
+	plots.quotients->setUseOpenGL(true);
+	plots.quotients->replace(points2);
+	plots.quotients->setVisible(1);
 	
 	chart = new QtCharts::QChart();
     chart->legend()->hide();
-    chart->addSeries(series);
-	chart->addSeries(series2);
+    chart->addSeries(plots.series);
+	chart->addSeries(plots.intensity);
+	chart->addSeries(plots.A1);
+	chart->addSeries(plots.A2);
+	chart->addSeries(plots.quotients);
     chart->createDefaultAxes();
     chart->axisX()->setRange(0, 1024);
     chart->axisY()->setRange(-1, 4);
@@ -68,20 +87,43 @@ void MainWindow::on_acquisitionButton_clicked() {
 void MainWindow::updatePlot() {
 	if (channel == 4) {
 		SCAN_RESULTS scanResults = d.getScanResults();
-		QVector<QPointF> data;
-		data.reserve(scanResults.nrSteps);
+		QVector<QPointF> intensity;
+		intensity.reserve(scanResults.nrSteps);
+		QVector<QPointF> A1;
+		A1.reserve(scanResults.nrSteps);
+		QVector<QPointF> A2;
+		A2.reserve(scanResults.nrSteps);
+		QVector<QPointF> quotients;
+		quotients.reserve(scanResults.nrSteps);
 		for (int j(0); j < scanResults.nrSteps; j++) {
 			//data.append(QPointF(scanResults.voltages[j] / double(1e6), scanResults.intensity[j] / double(1e3)));
-			data.append(QPointF(scanResults.voltages[j] / double(1e6), std::real(scanResults.amplitudes.A1[j]) / double(1e3)));
+			intensity.append(QPointF(scanResults.voltages[j] / double(1e6), scanResults.intensity[j] / double(1e3)));
+			A1.append(QPointF(scanResults.voltages[j] / double(1e6), 5*std::real(scanResults.amplitudes.A1[j]) / double(1e3)));
+			A2.append(QPointF(scanResults.voltages[j] / double(1e6), 5*std::real(scanResults.amplitudes.A2[j]) / double(1e3)));
+			quotients.append(QPointF(scanResults.voltages[j] / double(1e6), 5*scanResults.quotients[j] / double(1e3)));
 		}
-		series->replace(data);
+		plots.intensity->replace(intensity);
+		plots.A1->replace(A1);
+		plots.A2->replace(A2);
+		plots.quotients->replace(quotients);
+
+		plots.intensity->setVisible(1);
+		plots.A1->setVisible(1);
+		plots.A2->setVisible(1);
+		plots.quotients->setVisible(1);
+
 		chart->axisX()->setRange(0, 2);
-		//chart->axisY()->setRange(-0.05, 0.05);
+		chart->axisY()->setRange(-0.4, 1.2);
 	}
 	else {
 		QVector<QPointF> points = d.getBuffer(channel);
-		series->replace(points);
+		plots.series->replace(points);
 		chart->axisX()->setRange(0, points.length());
+
+		plots.intensity->setVisible(0);
+		plots.A1->setVisible(0);
+		plots.A2->setVisible(0);
+		plots.quotients->setVisible(0);
 	}
 }
 

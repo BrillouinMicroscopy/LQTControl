@@ -33,8 +33,14 @@ private slots:
 private:
     Ui::MainWindow *ui;
 	QTimer timer;
-	QtCharts::QLineSeries *series;
-	QtCharts::QLineSeries *series2;
+	typedef struct {
+		QtCharts::QLineSeries *series;
+		QtCharts::QLineSeries *intensity;
+		QtCharts::QLineSeries *A1;
+		QtCharts::QLineSeries *A2;
+		QtCharts::QLineSeries *quotients;
+	} PLOTS;
+	PLOTS plots;
 	QtCharts::QChart *chart;
 	daq d;
 	int channel = 0;				// selection of the oscilloscope channel

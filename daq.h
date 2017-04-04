@@ -29,7 +29,7 @@ typedef struct {
 	std::vector<int32_t> voltages;	// [µV] output voltage (<int32_t> is sufficient for this)
 	std::vector<int32_t> intensity;	// [µV] measured intensity (<int32_t> is fine)
 	AMPLITUDES amplitudes;			// amplitudes of the first and second harmonic
-	std::vector<int32_t> quotients;	// quotients of the amplitudes of the first and second harmonic
+	std::vector<double> quotients;	// quotients of the amplitudes of the first and second harmonic
 } SCAN_RESULTS;
 
 class daq : public QObject {

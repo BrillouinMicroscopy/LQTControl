@@ -7,7 +7,7 @@ typedef struct {
 	double R = 0.875;	// [1] reflectivity
 	double n = 1.0;		// [1] refractive index
 	double d0 = 0.01;	// [m] mirror spacing
-	double piezoConstant = 780.24e-9 / 8;	// [m/V] constant of the piezo element
+	double piezoConstant = 780.24e-9 / 16;	// [m/V] constant of the piezo element
 } FPI_PARAMS;
 
 const int c = 299792458;	// [m/s] speed of light in vacuum
@@ -27,7 +27,7 @@ class FPI {
 	public:
 		double tau(double frequency, double voltage) {
 
-			double d = fpiParams.d0 + fpiParams.piezoConstant * (voltage + 2.4);
+			double d = fpiParams.d0 + fpiParams.piezoConstant * (voltage - 2.0);
 
 			double delta = 4 * M_PI*frequency*fpiParams.n*d / c;
 
