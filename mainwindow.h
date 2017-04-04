@@ -20,7 +20,6 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_playButton_clicked();
 	void on_selectDisplay_activated(const int index);
 	void on_scanWaveform_activated(const int index);
     void updatePlot();
@@ -32,7 +31,6 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-	QTimer timer;
 	typedef struct {
 		QtCharts::QLineSeries *series;
 		QtCharts::QLineSeries *intensity;

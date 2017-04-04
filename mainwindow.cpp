@@ -19,9 +19,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
-	QWidget::connect(&timer, &QTimer::timeout,
-		this, &MainWindow::updatePlot);
-
 	QWidget::connect(&d, SIGNAL(scanDone()), this, SLOT(updatePlot()));
 	QWidget::connect(&d, SIGNAL(collectedData()), this, SLOT(updatePlot()));
 
@@ -142,16 +139,6 @@ void MainWindow::updatePlot() {
 			chart->axisY()->setRange(-0.4, 1.2);
 			break;
 		}
-	}
-}
-
-void MainWindow::on_playButton_clicked() {
-	if (timer.isActive()) {
-		timer.stop();
-		ui->playButton->setText(QString("Play"));
-	} else {
-		timer.start(20);
-		ui->playButton->setText(QString("Stop"));
 	}
 }
 
