@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "daq.h"
 #include "ui_mainwindow.h"
+#include "colors.h"
 #include <QtWidgets>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMainWindow>
@@ -27,26 +28,31 @@ MainWindow::MainWindow(QWidget *parent) :
 	plots.series = new QtCharts::QLineSeries();
 	plots.series->setUseOpenGL(true);
 	plots.series->replace(points);
+	plots.series->setColor(colors.blue);
 
 	plots.intensity = new QtCharts::QLineSeries();
 	plots.intensity->setUseOpenGL(true);
 	plots.intensity->replace(points2);
-	plots.intensity->setVisible(1);
+	plots.intensity->setVisible(0);
+	plots.intensity->setColor(colors.orange);
 
 	plots.A1 = new QtCharts::QLineSeries();
 	plots.A1->setUseOpenGL(true);
 	plots.A1->replace(points2);
-	plots.A1->setVisible(1);
+	plots.A1->setVisible(0);
+	plots.A1->setColor(colors.yellow);
 
 	plots.A2 = new QtCharts::QLineSeries();
 	plots.A2->setUseOpenGL(true);
 	plots.A2->replace(points2);
-	plots.A2->setVisible(1);
+	plots.A2->setVisible(0);
+	plots.A2->setColor(colors.purple);
 
 	plots.quotients = new QtCharts::QLineSeries();
 	plots.quotients->setUseOpenGL(true);
 	plots.quotients->replace(points2);
-	plots.quotients->setVisible(1);
+	plots.quotients->setVisible(0);
+	plots.quotients->setColor(colors.green);
 	
 	chart = new QtCharts::QChart();
     chart->legend()->hide();
