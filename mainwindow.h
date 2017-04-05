@@ -22,7 +22,8 @@ public:
 private slots:
 	void on_selectDisplay_activated(const int index);
 	void on_scanWaveform_activated(const int index);
-    void updatePlot();
+    void updateLiveView();
+	void updateScanView();
 	void on_acquisitionButton_clicked();
 	void on_actionConnect_triggered();
 	void on_actionDisconnect_triggered();
