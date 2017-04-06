@@ -30,6 +30,10 @@ private slots:
 	void on_scanButton_clicked();
 	void on_scanButtonManual_clicked();
 
+public slots:
+	void connectMarkers();
+	void handleMarkerClicked();
+
 private:
     Ui::MainWindow *ui;
 	enum class liveViewPlotTypes {

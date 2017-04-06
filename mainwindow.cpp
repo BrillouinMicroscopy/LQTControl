@@ -12,6 +12,8 @@
 #include <iostream>
 #include <ctime>
 #include <string>
+#include <QtCharts/QLegendMarker>
+#include <QtCharts/QXYLegendMarker>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -101,10 +103,71 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->scanOffset->setValue(scanParameters.offset / double(1e6));
 	ui->scanFrequency->setValue(scanParameters.frequency / double(1e6));
 	ui->scanWaveform->setCurrentIndex(scanParameters.waveform);
+
+	// connect legend marker to toggle visibility of plots
+	MainWindow::connectMarkers();
 }
 
 MainWindow::~MainWindow() {
     delete ui;
+}
+
+void MainWindow::connectMarkers() {
+	// Connect all markers to handler
+	foreach(QtCharts::QLegendMarker* marker, liveViewChart->legend()->markers()) {
+		// Disconnect possible existing connection to avoid multiple connections
+		QWidget::disconnect(marker, SIGNAL(clicked()), this, SLOT(handleMarkerClicked()));
+		QWidget::connect(marker, SIGNAL(clicked()), this, SLOT(handleMarkerClicked()));
+	}
+	foreach(QtCharts::QLegendMarker* marker, scanViewChart->legend()->markers()) {
+		// Disconnect possible existing connection to avoid multiple connections
+		QWidget::disconnect(marker, SIGNAL(clicked()), this, SLOT(handleMarkerClicked()));
+		QWidget::connect(marker, SIGNAL(clicked()), this, SLOT(handleMarkerClicked()));
+	}
+}
+
+void MainWindow::handleMarkerClicked() {
+	QtCharts::QLegendMarker* marker = qobject_cast<QtCharts::QLegendMarker*> (sender());
+	Q_ASSERT(marker);
+
+	switch (marker->type()) {
+		case QtCharts::QLegendMarker::LegendMarkerTypeXY: {
+			// Toggle visibility of series
+			marker->series()->setVisible(!marker->series()->isVisible());
+
+			// Turn legend marker back to visible, since hiding series also hides the marker
+			// and we don't want it to happen now.
+			marker->setVisible(true);
+
+			// Dim the marker, if series is not visible
+			qreal alpha = 1.0;
+
+			if (!marker->series()->isVisible()) {
+				alpha = 0.5;
+			}
+
+			QColor color;
+			QBrush brush = marker->labelBrush();
+			color = brush.color();
+			color.setAlphaF(alpha);
+			brush.setColor(color);
+			marker->setLabelBrush(brush);
+
+			brush = marker->brush();
+			color = brush.color();
+			color.setAlphaF(alpha);
+			brush.setColor(color);
+			marker->setBrush(brush);
+
+			QPen pen = marker->pen();
+			color = pen.color();
+			color.setAlphaF(alpha);
+			pen.setColor(color);
+			marker->setPen(pen);
+
+			break;
+		}
+	}
 }
 
 void MainWindow::on_acquisitionButton_clicked() {
