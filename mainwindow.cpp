@@ -25,51 +25,67 @@ MainWindow::MainWindow(QWidget *parent) :
 	QVector<QPointF> points = d.getData();
 	QVector<QPointF> points2 = d.getData();
 	
-	plots.series = new QtCharts::QLineSeries();
-	plots.series->setUseOpenGL(true);
-	plots.series->replace(points);
-	plots.series->setColor(colors.blue);
+	// set up live view plots
+	liveViewPlots.seriesA = new QtCharts::QLineSeries();
+	liveViewPlots.seriesA->setUseOpenGL(true);
+	liveViewPlots.seriesA->replace(points);
+	liveViewPlots.seriesA->setColor(colors.blue);
 
-	plots.intensity = new QtCharts::QLineSeries();
-	plots.intensity->setUseOpenGL(true);
-	plots.intensity->replace(points2);
-	plots.intensity->setVisible(0);
-	plots.intensity->setColor(colors.orange);
-
-	plots.A1 = new QtCharts::QLineSeries();
-	plots.A1->setUseOpenGL(true);
-	plots.A1->replace(points2);
-	plots.A1->setVisible(0);
-	plots.A1->setColor(colors.yellow);
-
-	plots.A2 = new QtCharts::QLineSeries();
-	plots.A2->setUseOpenGL(true);
-	plots.A2->replace(points2);
-	plots.A2->setVisible(0);
-	plots.A2->setColor(colors.purple);
-
-	plots.quotients = new QtCharts::QLineSeries();
-	plots.quotients->setUseOpenGL(true);
-	plots.quotients->replace(points2);
-	plots.quotients->setVisible(0);
-	plots.quotients->setColor(colors.green);
+	liveViewPlots.seriesB = new QtCharts::QLineSeries();
+	liveViewPlots.seriesB->setUseOpenGL(true);
+	liveViewPlots.seriesB->replace(points2);
+	liveViewPlots.seriesB->setColor(colors.orange);
 	
-	chart = new QtCharts::QChart();
-    chart->legend()->hide();
-    chart->addSeries(plots.series);
-	chart->addSeries(plots.intensity);
-	chart->addSeries(plots.A1);
-	chart->addSeries(plots.A2);
-	chart->addSeries(plots.quotients);
-    chart->createDefaultAxes();
-    chart->axisX()->setRange(0, 1024);
-    chart->axisY()->setRange(-1, 4);
-    chart->setTitle("Simple line chart example");
-    chart->layout()->setContentsMargins(0, 0, 0, 0);
+	// set up live view chart
+	liveViewChart = new QtCharts::QChart();
+	liveViewChart->legend()->hide();
+	liveViewChart->addSeries(liveViewPlots.seriesA);
+	liveViewChart->addSeries(liveViewPlots.seriesB);
+	liveViewChart->createDefaultAxes();
+	liveViewChart->axisX()->setRange(0, 1024);
+	liveViewChart->axisY()->setRange(-1, 4);
+	liveViewChart->setTitle("Live view");
+	liveViewChart->layout()->setContentsMargins(0, 0, 0, 0);
 
-    ui->plotAxes->setChart(chart);
+	// set up scan view plots
+	scanViewPlots.intensity = new QtCharts::QLineSeries();
+	scanViewPlots.intensity->setUseOpenGL(true);
+	scanViewPlots.intensity->replace(points2);
+	scanViewPlots.intensity->setColor(colors.orange);
+
+	scanViewPlots.A1 = new QtCharts::QLineSeries();
+	scanViewPlots.A1->setUseOpenGL(true);
+	scanViewPlots.A1->replace(points2);
+	scanViewPlots.A1->setColor(colors.yellow);
+
+	scanViewPlots.A2 = new QtCharts::QLineSeries();
+	scanViewPlots.A2->setUseOpenGL(true);
+	scanViewPlots.A2->replace(points2);
+	scanViewPlots.A2->setColor(colors.purple);
+
+	scanViewPlots.quotients = new QtCharts::QLineSeries();
+	scanViewPlots.quotients->setUseOpenGL(true);
+	scanViewPlots.quotients->replace(points2);
+	scanViewPlots.quotients->setColor(colors.green);
+
+	// set up live view chart
+	scanViewChart = new QtCharts::QChart();
+	scanViewChart->legend()->hide();
+	scanViewChart->addSeries(scanViewPlots.intensity);
+	scanViewChart->addSeries(scanViewPlots.A1);
+	scanViewChart->addSeries(scanViewPlots.A2);
+	scanViewChart->addSeries(scanViewPlots.quotients);
+	scanViewChart->createDefaultAxes();
+	scanViewChart->axisX()->setRange(0, 1024);
+	scanViewChart->axisY()->setRange(-1, 4);
+	scanViewChart->setTitle("Scan View");
+	scanViewChart->layout()->setContentsMargins(0, 0, 0, 0);
+
+	// set live view chart as default chart
+    ui->plotAxes->setChart(liveViewChart);
     ui->plotAxes->setRenderHint(QPainter::Antialiasing);
 
+	// set default values of GUI elements
 	SCAN_PARAMETERS scanParameters = d.getScanParameters();
 	ui->scanAmplitude->setValue(scanParameters.amplitude / double(1e6));
 	ui->scanOffset->setValue(scanParameters.offset / double(1e6));
@@ -93,14 +109,8 @@ void MainWindow::on_acquisitionButton_clicked() {
 void MainWindow::updateLiveView() {
 	if (view == 0) {
 		QVector<QPointF> points = d.getBuffer(0);
-		plots.series->replace(points);
-		chart->axisX()->setRange(0, points.length());
-
-		plots.series->setVisible(1);
-		plots.intensity->setVisible(0);
-		plots.A1->setVisible(0);
-		plots.A2->setVisible(0);
-		plots.quotients->setVisible(0);
+		liveViewPlots.seriesA->replace(points);
+		liveViewChart->axisX()->setRange(0, points.length());
 	}
 }
 
@@ -116,25 +126,18 @@ void MainWindow::updateScanView() {
 		QVector<QPointF> quotients;
 		quotients.reserve(scanResults.nrSteps);
 		for (int j(0); j < scanResults.nrSteps; j++) {
-			//data.append(QPointF(scanResults.voltages[j] / double(1e6), scanResults.intensity[j] / double(1e3)));
 			intensity.append(QPointF(scanResults.voltages[j] / double(1e6), scanResults.intensity[j] / double(1e3)));
 			A1.append(QPointF(scanResults.voltages[j] / double(1e6), std::real(scanResults.amplitudes.A1[j]) / double(1e3)));
 			A2.append(QPointF(scanResults.voltages[j] / double(1e6), std::real(scanResults.amplitudes.A2[j]) / double(1e3)));
 			quotients.append(QPointF(scanResults.voltages[j] / double(1e6), scanResults.quotients[j] / double(20.0)));
 		}
-		plots.intensity->replace(intensity);
-		plots.A1->replace(A1);
-		plots.A2->replace(A2);
-		plots.quotients->replace(quotients);
+		scanViewPlots.intensity->replace(intensity);
+		scanViewPlots.A1->replace(A1);
+		scanViewPlots.A2->replace(A2);
+		scanViewPlots.quotients->replace(quotients);
 
-		plots.series->setVisible(0);
-		plots.intensity->setVisible(1);
-		plots.A1->setVisible(1);
-		plots.A2->setVisible(1);
-		plots.quotients->setVisible(1);
-
-		chart->axisX()->setRange(0, 2);
-		chart->axisY()->setRange(-0.4, 1.2);
+		scanViewChart->axisX()->setRange(0, 2);
+		scanViewChart->axisY()->setRange(-0.4, 1.2);
 	}
 }
 
@@ -144,6 +147,33 @@ void MainWindow::on_scanButtonManual_clicked() {
 
 void MainWindow::on_selectDisplay_activated(const int index) {
 	view = index;
+	switch (index) {
+		case 0:
+			// it is necessary to hide the series, because they do not get removed
+			// after setChart in case useOpenGL == true (bug in QT?)
+			scanViewPlots.intensity->setVisible(false);
+			scanViewPlots.A1->setVisible(false);
+			scanViewPlots.A2->setVisible(false);
+			scanViewPlots.quotients->setVisible(false);
+			liveViewPlots.seriesA->setVisible(true);
+			liveViewPlots.seriesB->setVisible(true);
+
+			ui->plotAxes->setChart(liveViewChart);
+			break;
+		case 1:
+			break;
+		case 2:
+			// it is necessary to hide the series, because they do not get removed
+			// after setChart in case useOpenGL == true (bug in QT?)
+			liveViewPlots.seriesA->setVisible(false);
+			liveViewPlots.seriesB->setVisible(false);
+			scanViewPlots.intensity->setVisible(true);
+			scanViewPlots.A1->setVisible(true);
+			scanViewPlots.A2->setVisible(true);
+			scanViewPlots.quotients->setVisible(true);
+			ui->plotAxes->setChart(scanViewChart);
+			break;
+	}
 }
 
 void MainWindow::on_scanWaveform_activated(const int index) {

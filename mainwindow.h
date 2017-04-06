@@ -33,14 +33,23 @@ private slots:
 private:
     Ui::MainWindow *ui;
 	typedef struct {
-		QtCharts::QLineSeries *series;
+		QtCharts::QLineSeries *seriesA;
+		QtCharts::QLineSeries *seriesB;
+		QtCharts::QLineSeries *A1;
+		QtCharts::QLineSeries *A2;
+		QtCharts::QLineSeries *quotients;
+	} LIVEVIEWPLOTS;
+	LIVEVIEWPLOTS liveViewPlots;
+	typedef struct {
 		QtCharts::QLineSeries *intensity;
 		QtCharts::QLineSeries *A1;
 		QtCharts::QLineSeries *A2;
 		QtCharts::QLineSeries *quotients;
-	} PLOTS;
-	PLOTS plots;
-	QtCharts::QChart *chart;
+	} SCANVIEWPLOTS;
+	SCANVIEWPLOTS scanViewPlots;
+	QtCharts::QChart *liveViewChart;
+	QtCharts::QChart *lockViewChart;
+	QtCharts::QChart *scanViewChart;
 	daq d;
 	int view = 0;	// selection of the view
 };
