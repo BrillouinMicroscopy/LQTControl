@@ -32,24 +32,21 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-	typedef struct {
-		QtCharts::QLineSeries *seriesA;
-		QtCharts::QLineSeries *seriesB;
-		QtCharts::QLineSeries *A1;
-		QtCharts::QLineSeries *A2;
-		QtCharts::QLineSeries *quotients;
-	} LIVEVIEWPLOTS;
-	LIVEVIEWPLOTS liveViewPlots;
-	typedef struct {
-		QtCharts::QLineSeries *intensity;
-		QtCharts::QLineSeries *A1;
-		QtCharts::QLineSeries *A2;
-		QtCharts::QLineSeries *quotients;
-	} SCANVIEWPLOTS;
-	SCANVIEWPLOTS scanViewPlots;
+	enum class liveViewPlotTypes {
+		CHANNEL_A,
+		CHANNEL_B
+	};
+	enum class scanViewPlotTypes {
+		INTENSITY,
+		A1,
+		A2,
+		QUOTIENTS
+	};
 	QtCharts::QChart *liveViewChart;
 	QtCharts::QChart *lockViewChart;
 	QtCharts::QChart *scanViewChart;
+	QList<QtCharts::QLineSeries *> liveViewPlots;
+	QList<QtCharts::QLineSeries *> scanViewPlots;
 	daq d;
 	int view = 0;	// selection of the view
 };
