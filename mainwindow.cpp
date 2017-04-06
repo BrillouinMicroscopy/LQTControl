@@ -30,15 +30,16 @@ MainWindow::MainWindow(QWidget *parent) :
 	liveViewPlots.seriesA->setUseOpenGL(true);
 	liveViewPlots.seriesA->replace(points);
 	liveViewPlots.seriesA->setColor(colors.blue);
+	liveViewPlots.seriesA->setName(QString("Detector signal"));
 
 	liveViewPlots.seriesB = new QtCharts::QLineSeries();
 	liveViewPlots.seriesB->setUseOpenGL(true);
 	liveViewPlots.seriesB->replace(points2);
 	liveViewPlots.seriesB->setColor(colors.orange);
+	liveViewPlots.seriesB->setName(QString("Reference Signal"));
 	
 	// set up live view chart
 	liveViewChart = new QtCharts::QChart();
-	liveViewChart->legend()->hide();
 	liveViewChart->addSeries(liveViewPlots.seriesA);
 	liveViewChart->addSeries(liveViewPlots.seriesB);
 	liveViewChart->createDefaultAxes();
@@ -52,25 +53,28 @@ MainWindow::MainWindow(QWidget *parent) :
 	scanViewPlots.intensity->setUseOpenGL(true);
 	scanViewPlots.intensity->replace(points2);
 	scanViewPlots.intensity->setColor(colors.orange);
+	scanViewPlots.intensity->setName(QString("Intensity"));
 
 	scanViewPlots.A1 = new QtCharts::QLineSeries();
 	scanViewPlots.A1->setUseOpenGL(true);
 	scanViewPlots.A1->replace(points2);
 	scanViewPlots.A1->setColor(colors.yellow);
+	scanViewPlots.A1->setName(QString("Amplitude 1"));
 
 	scanViewPlots.A2 = new QtCharts::QLineSeries();
 	scanViewPlots.A2->setUseOpenGL(true);
 	scanViewPlots.A2->replace(points2);
 	scanViewPlots.A2->setColor(colors.purple);
+	scanViewPlots.A2->setName(QString("Amplitude 2"));
 
 	scanViewPlots.quotients = new QtCharts::QLineSeries();
 	scanViewPlots.quotients->setUseOpenGL(true);
 	scanViewPlots.quotients->replace(points2);
 	scanViewPlots.quotients->setColor(colors.green);
+	scanViewPlots.quotients->setName(QString("Quotient"));
 
 	// set up live view chart
 	scanViewChart = new QtCharts::QChart();
-	scanViewChart->legend()->hide();
 	scanViewChart->addSeries(scanViewPlots.intensity);
 	scanViewChart->addSeries(scanViewPlots.A1);
 	scanViewChart->addSeries(scanViewPlots.A2);
