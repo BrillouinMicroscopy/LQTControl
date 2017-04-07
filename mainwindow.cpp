@@ -254,6 +254,7 @@ void MainWindow::on_selectDisplay_activated(const int index) {
 				series->setVisible(true);
 			}
 			ui->plotAxes->setChart(liveViewChart);
+			MainWindow::updateLiveView();
 			break;
 		case 1:
 			break;
@@ -267,6 +268,7 @@ void MainWindow::on_selectDisplay_activated(const int index) {
 				series->setVisible(true);
 			}
 			ui->plotAxes->setChart(scanViewChart);
+			MainWindow::updateScanView();
 			break;
 	}
 }
