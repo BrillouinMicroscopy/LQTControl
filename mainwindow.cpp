@@ -208,9 +208,10 @@ void MainWindow::updateLiveView() {
 		QVector<QPointF> data;
 		foreach(QtCharts::QLineSeries* series, liveViewPlots) {
 			if (series->isVisible()) {
-				data = d.getBuffer(plot++);
+				data = d.getBuffer(plot);
 				series->replace(data);
 			}
+			++plot;
 		}
 		liveViewChart->axisX()->setRange(0, data.length());
 	}
