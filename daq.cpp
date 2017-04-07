@@ -4,6 +4,7 @@
 #include <QtWidgets>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMainWindow>
+#include <array>
 
 /* Definitions of PS2000 driver routines */
 #include "ps2000.h"
@@ -182,6 +183,81 @@ void daq::acquire() {
 	points = tmp;
 }
 
+ACQUISITION_PARAMETERS daq::setAcquisitionParameters() {
+	ACQUISITION_PARAMETERS acquisitionParameters;
+	// initialize the ADC
+	set_defaults();
+
+	/* Trigger disabled */
+	ps2000_set_trigger(unitOpened.handle, PS2000_NONE, 0, PS2000_RISING, 0, acquisitionParameters.auto_trigger_ms);
+
+	/*  find the maximum number of samples, the time interval (in time_units),
+	*		 the most suitable time units, and the maximum oversample at the current timebase
+	*/
+	acquisitionParameters.oversample = 1;
+	while (!ps2000_get_timebase(
+		unitOpened.handle,
+		timebase,
+		acquisitionParameters.no_of_samples,
+		&acquisitionParameters.time_interval,
+		&acquisitionParameters.time_units,
+		acquisitionParameters.oversample,
+		&acquisitionParameters.max_samples)
+		) {
+		timebase++;
+	};
+
+	return acquisitionParameters;
+}
+
+std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq::collectData(ACQUISITION_PARAMETERS acquisitionParameters) {
+	
+	int32_t times[BUFFER_SIZE];
+
+	/* Start collecting data,
+	*  wait for completion */
+	ps2000_run_block(
+		unitOpened.handle,
+		acquisitionParameters.no_of_samples,
+		timebase,
+		acquisitionParameters.oversample,
+		&acquisitionParameters.time_indisposed_ms
+	);
+
+	while (!ps2000_ready(unitOpened.handle)) {
+		Sleep(10);
+	}
+
+	ps2000_stop(unitOpened.handle);
+
+	/* Should be done now...
+	*  get the times (in nanoseconds)
+	*  and the values (in ADC counts)
+	*/
+	ps2000_get_times_and_values(
+		unitOpened.handle,
+		times,
+		unitOpened.channelSettings[PS2000_CHANNEL_A].values,
+		unitOpened.channelSettings[PS2000_CHANNEL_B].values,
+		NULL,
+		NULL,
+		&overflow,
+		acquisitionParameters.time_units,
+		acquisitionParameters.no_of_samples
+	);
+
+	// create vector of voltage values
+	std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values;
+	for (int i(0); i < acquisitionParameters.no_of_samples; i++) {
+		for (int ch(0); ch < unitOpened.noOfChannels; ch++) {
+			if (unitOpened.channelSettings[ch].enabled) {
+				values[ch].push_back(adc_to_mv(unitOpened.channelSettings[ch].values[i], unitOpened.channelSettings[ch].range));
+			}
+		}
+	}
+	return values;
+}
+
 void daq::scanManual() {
 	scanResults.nrSteps = scanParameters.nrSteps;
 	scanResults.voltages.resize(scanParameters.nrSteps);
@@ -190,41 +266,9 @@ void daq::scanManual() {
 	scanResults.amplitudes.A2.resize(scanParameters.nrSteps);
 	scanResults.quotients.resize(scanParameters.nrSteps);
 
-	int16_t 	auto_trigger_ms = 0;
-	int32_t 	time_interval;
-	int16_t 	time_units;
-	int16_t 	oversample;
-	int32_t 	no_of_samples = BUFFER_SIZE;
-	int32_t 	max_samples;
-	int32_t 	time_indisposed_ms;
-	int16_t		ch = 0;
-	timebase = 0;
+	ACQUISITION_PARAMETERS acquisitionParameters = daq::setAcquisitionParameters();
 
-	std::vector<double> frequencies = fpi.getFrequencies(no_of_samples);
-
-	int32_t times[BUFFER_SIZE];
-
-	// initialize the ADC
-	set_defaults();
-
-	/* Trigger disabled */
-	ps2000_set_trigger(unitOpened.handle, PS2000_NONE, 0, PS2000_RISING, 0, auto_trigger_ms);
-
-	/*  find the maximum number of samples, the time interval (in time_units),
-	*		 the most suitable time units, and the maximum oversample at the current timebase
-	*/
-	oversample = 1;
-	while (!ps2000_get_timebase(
-		unitOpened.handle,
-		timebase,
-		no_of_samples,
-		&time_interval,
-		&time_units,
-		oversample,
-		&max_samples)
-	) {
-		timebase++;
-	};
+	std::vector<double> frequencies = fpi.getFrequencies(acquisitionParameters.no_of_samples);
 
 	// generate voltage values
 	for (int j(0); j < scanResults.nrSteps; j++) {
@@ -245,56 +289,15 @@ void daq::scanManual() {
 			0						// sweeps, number of times to sweep the frequency
 		);
 
-		/* Start collecting data,
-		*  wait for completion */
-		ps2000_run_block(
-			unitOpened.handle,
-			no_of_samples,
-			timebase,
-			oversample,
-			&time_indisposed_ms
-		);
-
-		while (!ps2000_ready(unitOpened.handle)) {
-			Sleep(10);
-		}
-
-		ps2000_stop(unitOpened.handle);
-
-		/* Should be done now...
-		*  get the times (in nanoseconds)
-		*  and the values (in ADC counts)
-		*/
-		ps2000_get_times_and_values(
-			unitOpened.handle,
-			times,
-			unitOpened.channelSettings[PS2000_CHANNEL_A].values,
-			unitOpened.channelSettings[PS2000_CHANNEL_B].values,
-			NULL,
-			NULL,
-			&overflow,
-			time_units,
-			no_of_samples
-		);
-
-		// create vector of voltage values
-		std::vector<int32_t> values[PS2000_MAX_CHANNELS];
-		for (int i(0); i < no_of_samples; i++) {
-			for (ch = 0; ch < unitOpened.noOfChannels; ch++) {
-				if (unitOpened.channelSettings[ch].enabled) {
-					values[ch].push_back(adc_to_mv(unitOpened.channelSettings[ch].values[i], unitOpened.channelSettings[ch].range));
-				}
-			}
-		}
-
 		// acquire detector and reference signal, store and process it
+		std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectData(acquisitionParameters);
 
 		// calculate mean voltage
-		//scanResults.intensity[j] = daq::mean(values[0]);
+		scanResults.intensity[j] = daq::mean(values[0]);
 
 		// simulation of FPI
 		std::vector<double> tau;
-		tau.resize(no_of_samples);
+		tau.resize(acquisitionParameters.no_of_samples);
 		for (int kk(0); kk < frequencies.size(); kk++) {
 			tau[kk] = 1e3*fpi.tau(frequencies[kk], scanResults.voltages[j] / double(1e6));
 		}

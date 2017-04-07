@@ -17,6 +17,16 @@
 #define DUAL_SCOPE 2					// Dual channel scope
 
 typedef struct {
+	int16_t 	auto_trigger_ms = 0;
+	int32_t 	time_interval;
+	int16_t 	time_units;
+	int16_t 	oversample;
+	int32_t 	no_of_samples = BUFFER_SIZE;
+	int32_t 	max_samples;
+	int32_t 	time_indisposed_ms;
+} ACQUISITION_PARAMETERS;
+
+typedef struct {
 	int32_t amplitude = 2e6;		// [µV] peak to peak voltage
 	int32_t offset = 0;				// 
 	int16_t waveform = 3;			// type of waveform
@@ -68,6 +78,8 @@ class daq : public QObject {
 			int16_t   auto_stop,
 			uint32_t  nValues
 		);
+		ACQUISITION_PARAMETERS setAcquisitionParameters();
+		std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> collectData(ACQUISITION_PARAMETERS acquisitionParameters);
 		int32_t adc_to_mv(
 			int32_t raw,
 			int32_t ch
