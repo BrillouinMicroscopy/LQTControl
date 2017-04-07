@@ -96,6 +96,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	// set live view chart as default chart
     ui->plotAxes->setChart(liveViewChart);
     ui->plotAxes->setRenderHint(QPainter::Antialiasing);
+	ui->plotAxes->setRubberBand(QtCharts::QChartView::RectangleRubberBand);
 
 	// set default values of GUI elements
 	SCAN_PARAMETERS scanParameters = d.getScanParameters();
