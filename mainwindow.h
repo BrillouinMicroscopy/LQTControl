@@ -21,14 +21,20 @@ public:
 
 private slots:
 	void on_selectDisplay_activated(const int index);
-	void on_scanWaveform_activated(const int index);
-    void updateLiveView();
-	void updateScanView();
 	void on_acquisitionButton_clicked();
 	void on_actionConnect_triggered();
 	void on_actionDisconnect_triggered();
 	void on_scanButton_clicked();
 	void on_scanButtonManual_clicked();
+	// SLOTS for setting the scanParameters
+	void on_scanAmplitude_valueChanged(const double value);
+	void on_scanOffset_valueChanged(const double value);
+	void on_scanWaveform_activated(const int index);
+	void on_scanFrequency_valueChanged(const double value);
+	void on_scanSteps_valueChanged(const int value);
+
+    void updateLiveView();
+	void updateScanView();
 
 public slots:
 	void connectMarkers();

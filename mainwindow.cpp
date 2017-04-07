@@ -101,7 +101,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	SCAN_PARAMETERS scanParameters = d.getScanParameters();
 	ui->scanAmplitude->setValue(scanParameters.amplitude / static_cast<double>(1e6));
 	ui->scanOffset->setValue(scanParameters.offset / static_cast<double>(1e6));
-	ui->scanFrequency->setValue(scanParameters.frequency / static_cast<double>(1e6));
+	ui->scanFrequency->setValue(scanParameters.frequency);
+	ui->scanSteps->setValue(scanParameters.nrSteps);
 	ui->scanWaveform->setCurrentIndex(scanParameters.waveform);
 
 	// connect legend marker to toggle visibility of plots
@@ -179,6 +180,28 @@ void MainWindow::on_acquisitionButton_clicked() {
 	}
 }
 
+void MainWindow::on_scanAmplitude_valueChanged(const double value) {
+	// value is in [V], has to me set in [mV]
+	d.setScanParameters(0, static_cast<int>(1e6*value));
+}
+
+void MainWindow::on_scanOffset_valueChanged(const double value) {
+	// value is in [V], has to me set in [mV]
+	d.setScanParameters(1, static_cast<int>(1e6*value));
+}
+
+void MainWindow::on_scanWaveform_activated(const int index) {
+	d.setScanParameters(2, index);
+}
+
+void MainWindow::on_scanFrequency_valueChanged(const double value) {
+	d.setScanParameters(3, value);
+}
+
+void MainWindow::on_scanSteps_valueChanged(const int value) {
+	d.setScanParameters(4, value);
+}
+
 void MainWindow::updateLiveView() {
 	if (view == 0) {
 		QVector<QPointF> points = d.getBuffer(0);
@@ -246,10 +269,6 @@ void MainWindow::on_selectDisplay_activated(const int index) {
 			ui->plotAxes->setChart(scanViewChart);
 			break;
 	}
-}
-
-void MainWindow::on_scanWaveform_activated(const int index) {
-	d.setScanParameters(3, index);
 }
 
 void MainWindow::on_actionConnect_triggered() {

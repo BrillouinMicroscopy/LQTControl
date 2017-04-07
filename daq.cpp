@@ -151,10 +151,19 @@ SCAN_PARAMETERS daq::getScanParameters() {
 void daq::setScanParameters(int type, int value) {
 	switch (type) {
 		case 0:
-			//scanParameters.amplitude = value;
+			scanParameters.amplitude = value;
+			break;
+		case 1:
+			scanParameters.offset = value;
+			break;
+		case 2:
+			scanParameters.waveform = value;
 			break;
 		case 3:
-			scanParameters.waveform = value;
+			scanParameters.frequency = value;
+			break;
+		case 4:
+			scanParameters.nrSteps = value;
 			break;
 	}
 }
