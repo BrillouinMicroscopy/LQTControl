@@ -99,9 +99,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	// set default values of GUI elements
 	SCAN_PARAMETERS scanParameters = d.getScanParameters();
-	ui->scanAmplitude->setValue(scanParameters.amplitude / double(1e6));
-	ui->scanOffset->setValue(scanParameters.offset / double(1e6));
-	ui->scanFrequency->setValue(scanParameters.frequency / double(1e6));
+	ui->scanAmplitude->setValue(scanParameters.amplitude / static_cast<double>(1e6));
+	ui->scanOffset->setValue(scanParameters.offset / static_cast<double>(1e6));
+	ui->scanFrequency->setValue(scanParameters.frequency / static_cast<double>(1e6));
 	ui->scanWaveform->setCurrentIndex(scanParameters.waveform);
 
 	// connect legend marker to toggle visibility of plots
@@ -199,10 +199,10 @@ void MainWindow::updateScanView() {
 		QVector<QPointF> quotients;
 		quotients.reserve(scanResults.nrSteps);
 		for (int j(0); j < scanResults.nrSteps; j++) {
-			intensity.append(QPointF(scanResults.voltages[j] / double(1e6), scanResults.intensity[j] / double(1e3)));
-			A1.append(QPointF(scanResults.voltages[j] / double(1e6), std::real(scanResults.amplitudes.A1[j]) / double(1e3)));
-			A2.append(QPointF(scanResults.voltages[j] / double(1e6), std::real(scanResults.amplitudes.A2[j]) / double(1e3)));
-			quotients.append(QPointF(scanResults.voltages[j] / double(1e6), scanResults.quotients[j] / double(20.0)));
+			intensity.append(QPointF(scanResults.voltages[j] / static_cast<double>(1e6), scanResults.intensity[j] / static_cast<double>(1000)));
+			A1.append(QPointF(scanResults.voltages[j] / static_cast<double>(1e6), std::real(scanResults.amplitudes.A1[j]) / static_cast<double>(1000)));
+			A2.append(QPointF(scanResults.voltages[j] / static_cast<double>(1e6), std::real(scanResults.amplitudes.A2[j]) / static_cast<double>(1000)));
+			quotients.append(QPointF(scanResults.voltages[j] / static_cast<double>(1e6), scanResults.quotients[j] / static_cast<double>(20)));
 		}
 		scanViewPlots[static_cast<int>(scanViewPlotTypes::INTENSITY)]->replace(intensity);
 		scanViewPlots[static_cast<int>(scanViewPlotTypes::A1)]->replace(A1);

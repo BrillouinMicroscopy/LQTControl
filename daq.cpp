@@ -347,8 +347,8 @@ QVector<QPointF> daq::getBuffer(int ch) {
 
 	for (int j = 0; j < 50000; j++) {
 	//for (uint32_t j = 0; j < unitOpened.trigger.advanced.totalSamples; j++) {
-		//voltage = adc_to_mv(bufferInfo.appBuffers[ch * 2][j], unitOpened.channelSettings[ch].range) / double(1000) + (qreal)rand() / (qreal)RAND_MAX;
-		voltage = adc_to_mv(bufferInfo.appBuffers[ch * 2][j], unitOpened.channelSettings[ch].range) / double(1000);
+		//voltage = adc_to_mv(bufferInfo.appBuffers[ch * 2][j], unitOpened.channelSettings[ch].range) / static_cast<double>(1000) + (qreal)rand() / (qreal)RAND_MAX;
+		voltage = adc_to_mv(bufferInfo.appBuffers[ch * 2][j], unitOpened.channelSettings[ch].range) / static_cast<double>(1000);
 		data.append(QPointF(j, voltage));
 	}
 
