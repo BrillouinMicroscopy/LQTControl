@@ -204,9 +204,15 @@ void MainWindow::on_scanSteps_valueChanged(const int value) {
 
 void MainWindow::updateLiveView() {
 	if (view == 0) {
-		QVector<QPointF> points = d.getBuffer(0);
-		liveViewPlots[static_cast<int>(liveViewPlotTypes::CHANNEL_A)]->replace(points);
-		liveViewChart->axisX()->setRange(0, points.length());
+		int plot = 0;
+		QVector<QPointF> data;
+		foreach(QtCharts::QLineSeries* series, liveViewPlots) {
+			if (series->isVisible()) {
+				data = d.getBuffer(plot++);
+				series->replace(data);
+			}
+		}
+		liveViewChart->axisX()->setRange(0, data.length());
 	}
 }
 
