@@ -25,7 +25,7 @@ typedef struct {
 } SCAN_PARAMETERS;
 
 typedef struct {
-	int32_t nrSteps;
+	int32_t nrSteps = 0;
 	std::vector<int32_t> voltages;	// [µV] output voltage (<int32_t> is sufficient for this)
 	std::vector<int32_t> intensity;	// [µV] measured intensity (<int32_t> is fine)
 	AMPLITUDES amplitudes;			// amplitudes of the first and second harmonic
