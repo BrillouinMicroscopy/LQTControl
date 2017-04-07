@@ -261,31 +261,6 @@
           <string>Manual</string>
          </property>
         </widget>
-        <widget class="QDoubleSpinBox" name="scanSteps">
-         <property name="geometry">
-          <rect>
-           <x>150</x>
-           <y>193</y>
-           <width>90</width>
-           <height>30</height>
-          </rect>
-         </property>
-         <property name="decimals">
-          <number>0</number>
-         </property>
-         <property name="minimum">
-          <double>10.000000000000000</double>
-         </property>
-         <property name="maximum">
-          <double>1000.000000000000000</double>
-         </property>
-         <property name="singleStep">
-          <double>1.000000000000000</double>
-         </property>
-         <property name="value">
-          <double>100.000000000000000</double>
-         </property>
-        </widget>
         <widget class="QLabel" name="scanStepsLabel">
          <property name="geometry">
           <rect>
@@ -297,6 +272,25 @@
          </property>
          <property name="text">
           <string>Steps</string>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="scanSteps">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>193</y>
+           <width>90</width>
+           <height>30</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>500</number>
+         </property>
+         <property name="value">
+          <number>100</number>
          </property>
         </widget>
        </widget>
