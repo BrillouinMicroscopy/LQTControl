@@ -22,22 +22,18 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
 	QWidget::connect(&d, SIGNAL(scanDone()), this, SLOT(updateScanView()));
-	QWidget::connect(&d, SIGNAL(collectedData()), this, SLOT(updateLiveView()));
-
-	QVector<QPointF> points = d.getData();
-	QVector<QPointF> points2 = d.getData();
+	QWidget::connect(&d, SIGNAL(collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS>)), this,
+		SLOT(updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS>)));
 	
 	// set up live view plots
 	QtCharts::QLineSeries *channelA = new QtCharts::QLineSeries();
 	channelA->setUseOpenGL(true);
-	channelA->replace(points);
 	channelA->setColor(colors.blue);
 	channelA->setName(QString("Detector signal"));
 	liveViewPlots.append(channelA);
 
 	QtCharts::QLineSeries *channelB = new QtCharts::QLineSeries();
 	channelB->setUseOpenGL(true);
-	channelB->replace(points2);
 	channelB->setColor(colors.orange);
 	channelB->setName(QString("Reference Signal"));
 	liveViewPlots.append(channelB);
@@ -56,28 +52,24 @@ MainWindow::MainWindow(QWidget *parent) :
 	// set up scan view plots
 	QtCharts::QLineSeries *intensity = new QtCharts::QLineSeries();
 	intensity->setUseOpenGL(true);
-	intensity->replace(points2);
 	intensity->setColor(colors.orange);
 	intensity->setName(QString("Intensity"));
 	scanViewPlots.append(intensity);
 
 	QtCharts::QLineSeries *A1 = new QtCharts::QLineSeries();
 	A1->setUseOpenGL(true);
-	A1->replace(points2);
 	A1->setColor(colors.yellow);
 	A1->setName(QString("Amplitude 1"));
 	scanViewPlots.append(A1);
 
 	QtCharts::QLineSeries *A2 = new QtCharts::QLineSeries();
 	A2->setUseOpenGL(true);
-	A2->replace(points2);
 	A2->setColor(colors.purple);
 	A2->setName(QString("Amplitude 2"));
 	scanViewPlots.append(A2);
 
 	QtCharts::QLineSeries *quotients = new QtCharts::QLineSeries();
 	quotients->setUseOpenGL(true);
-	quotients->replace(points2);
 	quotients->setColor(colors.green);
 	quotients->setName(QString("Quotient"));
 	scanViewPlots.append(quotients);
@@ -203,18 +195,16 @@ void MainWindow::on_scanSteps_valueChanged(const int value) {
 	d.setScanParameters(4, value);
 }
 
-void MainWindow::updateLiveView() {
+void MainWindow::updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> data) {
 	if (view == 0) {
-		int plot = 0;
-		QVector<QPointF> data;
+		int channel = 0;
 		foreach(QtCharts::QLineSeries* series, liveViewPlots) {
 			if (series->isVisible()) {
-				data = d.getBuffer(plot);
-				series->replace(data);
+				series->replace(data[channel]);
 			}
-			++plot;
+			++channel;
 		}
-		liveViewChart->axisX()->setRange(0, data.length());
+		liveViewChart->axisX()->setRange(0, data[0].length());
 	}
 }
 
@@ -262,7 +252,7 @@ void MainWindow::on_selectDisplay_activated(const int index) {
 				series->setVisible(true);
 			}
 			ui->plotAxes->setChart(liveViewChart);
-			MainWindow::updateLiveView();
+			//MainWindow::updateLiveView();
 			break;
 		case 1:
 			break;

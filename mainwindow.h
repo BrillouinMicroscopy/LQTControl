@@ -33,7 +33,7 @@ private slots:
 	void on_scanFrequency_valueChanged(const double value);
 	void on_scanSteps_valueChanged(const int value);
 
-    void updateLiveView();
+    void updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> data);
 	void updateScanView();
 
 public slots:

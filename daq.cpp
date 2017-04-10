@@ -4,7 +4,6 @@
 #include <QtWidgets>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMainWindow>
-#include <array>
 
 /* Definitions of PS2000 driver routines */
 #include "ps2000.h"
@@ -127,18 +126,15 @@ daq::daq(QObject *parent) :
 	QObject(parent) {
 
 	QWidget::connect(&timer, &QTimer::timeout,
-		this, &daq::collectStreamingData);
-	points.reserve(colCount);
-	daq::acquire();
+		this, &daq::getBlockData);
 }
 
 bool daq::startStopAcquisition() {
 	if (timer.isActive()) {
 		timer.stop();
-		daq::stopStreaming();
 		return false;
 	} else {
-		daq::startStreaming();
+		daq::setAcquisitionParameters();
 		timer.start(20);
 		return true;
 	}
@@ -169,22 +165,7 @@ void daq::setScanParameters(int type, int value) {
 	}
 }
 
-void daq::acquire() {
-	QVector<QPointF> tmp;
-	tmp.reserve(colCount);
-	for (int j(0); j < colCount; j++) {
-		qreal x(0);
-		qreal y(0);
-		// data with sin + random component
-		y = qSin(3.14159265358979 / 50 * j) + 0.5 + (qreal)rand() / (qreal)RAND_MAX;
-		x = j;
-		tmp.append(QPointF(x, y));
-	}
-	points = tmp;
-}
-
 ACQUISITION_PARAMETERS daq::setAcquisitionParameters() {
-	ACQUISITION_PARAMETERS acquisitionParameters;
 	// initialize the ADC
 	set_defaults();
 
@@ -210,7 +191,7 @@ ACQUISITION_PARAMETERS daq::setAcquisitionParameters() {
 	return acquisitionParameters;
 }
 
-std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq::collectData(ACQUISITION_PARAMETERS acquisitionParameters) {
+std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq::collectBlockData() {
 	
 	int32_t times[BUFFER_SIZE];
 
@@ -266,7 +247,7 @@ void daq::scanManual() {
 	scanResults.amplitudes.A2.resize(scanParameters.nrSteps);
 	scanResults.quotients.resize(scanParameters.nrSteps);
 
-	ACQUISITION_PARAMETERS acquisitionParameters = daq::setAcquisitionParameters();
+	daq::setAcquisitionParameters();
 
 	std::vector<double> frequencies = fpi.getFrequencies(acquisitionParameters.no_of_samples);
 
@@ -290,7 +271,7 @@ void daq::scanManual() {
 		);
 
 		// acquire detector and reference signal, store and process it
-		std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectData(acquisitionParameters);
+		std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectBlockData();
 
 		// calculate mean voltage
 		scanResults.intensity[j] = daq::mean(values[0]);
@@ -330,11 +311,6 @@ void daq::scanManual() {
 	emit scanDone();
 }
 
-QVector<QPointF> daq::getData() {
-	daq::acquire();
-	return points;
-}
-
 double daq::mean(std::vector<int> vector) {
 	return std::accumulate(std::begin(vector), std::end(vector), 0.0) / vector.size();
 }
@@ -351,7 +327,21 @@ SCAN_RESULTS daq::getScanResults() {
 	return scanResults;
 }
 
-QVector<QPointF> daq::getBuffer(int ch) {
+void daq::getBlockData() {
+	std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectBlockData();
+
+	std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> data;
+
+	for (int channel(0); channel < values.size(); channel++) {
+		for (int jj(0); jj < values[channel].size(); jj++) {
+			data[channel].append(QPointF(jj, values[channel][jj] / static_cast<double>(1000)));
+		}
+	}
+
+	emit collectedBlockData(data);
+}
+
+QVector<QPointF> daq::getStreamingBuffer(int ch) {
 	QVector<QPointF> data;
 	//data.reserve(unitOpened.trigger.advanced.totalSamples);
 	data.reserve(50000);

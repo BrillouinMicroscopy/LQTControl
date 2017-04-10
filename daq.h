@@ -5,6 +5,7 @@
 #include <QtCore/QObject>
 #include <QtWidgets>
 #include <vector>
+#include <array>
 
 #include "ps2000.h"
 #include "DFT.h"
@@ -48,9 +49,8 @@ class daq : public QObject {
 	public:
 		explicit daq(QObject *parent = 0);
 		bool startStopAcquisition();
-		void acquire();
-		QVector<QPointF> getData();
-		QVector<QPointF> getBuffer(int ch);
+		void getBlockData();
+		QVector<QPointF> getStreamingBuffer(int ch);
 		bool connect();
 		bool disconnect();
 		void startStreaming();
@@ -68,6 +68,7 @@ class daq : public QObject {
 	signals:
 		void scanDone();
 		void collectedData();
+		void collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS>);
 
 	private:
 		static void __stdcall ps2000FastStreamingReady2(
@@ -79,7 +80,7 @@ class daq : public QObject {
 			uint32_t  nValues
 		);
 		ACQUISITION_PARAMETERS setAcquisitionParameters();
-		std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> collectData(ACQUISITION_PARAMETERS acquisitionParameters);
+		std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> collectBlockData();
 		int32_t adc_to_mv(
 			int32_t raw,
 			int32_t ch
@@ -91,9 +92,9 @@ class daq : public QObject {
 		void set_defaults(void);
 		void get_info(void);
 		QTimer timer;
-		int colCount = 1024;
 		QVector<QPointF> points;
 		SCAN_PARAMETERS scanParameters;
+		ACQUISITION_PARAMETERS acquisitionParameters;
 		SCAN_RESULTS scanResults;
 		double mean(std::vector<int>);
 		double mean(std::vector<double>);
