@@ -180,6 +180,10 @@ void MainWindow::on_sampleRate_activated(const int index) {
 	d.setSampleRate(index);
 }
 
+void MainWindow::on_sampleNumber_valueChanged(const int no_of_samples) {
+	d.setNumberSamples(no_of_samples);
+}
+
 void MainWindow::on_scanAmplitude_valueChanged(const double value) {
 	// value is in [V], has to me set in [mV]
 	d.setScanParameters(0, static_cast<int>(1e6*value));

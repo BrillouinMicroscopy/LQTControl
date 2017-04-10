@@ -61,6 +61,7 @@ class daq : public QObject {
 		void set_trigger_advanced();
 		SCAN_PARAMETERS getScanParameters();
 		void setSampleRate(int index);
+		void setNumberSamples(int32_t no_of_samples);
 		void setScanParameters(int type, int value);
 		void scanManual();
 		SCAN_RESULTS getScanResults();

@@ -149,6 +149,11 @@ void daq::setSampleRate(int index) {
 	daq::setAcquisitionParameters();
 }
 
+void daq::setNumberSamples(int32_t no_of_samples) {
+	acquisitionParameters.no_of_samples = no_of_samples;
+	daq::setAcquisitionParameters();
+}
+
 void daq::setScanParameters(int type, int value) {
 	switch (type) {
 		case 0:
@@ -255,7 +260,7 @@ void daq::scanManual() {
 
 	daq::setAcquisitionParameters();
 
-	std::vector<double> frequencies = fpi.getFrequencies(acquisitionParameters.no_of_samples);
+	std::vector<double> frequencies = fpi.getFrequencies(acquisitionParameters);
 
 	// generate voltage values
 	for (int j(0); j < scanResults.nrSteps; j++) {
@@ -290,7 +295,7 @@ void daq::scanManual() {
 		}
 		scanResults.intensity[j] = mean(tau);
 
-		double fa = 4e6;	// sampling frequency
+		double fa = (200e6 / pow(2.0, acquisitionParameters.timebase));	// sampling frequency
 		double fm = 5000;	// [Hz] modulation frequency
 
 		AMPLITUDES amplitudes = dft.getAmplitudes(tau, fa, fm);

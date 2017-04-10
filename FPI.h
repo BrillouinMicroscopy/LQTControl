@@ -2,6 +2,7 @@
 #define FPI_H
 
 #include <cmath>
+#include <DAQ.h>
 
 typedef struct {
 	double R = 0.875;	// [1] reflectivity
@@ -34,12 +35,12 @@ class FPI {
 			return pow((1 - fpiParams.R), 2) / (1 + pow(fpiParams.R, 2) - 2*fpiParams.R*cos(delta));
 		};
 
-		std::vector<double> getFrequencies(int nrSamples) {
+		std::vector<double> getFrequencies(ACQUISITION_PARAMETERS acquisitionParameters) {
 			std::vector<double> frequencies;
-			frequencies.resize(nrSamples);
+			frequencies.resize(acquisitionParameters.no_of_samples);
 
-			for (int kk(0); kk < nrSamples; kk++) {
-				frequencies[kk] = laserParams.f0 + laserParams.fa  * cos(2 * M_PI * laserParams.nrPeriods * kk / (nrSamples - 1));
+			for (int kk(0); kk < acquisitionParameters.no_of_samples; kk++) {
+				frequencies[kk] = laserParams.f0 + laserParams.fa  * cos(2 * M_PI * laserParams.fm * kk / (200e6 / pow(2.0, acquisitionParameters.timebase)));
 			}
 			return frequencies;
 		};

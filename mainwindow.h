@@ -28,6 +28,7 @@ private slots:
 	void on_scanButtonManual_clicked();
 	// SLOTS for setting the acquisitionParameters
 	void on_sampleRate_activated(const int index);
+	void on_sampleNumber_valueChanged(const int no_of_samples);
 	// SLOTS for setting the scanParameters
 	void on_scanAmplitude_valueChanged(const double value);
 	void on_scanOffset_valueChanged(const double value);

@@ -697,7 +697,7 @@
           </item>
          </widget>
         </widget>
-        <widget class="QDoubleSpinBox" name="sampleNumber">
+        <widget class="QSpinBox" name="sampleNumber">
          <property name="geometry">
           <rect>
            <x>150</x>
@@ -706,20 +706,14 @@
            <height>30</height>
           </rect>
          </property>
-         <property name="decimals">
-          <number>0</number>
-         </property>
          <property name="minimum">
-          <double>1.000000000000000</double>
+          <number>1</number>
          </property>
          <property name="maximum">
-          <double>16000.000000000000000</double>
-         </property>
-         <property name="singleStep">
-          <double>1.000000000000000</double>
+          <number>16000</number>
          </property>
          <property name="value">
-          <double>6250.000000000000000</double>
+          <number>6250</number>
          </property>
         </widget>
         <widget class="QComboBox" name="sampleRate">
