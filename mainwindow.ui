@@ -697,19 +697,6 @@
           </item>
          </widget>
         </widget>
-        <widget class="QDoubleSpinBox" name="sampleRate">
-         <property name="geometry">
-          <rect>
-           <x>150</x>
-           <y>28</y>
-           <width>90</width>
-           <height>30</height>
-          </rect>
-         </property>
-         <property name="singleStep">
-          <double>0.500000000000000</double>
-         </property>
-        </widget>
         <widget class="QDoubleSpinBox" name="sampleNumber">
          <property name="geometry">
           <rect>
@@ -722,9 +709,83 @@
          <property name="decimals">
           <number>0</number>
          </property>
+         <property name="minimum">
+          <double>1.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>16000.000000000000000</double>
+         </property>
          <property name="singleStep">
           <double>1.000000000000000</double>
          </property>
+         <property name="value">
+          <double>6250.000000000000000</double>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="sampleRate">
+         <property name="geometry">
+          <rect>
+           <x>99</x>
+           <y>25</y>
+           <width>141</width>
+           <height>34</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>200 MS/s</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>100 MS/s</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>50 MS/s</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>25 MS/s</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>12.5 MS/s</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>6.25 MS/s</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>3.125 MS/s</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>1562.5 kS/s</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>781.25 kS/s</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>390.625 kS/s</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>195.3125 kS/s</string>
+          </property>
+         </item>
         </widget>
        </widget>
       </widget>

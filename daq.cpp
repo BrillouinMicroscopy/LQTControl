@@ -15,7 +15,6 @@ int16_t		overflow;
 int32_t		scale_to_mv = 1;
 
 int16_t		channel_mv[PS2000_MAX_CHANNELS];
-int16_t		timebase = 8;
 
 int16_t		g_overflow = 0;
 
@@ -145,6 +144,13 @@ SCAN_PARAMETERS daq::getScanParameters() {
 	return scanParameters;
 }
 
+void daq::setSampleRate(int index) {
+	acquisitionParameters.timebase = index;
+	daq::setAcquisitionParameters();
+
+	emit acquisitionParametersChanged(acquisitionParameters);
+}
+
 void daq::setScanParameters(int type, int value) {
 	switch (type) {
 		case 0:
@@ -178,14 +184,14 @@ ACQUISITION_PARAMETERS daq::setAcquisitionParameters() {
 	acquisitionParameters.oversample = 1;
 	while (!ps2000_get_timebase(
 		unitOpened.handle,
-		timebase,
+		acquisitionParameters.timebase,
 		acquisitionParameters.no_of_samples,
 		&acquisitionParameters.time_interval,
 		&acquisitionParameters.time_units,
 		acquisitionParameters.oversample,
 		&acquisitionParameters.max_samples)
 		) {
-		timebase++;
+		acquisitionParameters.timebase++;
 	};
 
 	return acquisitionParameters;
@@ -200,7 +206,7 @@ std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq::collectBlockData() {
 	ps2000_run_block(
 		unitOpened.handle,
 		acquisitionParameters.no_of_samples,
-		timebase,
+		acquisitionParameters.timebase,
 		acquisitionParameters.oversample,
 		&acquisitionParameters.time_indisposed_ms
 	);
@@ -585,8 +591,6 @@ bool daq::connect() {
 		unitOpened.handle = ps2000_open_unit();
 		
 		get_info();
-
-		timebase = 0;
 
 		if (!unitOpened.handle) {
 			return false;

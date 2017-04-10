@@ -25,6 +25,7 @@ typedef struct {
 	int32_t 	no_of_samples = BUFFER_SIZE;
 	int32_t 	max_samples;
 	int32_t 	time_indisposed_ms;
+	int16_t		timebase = 0;
 } ACQUISITION_PARAMETERS;
 
 typedef struct {
@@ -59,6 +60,7 @@ class daq : public QObject {
 		void set_sig_gen();
 		void set_trigger_advanced();
 		SCAN_PARAMETERS getScanParameters();
+		void setSampleRate(int index);
 		void setScanParameters(int type, int value);
 		void scanManual();
 		SCAN_RESULTS getScanResults();
@@ -69,6 +71,7 @@ class daq : public QObject {
 		void scanDone();
 		void collectedData();
 		void collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS>);
+		void acquisitionParametersChanged(ACQUISITION_PARAMETERS);
 
 	private:
 		static void __stdcall ps2000FastStreamingReady2(

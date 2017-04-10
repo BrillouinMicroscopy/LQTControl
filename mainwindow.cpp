@@ -24,6 +24,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	QWidget::connect(&d, SIGNAL(scanDone()), this, SLOT(updateScanView()));
 	QWidget::connect(&d, SIGNAL(collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS>)), this,
 		SLOT(updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS>)));
+
+	QWidget::connect(&d, SIGNAL(acquisitionParametersChanged(ACQUISITION_PARAMETERS)), this,
+		SLOT(updateAcquisitionParameters(ACQUISITION_PARAMETERS)));
 	
 	// set up live view plots
 	QtCharts::QLineSeries *channelA = new QtCharts::QLineSeries();
@@ -173,6 +176,10 @@ void MainWindow::on_acquisitionButton_clicked() {
 	}
 }
 
+void MainWindow::on_sampleRate_activated(const int index) {
+	d.setSampleRate(index);
+}
+
 void MainWindow::on_scanAmplitude_valueChanged(const double value) {
 	// value is in [V], has to me set in [mV]
 	d.setScanParameters(0, static_cast<int>(1e6*value));
@@ -233,6 +240,13 @@ void MainWindow::updateScanView() {
 		scanViewChart->axisX()->setRange(0, 2);
 		scanViewChart->axisY()->setRange(-0.4, 1.2);
 	}
+}
+
+void MainWindow::updateAcquisitionParameters(ACQUISITION_PARAMETERS acquisitionParameters) {
+	// set sample rate
+	ui->sampleRate->setCurrentIndex(acquisitionParameters.timebase);
+	// set number of samples
+	ui->sampleNumber->setValue(acquisitionParameters.no_of_samples);
 }
 
 void MainWindow::on_scanButtonManual_clicked() {

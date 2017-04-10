@@ -26,6 +26,8 @@ private slots:
 	void on_actionDisconnect_triggered();
 	void on_scanButton_clicked();
 	void on_scanButtonManual_clicked();
+	// SLOTS for setting the acquisitionParameters
+	void on_sampleRate_activated(const int index);
 	// SLOTS for setting the scanParameters
 	void on_scanAmplitude_valueChanged(const double value);
 	void on_scanOffset_valueChanged(const double value);
@@ -33,8 +35,12 @@ private slots:
 	void on_scanFrequency_valueChanged(const double value);
 	void on_scanSteps_valueChanged(const int value);
 
+	// SLOTS for updating the plots
     void updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> data);
 	void updateScanView();
+
+	// SLOTS for updating the acquisition parameters
+	void updateAcquisitionParameters(ACQUISITION_PARAMETERS acquisitionParameters);
 
 public slots:
 	void connectMarkers();
