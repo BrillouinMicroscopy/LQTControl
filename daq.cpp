@@ -147,8 +147,6 @@ SCAN_PARAMETERS daq::getScanParameters() {
 void daq::setSampleRate(int index) {
 	acquisitionParameters.timebase = index;
 	daq::setAcquisitionParameters();
-
-	emit acquisitionParametersChanged(acquisitionParameters);
 }
 
 void daq::setScanParameters(int type, int value) {
@@ -193,6 +191,8 @@ ACQUISITION_PARAMETERS daq::setAcquisitionParameters() {
 		) {
 		acquisitionParameters.timebase++;
 	};
+
+	emit acquisitionParametersChanged(acquisitionParameters);
 
 	return acquisitionParameters;
 }
