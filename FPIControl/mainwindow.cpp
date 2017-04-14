@@ -49,6 +49,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	liveViewChart->createDefaultAxes();
 	liveViewChart->axisX()->setRange(0, 1024);
 	liveViewChart->axisY()->setRange(-1, 4);
+	liveViewChart->axisX()->setTitleText("Samples");
+	liveViewChart->axisY()->setTitleText("Voltage [V]");
 	liveViewChart->setTitle("Live view");
 	liveViewChart->layout()->setContentsMargins(0, 0, 0, 0);
 
@@ -85,6 +87,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	scanViewChart->createDefaultAxes();
 	scanViewChart->axisX()->setRange(0, 1024);
 	scanViewChart->axisY()->setRange(-1, 4);
+	scanViewChart->axisX()->setTitleText("Piezo Voltage [V]");
 	scanViewChart->setTitle("Scan View");
 	scanViewChart->layout()->setContentsMargins(0, 0, 0, 0);
 
