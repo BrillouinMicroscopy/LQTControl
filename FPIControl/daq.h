@@ -45,6 +45,13 @@ typedef struct {
 	std::vector<double> quotients;	// quotients of the amplitudes of the first and second harmonic
 } SCAN_RESULTS;
 
+typedef struct {
+	double proportional = 1.0;
+	double integral = 1.0;
+	double derivative = 1.0;
+	double frequency = 5000.0;
+} LOCKIN_PARAMETERS;
+
 class daq : public QObject {
 	Q_OBJECT
 
@@ -60,12 +67,13 @@ class daq : public QObject {
 		void stopStreaming();
 		void set_sig_gen();
 		void set_trigger_advanced();
-		SCAN_PARAMETERS getScanParameters();
 		void setSampleRate(int index);
 		void setNumberSamples(int32_t no_of_samples);
 		void setScanParameters(int type, int value);
 		void scanManual();
+		SCAN_PARAMETERS getScanParameters();
 		SCAN_RESULTS getScanResults();
+		LOCKIN_PARAMETERS getLockInParameters();
 
 	private slots:
 
@@ -101,6 +109,7 @@ class daq : public QObject {
 		SCAN_PARAMETERS scanParameters;
 		ACQUISITION_PARAMETERS acquisitionParameters;
 		SCAN_RESULTS scanResults;
+		LOCKIN_PARAMETERS lockInParameters;
 		double mean(std::vector<int>);
 		double mean(std::vector<double>);
 		std::complex<double> mean(std::vector<std::complex<double>>);

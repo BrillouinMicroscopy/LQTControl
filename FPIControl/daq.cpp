@@ -326,6 +326,10 @@ SCAN_RESULTS daq::getScanResults() {
 	return scanResults;
 }
 
+LOCKIN_PARAMETERS daq::getLockInParameters() {
+	return lockInParameters;
+}
+
 void daq::getBlockData() {
 	std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectBlockData();
 
