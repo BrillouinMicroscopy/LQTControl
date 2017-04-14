@@ -14,7 +14,8 @@ typedef struct {
 const int c = 299792458;	// [m/s] speed of light in vacuum
 
 typedef struct {
-	double f0 = 299792458 / 780.24e-9;	// current laser frequency
+	double lambda = 780.24e-9;
+	double f0 = c / lambda;	// current laser frequency
 	double fa = 100e6;	// [Hz] frequency modulation amplitude
 	double fm = 5000;	// [Hz] frequency modulation frequency
 	int nrPeriods = 10;
