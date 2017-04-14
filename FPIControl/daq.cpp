@@ -285,7 +285,7 @@ void daq::scanManual() {
 		std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectBlockData();
 
 		// calculate mean voltage
-		scanResults.intensity[j] = daq::mean(values[0]);
+		scanResults.intensity[j] = generalmath::mean(values[0]);
 
 		// simulation of FPI
 		std::vector<double> tau;
@@ -293,14 +293,14 @@ void daq::scanManual() {
 		for (int kk(0); kk < frequencies.size(); kk++) {
 			tau[kk] = 1e3*fpi.tau(frequencies[kk], scanResults.voltages[j] / double(1e6));
 		}
-		scanResults.intensity[j] = mean(tau);
+		scanResults.intensity[j] = generalmath::mean(tau);
 
 		double fa = (200e6 / pow(2.0, acquisitionParameters.timebase));	// sampling frequency
 		double fm = 5000;	// [Hz] modulation frequency
 
 		AMPLITUDES amplitudes = dft.getAmplitudes(tau, fa, fm);
-		scanResults.amplitudes.A1[j] = mean(amplitudes.A1);
-		scanResults.amplitudes.A2[j] = mean(amplitudes.A2);
+		scanResults.amplitudes.A1[j] = generalmath::mean(amplitudes.A1);
+		scanResults.amplitudes.A2[j] = generalmath::mean(amplitudes.A2);
 
 		// calculate the phase angle of the reference signal
 		AMPLITUDES amplitudes_ref = dft.getAmplitudes(frequencies, fa, fm);
@@ -309,7 +309,7 @@ void daq::scanManual() {
 		for (int kk(0); kk < amplitudes_ref.A1.size(); kk++) {
 			angles[kk] = std::arg(amplitudes_ref.A1[kk]);
 		}
-		double angle = mean(angles);
+		double angle = generalmath::mean(angles);
 
 		scanResults.amplitudes.A1[j] *= exp(-1.0*imaginary*angle);
 		scanResults.amplitudes.A2[j] *= exp(-2.0*imaginary*angle);
@@ -320,18 +320,6 @@ void daq::scanManual() {
 	// reset signal generator to start values
 	daq::set_sig_gen();
 	emit scanDone();
-}
-
-double daq::mean(std::vector<int> vector) {
-	return std::accumulate(std::begin(vector), std::end(vector), 0.0) / vector.size();
-}
-
-double daq::mean(std::vector<double> vector) {
-	return std::accumulate(std::begin(vector), std::end(vector), 0.0) / vector.size();
-}
-
-std::complex<double> daq::mean(std::vector<std::complex<double>> vector) {
-	return std::accumulate(std::begin(vector), std::end(vector), std::complex<double>(0.0,0.0)) / std::complex<double>(vector.size(),0);
 }
 
 SCAN_RESULTS daq::getScanResults() {

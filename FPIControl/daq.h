@@ -9,6 +9,7 @@
 
 #include "ps2000.h"
 #include "DFT.h"
+#include "generalmath.h"
 
 #define BUFFER_SIZE 	8000
 #define BUFFER_SIZE_STREAMING 50000		// Overview buffer size
@@ -22,10 +23,10 @@ typedef struct {
 	int32_t 	time_interval;
 	int16_t 	time_units;
 	int16_t 	oversample;
-	int32_t 	no_of_samples = BUFFER_SIZE;
+	int32_t 	no_of_samples = 6250;	// set to a value which allows a clean frequency analysis for 5000 Hz modulation frequency at timebase 10
 	int32_t 	max_samples;
 	int32_t 	time_indisposed_ms;
-	int16_t		timebase = 0;
+	int16_t		timebase = 10;
 } ACQUISITION_PARAMETERS;
 
 typedef struct {
