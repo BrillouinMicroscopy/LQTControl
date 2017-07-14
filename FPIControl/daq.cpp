@@ -154,6 +154,13 @@ void daq::setNumberSamples(int32_t no_of_samples) {
 	daq::setAcquisitionParameters();
 }
 
+void daq::setCoupling(int index, int ch) {
+	unitOpened.channelSettings[ch].DCcoupled = (bool) index;
+	daq::set_defaults();
+	//acquisitionParameters.timebase = index;
+	//daq::setAcquisitionParameters();
+}
+
 void daq::setScanParameters(int type, int value) {
 	switch (type) {
 		case 0:

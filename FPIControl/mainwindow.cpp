@@ -190,6 +190,14 @@ void MainWindow::on_sampleRate_activated(const int index) {
 	d.setSampleRate(index);
 }
 
+void MainWindow::on_chACoupling_activated(const int index) {
+	d.setCoupling(index, 0);
+}
+
+void MainWindow::on_chBCoupling_activated(const int index) {
+	d.setCoupling(index, 1);
+}
+
 void MainWindow::on_sampleNumber_valueChanged(const int no_of_samples) {
 	d.setNumberSamples(no_of_samples);
 }
