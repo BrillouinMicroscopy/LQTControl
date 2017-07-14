@@ -157,8 +157,17 @@ void daq::setNumberSamples(int32_t no_of_samples) {
 void daq::setCoupling(int index, int ch) {
 	unitOpened.channelSettings[ch].DCcoupled = (bool) index;
 	daq::set_defaults();
-	//acquisitionParameters.timebase = index;
-	//daq::setAcquisitionParameters();
+}
+
+void daq::setRange(int index, int ch) {
+	if (index < 9) {
+		unitOpened.channelSettings[ch].range = index + 2;
+	} else if (index == 9) {
+		// set auto range
+	} else {
+		unitOpened.channelSettings[ch].enabled = FALSE;
+	}
+	daq::set_defaults();
 }
 
 void daq::setScanParameters(int type, int value) {

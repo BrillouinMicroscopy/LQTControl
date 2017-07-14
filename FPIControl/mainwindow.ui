@@ -53,7 +53,7 @@
          <x>0</x>
          <y>0</y>
          <width>288</width>
-         <height>916</height>
+         <height>944</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -550,16 +550,6 @@
           </property>
           <item>
            <property name="text">
-            <string>Off</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Auto</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
             <string>±50 mV</string>
            </property>
           </item>
@@ -601,6 +591,16 @@
           <item>
            <property name="text">
             <string>±20 V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Auto</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Off</string>
            </property>
           </item>
          </widget>
@@ -674,16 +674,6 @@
           </property>
           <item>
            <property name="text">
-            <string>Off</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Auto</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
             <string>±50 mV</string>
            </property>
           </item>
@@ -725,6 +715,16 @@
           <item>
            <property name="text">
             <string>±20 V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Auto</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Off</string>
            </property>
           </item>
          </widget>
@@ -927,7 +927,7 @@
      <x>0</x>
      <y>0</y>
      <width>1289</width>
-     <height>31</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">
