@@ -42,7 +42,7 @@ private slots:
 	void on_scanSteps_valueChanged(const int value);
 
 	// SLOTS for updating the plots
-	void updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> data);
+	void updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &data);
 	void updateScanView();
 	void updateLockView();
 

@@ -23,8 +23,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	QWidget::connect(&d, SIGNAL(scanDone()), this, SLOT(updateScanView()));
 	QWidget::connect(&d, SIGNAL(locked()), this, SLOT(updateLockView()));
-	QWidget::connect(&d, SIGNAL(collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS>)), this,
-		SLOT(updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS>)));
+	QWidget::connect(&d, SIGNAL(collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &)), this,
+		SLOT(updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &)));
 
 	QWidget::connect(&d, SIGNAL(acquisitionParametersChanged(ACQUISITION_PARAMETERS)), this,
 		SLOT(updateAcquisitionParameters(ACQUISITION_PARAMETERS)));
@@ -261,7 +261,7 @@ void MainWindow::on_scanSteps_valueChanged(const int value) {
 	d.setScanParameters(4, value);
 }
 
-void MainWindow::updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> data) {
+void MainWindow::updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &data) {
 	if (view == 0) {
 		int channel = 0;
 		foreach(QtCharts::QLineSeries* series, liveViewPlots) {

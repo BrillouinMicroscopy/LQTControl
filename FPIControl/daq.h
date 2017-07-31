@@ -84,13 +84,15 @@ class daq : public QObject {
 		SCAN_RESULTS getScanResults();
 		LOCKIN_PARAMETERS getLockInParameters();
 
+		std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> data;
+
 	private slots:
 
 	signals:
 		void scanDone();
 		void collectedData();
 		void locked();
-		void collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS>);
+		void collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &);
 		void acquisitionParametersChanged(ACQUISITION_PARAMETERS);
 
 	private:

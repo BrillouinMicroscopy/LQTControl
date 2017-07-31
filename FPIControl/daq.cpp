@@ -357,11 +357,10 @@ LOCKIN_PARAMETERS daq::getLockInParameters() {
 void daq::getBlockData() {
 	std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectBlockData();
 
-	std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> data;
-
 	for (int channel(0); channel < values.size(); channel++) {
+		data[channel].resize(values[channel].size());
 		for (int jj(0); jj < values[channel].size(); jj++) {
-			data[channel].append(QPointF(jj, values[channel][jj] / static_cast<double>(1000)));
+			data[channel][jj] = QPointF(jj, values[channel][jj] / static_cast<double>(1000));
 		}
 	}
 
