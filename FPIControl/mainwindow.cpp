@@ -106,7 +106,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	// set default values of lockin parameters
 	LOCKIN_PARAMETERS lockInParameters = d.getLockInParameters();
-	ui->lockInFrequency->setValue(lockInParameters.frequency);
 	ui->proportionalTerm->setValue(lockInParameters.proportional);
 	ui->integralTerm->setValue(lockInParameters.integral);
 	ui->derivativeTerm->setValue(lockInParameters.derivative);

@@ -49,7 +49,6 @@ typedef struct {
 	double proportional = 1.0;
 	double integral = 1.0;
 	double derivative = 1.0;
-	double frequency = 5000.0;
 } LOCKIN_PARAMETERS;
 
 class daq : public QObject {
