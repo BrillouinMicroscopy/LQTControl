@@ -212,7 +212,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="colors.h" />
-    <ClInclude Include="DFT.h" />
+    <ClInclude Include="PDH.h" />
     <ClInclude Include="FPI.h" />
     <ClInclude Include="GeneratedFiles\ui_mainwindow.h" />
     <ClInclude Include="generalmath.h" />

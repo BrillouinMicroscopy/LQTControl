@@ -59,9 +59,7 @@ private:
 	};
 	enum class scanViewPlotTypes {
 		INTENSITY,
-		A1,
-		A2,
-		QUOTIENTS
+		ERRORSIGNAL
 	};
 	QtCharts::QChart *liveViewChart;
 	QtCharts::QChart *lockViewChart;

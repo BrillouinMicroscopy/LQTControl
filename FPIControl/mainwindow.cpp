@@ -61,23 +61,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	intensity->setName(QString("Intensity"));
 	scanViewPlots.append(intensity);
 
-	QtCharts::QLineSeries *A1 = new QtCharts::QLineSeries();
-	A1->setUseOpenGL(true);
-	A1->setColor(colors.yellow);
-	A1->setName(QString("Amplitude 1"));
-	scanViewPlots.append(A1);
-
-	QtCharts::QLineSeries *A2 = new QtCharts::QLineSeries();
-	A2->setUseOpenGL(true);
-	A2->setColor(colors.purple);
-	A2->setName(QString("Amplitude 2"));
-	scanViewPlots.append(A2);
-
-	QtCharts::QLineSeries *quotients = new QtCharts::QLineSeries();
-	quotients->setUseOpenGL(true);
-	quotients->setColor(colors.green);
-	quotients->setName(QString("Quotient"));
-	scanViewPlots.append(quotients);
+	QtCharts::QLineSeries *error = new QtCharts::QLineSeries();
+	error->setUseOpenGL(true);
+	error->setColor(colors.yellow);
+	error->setName(QString("Error signal"));
+	scanViewPlots.append(error);
 
 	// set up live view chart
 	scanViewChart = new QtCharts::QChart();
@@ -249,22 +237,14 @@ void MainWindow::updateScanView() {
 		SCAN_RESULTS scanResults = d.getScanResults();
 		QVector<QPointF> intensity;
 		intensity.reserve(scanResults.nrSteps);
-		QVector<QPointF> A1;
-		A1.reserve(scanResults.nrSteps);
-		QVector<QPointF> A2;
-		A2.reserve(scanResults.nrSteps);
-		QVector<QPointF> quotients;
-		quotients.reserve(scanResults.nrSteps);
+		QVector<QPointF> error;
+		error.reserve(scanResults.nrSteps);
 		for (int j(0); j < scanResults.nrSteps; j++) {
 			intensity.append(QPointF(scanResults.voltages[j] / static_cast<double>(1e6), scanResults.intensity[j] / static_cast<double>(1000)));
-			A1.append(QPointF(scanResults.voltages[j] / static_cast<double>(1e6), std::real(scanResults.amplitudes.A1[j]) / static_cast<double>(1000)));
-			A2.append(QPointF(scanResults.voltages[j] / static_cast<double>(1e6), std::real(scanResults.amplitudes.A2[j]) / static_cast<double>(1000)));
-			quotients.append(QPointF(scanResults.voltages[j] / static_cast<double>(1e6), scanResults.quotients[j] / static_cast<double>(20)));
+			error.append(QPointF(scanResults.voltages[j] / static_cast<double>(1e6), std::real(scanResults.error[j])));
 		}
 		scanViewPlots[static_cast<int>(scanViewPlotTypes::INTENSITY)]->replace(intensity);
-		scanViewPlots[static_cast<int>(scanViewPlotTypes::A1)]->replace(A1);
-		scanViewPlots[static_cast<int>(scanViewPlotTypes::A2)]->replace(A2);
-		scanViewPlots[static_cast<int>(scanViewPlotTypes::QUOTIENTS)]->replace(quotients);
+		scanViewPlots[static_cast<int>(scanViewPlotTypes::ERRORSIGNAL)]->replace(error);
 
 		scanViewChart->axisX()->setRange(0, 2);
 		scanViewChart->axisY()->setRange(-0.4, 1.2);

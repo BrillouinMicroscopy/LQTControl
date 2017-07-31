@@ -8,7 +8,7 @@
 #include <array>
 
 #include "ps2000.h"
-#include "DFT.h"
+#include "PDH.h"
 #include "generalmath.h"
 
 #define BUFFER_SIZE 	8000
@@ -41,8 +41,7 @@ typedef struct {
 	int32_t nrSteps = 0;
 	std::vector<int32_t> voltages;	// [µV] output voltage (<int32_t> is sufficient for this)
 	std::vector<int32_t> intensity;	// [µV] measured intensity (<int32_t> is fine)
-	AMPLITUDES amplitudes;			// amplitudes of the first and second harmonic
-	std::vector<double> quotients;	// quotients of the amplitudes of the first and second harmonic
+	std::vector<double> error;		// PDH error signal
 } SCAN_RESULTS;
 
 typedef struct {

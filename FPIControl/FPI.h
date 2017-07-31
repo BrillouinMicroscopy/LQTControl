@@ -33,7 +33,7 @@ class FPI {
 
 			double delta = 4 * M_PI*frequency*fpiParams.n*d / c;
 
-			return pow((1 - fpiParams.R), 2) / (1 + pow(fpiParams.R, 2) - 2*fpiParams.R*cos(delta));
+			return -1*pow((1 - fpiParams.R), 2) / (1 + pow(fpiParams.R, 2) - 2*fpiParams.R*cos(delta));
 		};
 
 		std::vector<double> getFrequencies(ACQUISITION_PARAMETERS acquisitionParameters) {

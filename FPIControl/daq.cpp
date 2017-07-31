@@ -1,6 +1,6 @@
 #include "daq.h"
 #include "FPI.h"
-#include "DFT.h"
+#include "PDH.h"
 #include <QtWidgets>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMainWindow>
@@ -119,7 +119,7 @@ BUFFER_INFO bufferInfo;
 int32_t input_ranges[PS2000_MAX_RANGES] = { 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000 };
 
 FPI fpi;
-DFT dft;
+PDH pdh;
 
 daq::daq(QObject *parent) :
 	QObject(parent) {
@@ -219,7 +219,7 @@ ACQUISITION_PARAMETERS daq::setAcquisitionParameters() {
 }
 
 std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq::collectBlockData() {
-	
+
 	int32_t times[BUFFER_SIZE];
 
 	/* Start collecting data,
@@ -270,9 +270,7 @@ void daq::scanManual() {
 	scanResults.nrSteps = scanParameters.nrSteps;
 	scanResults.voltages.resize(scanParameters.nrSteps);
 	scanResults.intensity.resize(scanParameters.nrSteps);
-	scanResults.amplitudes.A1.resize(scanParameters.nrSteps);
-	scanResults.amplitudes.A2.resize(scanParameters.nrSteps);
-	scanResults.quotients.resize(scanParameters.nrSteps);
+	scanResults.error.resize(scanParameters.nrSteps);
 
 	daq::setAcquisitionParameters();
 
@@ -288,9 +286,9 @@ void daq::scanManual() {
 			unitOpened.handle,		// handle of the oscilloscope
 			scanResults.voltages[j],// offsetVoltage in microvolt
 			0,						// peak to peak voltage in microvolt
-			(PS2000_WAVE_TYPE) 0 ,	// type of waveform
-			(float) 0,				// startFrequency in Hertz
-			(float) 0,				// stopFrequency in Hertz
+			(PS2000_WAVE_TYPE)0,	// type of waveform
+			(float)0,				// startFrequency in Hertz
+			(float)0,				// stopFrequency in Hertz
 			0,						// increment
 			0,						// dwellTime, time in seconds between frequency changes in sweep mode
 			PS2000_UPDOWN,			// sweepType
@@ -305,32 +303,29 @@ void daq::scanManual() {
 
 		// simulation of FPI
 		std::vector<double> tau;
+		std::vector<double> reference;
+
 		tau.resize(acquisitionParameters.no_of_samples);
 		for (int kk(0); kk < frequencies.size(); kk++) {
 			tau[kk] = 1e3*fpi.tau(frequencies[kk], scanResults.voltages[j] / double(1e6));
 		}
-		scanResults.intensity[j] = generalmath::mean(tau);
 
-		double fa = (200e6 / pow(2.0, acquisitionParameters.timebase));	// sampling frequency
-		double fm = 5000;	// [Hz] modulation frequency
+		double tau_mean = generalmath::mean(tau);
+		double tau_max = generalmath::max(tau);
 
-		AMPLITUDES amplitudes = dft.getAmplitudes(tau, fa, fm);
-		scanResults.amplitudes.A1[j] = generalmath::mean(amplitudes.A1);
-		scanResults.amplitudes.A2[j] = generalmath::mean(amplitudes.A2);
-
-		// calculate the phase angle of the reference signal
-		AMPLITUDES amplitudes_ref = dft.getAmplitudes(frequencies, fa, fm);
-		std::vector<double> angles;
-		angles.resize(amplitudes_ref.A1.size());
-		for (int kk(0); kk < amplitudes_ref.A1.size(); kk++) {
-			angles[kk] = std::arg(amplitudes_ref.A1[kk]);
+		for (int kk(0); kk < tau.size(); kk++) {
+			tau[kk] = (tau[kk] - tau_mean) / tau_max;
 		}
-		double angle = generalmath::mean(angles);
 
-		scanResults.amplitudes.A1[j] *= exp(-1.0*imaginary*angle);
-		scanResults.amplitudes.A2[j] *= exp(-2.0*imaginary*angle);
+		scanResults.intensity[j] = generalmath::absSum(tau);
 
-		scanResults.quotients[j] = std::real(scanResults.amplitudes.A1[j]) / std::real(scanResults.amplitudes.A2[j]);
+		scanResults.error[j] = pdh.getError(tau, frequencies);
+	}
+
+	// normalize error
+	double error_max = generalmath::max(scanResults.error);
+	for (int kk(0); kk < scanResults.error.size(); kk++) {
+		scanResults.error[kk] /= error_max;
 	}
 
 	// reset signal generator to start values
