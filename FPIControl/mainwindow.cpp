@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
 	QWidget::connect(&d, SIGNAL(scanDone()), this, SLOT(updateScanView()));
+	QWidget::connect(&d, SIGNAL(locked()), this, SLOT(updateLockView()));
 	QWidget::connect(&d, SIGNAL(collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS>)), this,
 		SLOT(updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS>)));
 
@@ -53,6 +54,31 @@ MainWindow::MainWindow(QWidget *parent) :
 	liveViewChart->axisY()->setTitleText("Voltage [V]");
 	liveViewChart->setTitle("Live view");
 	liveViewChart->layout()->setContentsMargins(0, 0, 0, 0);
+
+	// set up lock view plots
+	QtCharts::QLineSeries *voltage = new QtCharts::QLineSeries();
+	voltage->setUseOpenGL(true);
+	voltage->setColor(colors.orange);
+	voltage->setName(QString("Voltage"));
+	lockViewPlots.append(voltage);
+
+	QtCharts::QLineSeries *errorLock = new QtCharts::QLineSeries();
+	errorLock->setUseOpenGL(true);
+	errorLock->setColor(colors.yellow);
+	errorLock->setName(QString("Error signal"));
+	lockViewPlots.append(errorLock);
+
+	// set up lock view chart
+	lockViewChart = new QtCharts::QChart();
+	foreach(QtCharts::QLineSeries* series, lockViewPlots) {
+		lockViewChart->addSeries(series);
+	}
+	lockViewChart->createDefaultAxes();
+	lockViewChart->axisX()->setRange(0, 1024);
+	lockViewChart->axisY()->setRange(-1, 4);
+	lockViewChart->axisX()->setTitleText("Time [s]");
+	lockViewChart->setTitle("Lock View");
+	lockViewChart->layout()->setContentsMargins(0, 0, 0, 0);
 
 	// set up scan view plots
 	QtCharts::QLineSeries *intensity = new QtCharts::QLineSeries();
@@ -109,6 +135,11 @@ MainWindow::~MainWindow() {
 void MainWindow::connectMarkers() {
 	// Connect all markers to handler
 	foreach(QtCharts::QLegendMarker* marker, liveViewChart->legend()->markers()) {
+		// Disconnect possible existing connection to avoid multiple connections
+		QWidget::disconnect(marker, SIGNAL(clicked()), this, SLOT(handleMarkerClicked()));
+		QWidget::connect(marker, SIGNAL(clicked()), this, SLOT(handleMarkerClicked()));
+	}
+	foreach(QtCharts::QLegendMarker* marker, lockViewChart->legend()->markers()) {
 		// Disconnect possible existing connection to avoid multiple connections
 		QWidget::disconnect(marker, SIGNAL(clicked()), this, SLOT(handleMarkerClicked()));
 		QWidget::connect(marker, SIGNAL(clicked()), this, SLOT(handleMarkerClicked()));
@@ -173,6 +204,17 @@ void MainWindow::on_acquisitionButton_clicked() {
 	}
 }
 
+void MainWindow::on_lockButton_clicked() {
+	bool running = d.startStopLocking();
+	if (running) {
+		ui->lockButton->setText(QString("Unlock"));
+	}
+	else {
+		ui->lockButton->setText(QString("Lock"));
+	}
+
+}
+
 void MainWindow::on_sampleRate_activated(const int index) {
 	d.setSampleRate(index);
 }
@@ -232,6 +274,10 @@ void MainWindow::updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS
 	}
 }
 
+void MainWindow::updateLockView() {
+
+}
+
 void MainWindow::updateScanView() {
 	if (view == 2) {
 		SCAN_RESULTS scanResults = d.getScanResults();
@@ -271,6 +317,9 @@ void MainWindow::on_selectDisplay_activated(const int index) {
 			foreach(QtCharts::QLineSeries* series, scanViewPlots) {
 				series->setVisible(false);
 			}
+			foreach(QtCharts::QLineSeries* series, lockViewPlots) {
+				series->setVisible(false);
+			}
 			foreach(QtCharts::QLineSeries* series, liveViewPlots) {
 				series->setVisible(true);
 			}
@@ -278,11 +327,27 @@ void MainWindow::on_selectDisplay_activated(const int index) {
 			//MainWindow::updateLiveView();
 			break;
 		case 1:
+			// it is necessary to hide the series, because they do not get removed
+			// after setChart in case useOpenGL == true (bug in QT?)
+			foreach(QtCharts::QLineSeries* series, liveViewPlots) {
+				series->setVisible(false);
+			}
+			foreach(QtCharts::QLineSeries* series, scanViewPlots) {
+				series->setVisible(false);
+			}
+			foreach(QtCharts::QLineSeries* series, lockViewPlots) {
+				series->setVisible(true);
+			}
+			ui->plotAxes->setChart(lockViewChart);
+			//MainWindow::updateScanView();
 			break;
 		case 2:
 			// it is necessary to hide the series, because they do not get removed
 			// after setChart in case useOpenGL == true (bug in QT?)
 			foreach(QtCharts::QLineSeries* series, liveViewPlots) {
+				series->setVisible(false);
+			}
+			foreach(QtCharts::QLineSeries* series, lockViewPlots) {
 				series->setVisible(false);
 			}
 			foreach(QtCharts::QLineSeries* series, scanViewPlots) {

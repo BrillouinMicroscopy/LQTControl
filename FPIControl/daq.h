@@ -50,13 +50,22 @@ typedef struct {
 	double derivative = 1.0;
 } LOCKIN_PARAMETERS;
 
+typedef struct {
+	std::vector<double> time;		// [s]	time vector
+	std::vector<int32_t> voltage;	// [µV]	output voltage (<int32_t> is sufficient for this)
+	std::vector<int32_t> intensity;	// [µV]	measured intensity (<int32_t> is fine)
+	std::vector<double> error;		// [1]	PDH error signal
+} LOCKING_RESULTS;
+
 class daq : public QObject {
 	Q_OBJECT
 
 	public:
 		explicit daq(QObject *parent = 0);
 		bool startStopAcquisition();
+		bool startStopLocking();
 		void getBlockData();
+		void lock();
 		QVector<QPointF> getStreamingBuffer(int ch);
 		bool connect();
 		bool disconnect();
@@ -80,6 +89,7 @@ class daq : public QObject {
 	signals:
 		void scanDone();
 		void collectedData();
+		void locked();
 		void collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS>);
 		void acquisitionParametersChanged(ACQUISITION_PARAMETERS);
 
@@ -105,14 +115,13 @@ class daq : public QObject {
 		void set_defaults(void);
 		void get_info(void);
 		QTimer timer;
+		QTimer lockingTimer;
 		QVector<QPointF> points;
 		SCAN_PARAMETERS scanParameters;
 		ACQUISITION_PARAMETERS acquisitionParameters;
 		SCAN_RESULTS scanResults;
+		LOCKING_RESULTS lockingResults;
 		LOCKIN_PARAMETERS lockInParameters;
-		double mean(std::vector<int>);
-		double mean(std::vector<double>);
-		std::complex<double> mean(std::vector<std::complex<double>>);
 };
 
 #endif // DAQ_H

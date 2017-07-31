@@ -22,6 +22,7 @@ public:
 private slots:
 	void on_selectDisplay_activated(const int index);
 	void on_acquisitionButton_clicked();
+	void on_lockButton_clicked();
 	void on_actionConnect_triggered();
 	void on_actionDisconnect_triggered();
 	void on_scanButton_clicked();
@@ -41,8 +42,9 @@ private slots:
 	void on_scanSteps_valueChanged(const int value);
 
 	// SLOTS for updating the plots
-    void updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> data);
+	void updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> data);
 	void updateScanView();
+	void updateLockView();
 
 	// SLOTS for updating the acquisition parameters
 	void updateAcquisitionParameters(ACQUISITION_PARAMETERS acquisitionParameters);
@@ -65,6 +67,7 @@ private:
 	QtCharts::QChart *lockViewChart;
 	QtCharts::QChart *scanViewChart;
 	QList<QtCharts::QLineSeries *> liveViewPlots;
+	QList<QtCharts::QLineSeries *> lockViewPlots;
 	QList<QtCharts::QLineSeries *> scanViewPlots;
 	daq d;
 	int view = 0;	// selection of the view

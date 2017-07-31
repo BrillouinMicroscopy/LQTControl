@@ -126,6 +126,9 @@ daq::daq(QObject *parent) :
 
 	QWidget::connect(&timer, &QTimer::timeout,
 		this, &daq::getBlockData);
+
+	QWidget::connect(&lockingTimer, &QTimer::timeout,
+		this, &daq::lock);
 }
 
 bool daq::startStopAcquisition() {
@@ -135,6 +138,17 @@ bool daq::startStopAcquisition() {
 	} else {
 		daq::setAcquisitionParameters();
 		timer.start(20);
+		return true;
+	}
+	return true;
+}
+
+bool daq::startStopLocking() {
+	if (lockingTimer.isActive()) {
+		lockingTimer.stop();
+		return false;
+	} else {
+		lockingTimer.start(100);
 		return true;
 	}
 	return true;
@@ -305,14 +319,8 @@ void daq::scanManual() {
 		// calculate mean voltage
 		scanResults.intensity[j] = generalmath::mean(values[0]);
 
-		// simulation of FPI
 		std::vector<double> tau(values[0].begin(), values[0].end());
 		std::vector<double> reference(values[1].begin(), values[1].end());
-
-		//tau.resize(acquisitionparameters.no_of_samples);
-		//for (int kk(0); kk < frequencies.size(); kk++) {
-		//	tau[kk] = 1e3*fpi.tau(frequencies[kk], scanresults.voltages[j] / double(1e6));
-		//}
 
 		//double tau_mean = generalmath::mean(tau);
 		double tau_max = generalmath::max(tau);
@@ -358,6 +366,14 @@ void daq::getBlockData() {
 	}
 
 	emit collectedBlockData(data);
+}
+
+void daq::lock() {
+	std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectBlockData();
+
+
+
+	emit locked();
 }
 
 QVector<QPointF> daq::getStreamingBuffer(int ch) {
