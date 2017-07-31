@@ -279,7 +279,7 @@ void daq::scanManual() {
 	// generate voltage values
 	for (int j(0); j < scanResults.nrSteps; j++) {
 		// create voltages, store in array
-		scanResults.voltages[j] = j*scanParameters.amplitude / (scanParameters.nrSteps - 1) - scanParameters.offset;
+		scanResults.voltages[j] = j*scanParameters.amplitude / (scanParameters.nrSteps - 1) + scanParameters.offset;
 
 		// set voltages as DC value on the signal generator
 		ps2000_set_sig_gen_built_in(
@@ -295,6 +295,10 @@ void daq::scanManual() {
 			0						// sweeps, number of times to sweep the frequency
 		);
 
+		if (j == 0) {
+			Sleep(5000);
+		}
+
 		// acquire detector and reference signal, store and process it
 		std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectBlockData();
 
@@ -302,24 +306,25 @@ void daq::scanManual() {
 		scanResults.intensity[j] = generalmath::mean(values[0]);
 
 		// simulation of FPI
-		std::vector<double> tau;
-		std::vector<double> reference;
+		std::vector<double> tau(values[0].begin(), values[0].end());
+		std::vector<double> reference(values[1].begin(), values[1].end());
 
-		tau.resize(acquisitionParameters.no_of_samples);
-		for (int kk(0); kk < frequencies.size(); kk++) {
-			tau[kk] = 1e3*fpi.tau(frequencies[kk], scanResults.voltages[j] / double(1e6));
-		}
+		//tau.resize(acquisitionparameters.no_of_samples);
+		//for (int kk(0); kk < frequencies.size(); kk++) {
+		//	tau[kk] = 1e3*fpi.tau(frequencies[kk], scanresults.voltages[j] / double(1e6));
+		//}
 
-		double tau_mean = generalmath::mean(tau);
+		//double tau_mean = generalmath::mean(tau);
 		double tau_max = generalmath::max(tau);
+		double tau_min = generalmath::min(tau);
 
 		for (int kk(0); kk < tau.size(); kk++) {
-			tau[kk] = (tau[kk] - tau_mean) / tau_max;
+			tau[kk] = (tau[kk] - tau_min) / (tau_max - tau_min);
 		}
 
 		scanResults.intensity[j] = generalmath::absSum(tau);
 
-		scanResults.error[j] = pdh.getError(tau, frequencies);
+		scanResults.error[j] = pdh.getError(tau, reference);
 	}
 
 	// normalize error

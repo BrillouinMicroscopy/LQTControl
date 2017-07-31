@@ -32,8 +32,46 @@ public:
 		return max;
 	}
 
+	static int32_t max(std::vector<int32_t> vector) {
+		int32_t max = vector[0];
+		for (int jj(0); jj < vector.size(); jj++) {
+			if (vector[jj] > max) {
+				max = vector[jj];
+			}
+		}
+		return max;
+	}
+
+	static double min(std::vector<double> vector) {
+		double min = vector[0];
+		for (int jj(0); jj < vector.size(); jj++) {
+			if (vector[jj] < min) {
+				min = vector[jj];
+			}
+		}
+		return min;
+	}
+
+	static int32_t min(std::vector<int32_t> vector) {
+		int32_t min = vector[0];
+		for (int jj(0); jj < vector.size(); jj++) {
+			if (vector[jj] < min) {
+				min = vector[jj];
+			}
+		}
+		return min;
+	}
+
 	static double absSum(std::vector<double> vector) {
 		double sum = 0;
+		for (int jj(0); jj < vector.size(); jj++) {
+			sum += abs(vector[jj]);
+		}
+		return sum;
+	}
+
+	static int32_t absSum(std::vector<int32_t> vector) {
+		int32_t sum = 0;
 		for (int jj(0); jj < vector.size(); jj++) {
 			sum += abs(vector[jj]);
 		}
