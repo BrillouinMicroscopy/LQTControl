@@ -60,6 +60,7 @@ typedef struct {
 	double proportional = 1.0;
 	double integral = 1.0;
 	double derivative = 1.0;
+	bool active = FALSE;
 } LOCK_PARAMETERS;
 
 typedef struct {
@@ -75,6 +76,7 @@ class daq : public QObject {
 	public:
 		explicit daq(QObject *parent = 0);
 		bool startStopAcquisition();
+		bool startStopAcquireLocking();
 		bool startStopLocking();
 		void getBlockData();
 		void lock();

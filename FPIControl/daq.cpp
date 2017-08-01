@@ -143,15 +143,20 @@ bool daq::startStopAcquisition() {
 	return true;
 }
 
-bool daq::startStopLocking() {
+bool daq::startStopAcquireLocking() {
 	if (lockingTimer.isActive()) {
+		lockParameters.active = FALSE;
 		lockingTimer.stop();
 		return false;
 	} else {
 		lockingTimer.start(100);
 		return true;
 	}
-	return true;
+}
+
+bool daq::startStopLocking() {
+	lockParameters.active = !lockParameters.active;
+	return lockParameters.active;
 }
 
 SCAN_PARAMETERS daq::getScanParameters() {
@@ -401,20 +406,22 @@ void daq::lock() {
 
 	double error = pdh.getError(tau, reference);
 
-	currentVoltage = currentVoltage + 0.05 * error/100;
+	if (lockParameters.active) {
+		currentVoltage = currentVoltage + 0.01 * error / 100;
 
-	ps2000_set_sig_gen_built_in(
-		unitOpened.handle,				// handle of the oscilloscope
-		currentVoltage * 1e6,			// offsetVoltage in microvolt
-		0,								// peak to peak voltage in microvolt
-		(PS2000_WAVE_TYPE)5,			// type of waveform
-		(float)0,						// startFrequency in Hertz
-		(float)0,						// stopFrequency in Hertz
-		0,								// increment
-		0,								// dwellTime, time in seconds between frequency changes in sweep mode
-		PS2000_UPDOWN,					// sweepType
-		0								// sweeps, number of times to sweep the frequency
-	);
+		ps2000_set_sig_gen_built_in(
+			unitOpened.handle,				// handle of the oscilloscope
+			currentVoltage * 1e6,			// offsetVoltage in microvolt
+			0,								// peak to peak voltage in microvolt
+			(PS2000_WAVE_TYPE)5,			// type of waveform
+			(float)0,						// startFrequency in Hertz
+			(float)0,						// stopFrequency in Hertz
+			0,								// increment
+			0,								// dwellTime, time in seconds between frequency changes in sweep mode
+			PS2000_UPDOWN,					// sweepType
+			0								// sweeps, number of times to sweep the frequency
+		);
+	}
 
 	// write data to array for plotting
 	lockDataPlot[static_cast<int>(daq::lockViewPlotTypes::VOLTAGE)].append(QPointF(passed, currentVoltage));

@@ -205,6 +205,17 @@ void MainWindow::on_acquisitionButton_clicked() {
 	}
 }
 
+void MainWindow::on_acquireLockButton_clicked() {
+	bool running = d.startStopAcquireLocking();
+	if (running) {
+		ui->acquireLockButton->setText(QString("Stop"));
+	}
+	else {
+		ui->lockButton->setText(QString("Lock"));
+		ui->acquireLockButton->setText(QString("Acquire"));
+	}
+}
+
 void MainWindow::on_lockButton_clicked() {
 	bool running = d.startStopLocking();
 	if (running) {
@@ -213,7 +224,6 @@ void MainWindow::on_lockButton_clicked() {
 	else {
 		ui->lockButton->setText(QString("Lock"));
 	}
-
 }
 
 void MainWindow::on_sampleRate_activated(const int index) {
