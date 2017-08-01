@@ -22,7 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
 	QWidget::connect(&d, SIGNAL(scanDone()), this, SLOT(updateScanView()));
-	QWidget::connect(&d, SIGNAL(locked()), this, SLOT(updateLockView()));
+	QWidget::connect(&d, SIGNAL(locked(std::array<QVector<QPointF>, 3> &)), this,
+		SLOT(updateLockView(std::array<QVector<QPointF>, 3> &)));
 	QWidget::connect(&d, SIGNAL(collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &)), this,
 		SLOT(updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &)));
 
@@ -119,10 +120,10 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->scanWaveform->setCurrentIndex(scanParameters.waveform);
 
 	// set default values of lockin parameters
-	LOCKIN_PARAMETERS lockInParameters = d.getLockInParameters();
-	ui->proportionalTerm->setValue(lockInParameters.proportional);
-	ui->integralTerm->setValue(lockInParameters.integral);
-	ui->derivativeTerm->setValue(lockInParameters.derivative);
+	LOCK_PARAMETERS lockParameters = d.getLockParameters();
+	ui->proportionalTerm->setValue(lockParameters.proportional);
+	ui->integralTerm->setValue(lockParameters.integral);
+	ui->derivativeTerm->setValue(lockParameters.derivative);
 
 	// connect legend marker to toggle visibility of plots
 	MainWindow::connectMarkers();
@@ -274,23 +275,32 @@ void MainWindow::updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS
 	}
 }
 
-void MainWindow::updateLockView() {
-
+void MainWindow::updateLockView(std::array<QVector<QPointF>, 3> &data) {
+	if (view == 1) {
+		int channel = 0;
+		foreach(QtCharts::QLineSeries* series, lockViewPlots) {
+			if (series->isVisible()) {
+				series->replace(data[channel]);
+			}
+			++channel;
+		}
+		lockViewChart->axisX()->setRange(data[0][0].x(), data[0].back().x());
+	}
 }
 
 void MainWindow::updateScanView() {
 	if (view == 2) {
-		SCAN_RESULTS scanResults = d.getScanResults();
+		SCAN_DATA scanData = d.getScanData();
 		QVector<QPointF> intensity;
-		intensity.reserve(scanResults.nrSteps);
+		intensity.reserve(scanData.nrSteps);
 		QVector<QPointF> error;
-		error.reserve(scanResults.nrSteps);
-		for (int j(0); j < scanResults.nrSteps; j++) {
-			intensity.append(QPointF(scanResults.voltages[j] / static_cast<double>(1e6), scanResults.intensity[j] / static_cast<double>(1000)));
-			error.append(QPointF(scanResults.voltages[j] / static_cast<double>(1e6), std::real(scanResults.error[j])));
+		error.reserve(scanData.nrSteps);
+		for (int j(0); j < scanData.nrSteps; j++) {
+			intensity.append(QPointF(scanData.voltages[j] / static_cast<double>(1e6), scanData.intensity[j] / static_cast<double>(1000)));
+			error.append(QPointF(scanData.voltages[j] / static_cast<double>(1e6), std::real(scanData.error[j])));
 		}
-		scanViewPlots[static_cast<int>(scanViewPlotTypes::INTENSITY)]->replace(intensity);
-		scanViewPlots[static_cast<int>(scanViewPlotTypes::ERRORSIGNAL)]->replace(error);
+		scanViewPlots[static_cast<int>(daq::scanViewPlotTypes::INTENSITY)]->replace(intensity);
+		scanViewPlots[static_cast<int>(daq::scanViewPlotTypes::ERRORSIGNAL)]->replace(error);
 
 		scanViewChart->axisX()->setRange(0, 2);
 		scanViewChart->axisY()->setRange(-0.4, 1.2);

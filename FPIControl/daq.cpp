@@ -281,24 +281,24 @@ std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq::collectBlockData() {
 }
 
 void daq::scanManual() {
-	scanResults.nrSteps = scanParameters.nrSteps;
-	scanResults.voltages.resize(scanParameters.nrSteps);
-	scanResults.intensity.resize(scanParameters.nrSteps);
-	scanResults.error.resize(scanParameters.nrSteps);
+	scanData.nrSteps = scanParameters.nrSteps;
+	scanData.voltages.resize(scanParameters.nrSteps);
+	scanData.intensity.resize(scanParameters.nrSteps);
+	scanData.error.resize(scanParameters.nrSteps);
 
 	daq::setAcquisitionParameters();
 
 	std::vector<double> frequencies = fpi.getFrequencies(acquisitionParameters);
 
 	// generate voltage values
-	for (int j(0); j < scanResults.nrSteps; j++) {
+	for (int j(0); j < scanData.nrSteps; j++) {
 		// create voltages, store in array
-		scanResults.voltages[j] = j*scanParameters.amplitude / (scanParameters.nrSteps - 1) + scanParameters.offset;
+		scanData.voltages[j] = j*scanParameters.amplitude / (scanParameters.nrSteps - 1) + scanParameters.offset;
 
 		// set voltages as DC value on the signal generator
 		ps2000_set_sig_gen_built_in(
 			unitOpened.handle,		// handle of the oscilloscope
-			scanResults.voltages[j],// offsetVoltage in microvolt
+			scanData.voltages[j],// offsetVoltage in microvolt
 			0,						// peak to peak voltage in microvolt
 			(PS2000_WAVE_TYPE)0,	// type of waveform
 			(float)0,				// startFrequency in Hertz
@@ -316,9 +316,6 @@ void daq::scanManual() {
 		// acquire detector and reference signal, store and process it
 		std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectBlockData();
 
-		// calculate mean voltage
-		scanResults.intensity[j] = generalmath::mean(values[0]);
-
 		std::vector<double> tau(values[0].begin(), values[0].end());
 		std::vector<double> reference(values[1].begin(), values[1].end());
 
@@ -330,15 +327,15 @@ void daq::scanManual() {
 			tau[kk] = (tau[kk] - tau_min) / (tau_max - tau_min);
 		}
 
-		scanResults.intensity[j] = generalmath::absSum(tau);
+		scanData.intensity[j] = generalmath::absSum(tau);
 
-		scanResults.error[j] = pdh.getError(tau, reference);
+		scanData.error[j] = pdh.getError(tau, reference);
 	}
 
 	// normalize error
-	double error_max = generalmath::max(scanResults.error);
-	for (int kk(0); kk < scanResults.error.size(); kk++) {
-		scanResults.error[kk] /= error_max;
+	double error_max = generalmath::max(scanData.error);
+	for (int kk(0); kk < scanData.error.size(); kk++) {
+		scanData.error[kk] /= error_max;
 	}
 
 	// reset signal generator to start values
@@ -346,12 +343,12 @@ void daq::scanManual() {
 	emit scanDone();
 }
 
-SCAN_RESULTS daq::getScanResults() {
-	return scanResults;
+SCAN_DATA daq::getScanData() {
+	return scanData;
 }
 
-LOCKIN_PARAMETERS daq::getLockInParameters() {
-	return lockInParameters;
+LOCK_PARAMETERS daq::getLockParameters() {
+	return lockParameters;
 }
 
 void daq::getBlockData() {
@@ -370,9 +367,53 @@ void daq::getBlockData() {
 void daq::lock() {
 	std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectBlockData();
 
+	std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+
+	// write data to struct for storage
+	lockData.time.push_back(now);
 
 
-	emit locked();
+	double passed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lockData.time[0]).count() / 1e3;	// store passed time in seconds
+
+	std::vector<double> tau(values[0].begin(), values[0].end());
+	std::vector<double> reference(values[1].begin(), values[1].end());
+
+	//double tau_mean = generalmath::mean(tau);
+	double tau_max = generalmath::max(tau);
+	double tau_min = generalmath::min(tau);
+	double dtau = tau_max - tau_min;
+
+	if (dtau != 0) {
+		for (int kk(0); kk < tau.size(); kk++) {
+			tau[kk] = (tau[kk] - tau_min) / dtau;
+		}
+	}
+
+	double intensity = generalmath::absSum(tau);
+
+	double error = pdh.getError(tau, reference);
+
+	currentVoltage = currentVoltage + 0.05 * error/100;
+
+	ps2000_set_sig_gen_built_in(
+		unitOpened.handle,				// handle of the oscilloscope
+		currentVoltage * 1e6,			// offsetVoltage in microvolt
+		0,								// peak to peak voltage in microvolt
+		(PS2000_WAVE_TYPE)5,			// type of waveform
+		(float)0,						// startFrequency in Hertz
+		(float)0,						// stopFrequency in Hertz
+		0,								// increment
+		0,								// dwellTime, time in seconds between frequency changes in sweep mode
+		PS2000_UPDOWN,					// sweepType
+		0								// sweeps, number of times to sweep the frequency
+	);
+
+	// write data to array for plotting
+	lockDataPlot[static_cast<int>(daq::lockViewPlotTypes::VOLTAGE)].append(QPointF(passed, currentVoltage));
+	lockDataPlot[static_cast<int>(daq::lockViewPlotTypes::ERRORSIGNAL)].append(QPointF(passed, error / 100));
+	lockDataPlot[static_cast<int>(daq::lockViewPlotTypes::INTENSITY)].append(QPointF(passed, intensity));
+
+	emit locked(lockDataPlot);
 }
 
 QVector<QPointF> daq::getStreamingBuffer(int ch) {
@@ -818,6 +859,8 @@ void daq::get_info(void) {
 }
 
 void daq::set_sig_gen() {
+
+	currentVoltage = scanParameters.offset / 1e6;
 
 	ps2000_set_sig_gen_built_in(
 		unitOpened.handle,				// handle of the oscilloscope

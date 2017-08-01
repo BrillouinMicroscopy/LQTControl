@@ -6,6 +6,8 @@
 #include <QtWidgets>
 #include <vector>
 #include <array>
+#include <chrono>
+#include <ctime>
 
 #include "ps2000.h"
 #include "PDH.h"
@@ -42,20 +44,20 @@ typedef struct {
 	std::vector<int32_t> voltages;	// [µV] output voltage (<int32_t> is sufficient for this)
 	std::vector<int32_t> intensity;	// [µV] measured intensity (<int32_t> is fine)
 	std::vector<double> error;		// PDH error signal
-} SCAN_RESULTS;
+} SCAN_DATA;
 
 typedef struct {
 	double proportional = 1.0;
 	double integral = 1.0;
 	double derivative = 1.0;
-} LOCKIN_PARAMETERS;
+} LOCK_PARAMETERS;
 
 typedef struct {
-	std::vector<double> time;		// [s]	time vector
+	std::vector<std::chrono::time_point<std::chrono::system_clock>> time;		// [s]	time vector
 	std::vector<int32_t> voltage;	// [µV]	output voltage (<int32_t> is sufficient for this)
 	std::vector<int32_t> intensity;	// [µV]	measured intensity (<int32_t> is fine)
 	std::vector<double> error;		// [1]	PDH error signal
-} LOCKING_RESULTS;
+} LOCK_DATA;
 
 class daq : public QObject {
 	Q_OBJECT
@@ -81,17 +83,34 @@ class daq : public QObject {
 		void setScanParameters(int type, int value);
 		void scanManual();
 		SCAN_PARAMETERS getScanParameters();
-		SCAN_RESULTS getScanResults();
-		LOCKIN_PARAMETERS getLockInParameters();
+		SCAN_DATA getScanData();
+		LOCK_PARAMETERS getLockParameters();
 
 		std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> data;
+		std::array<QVector<QPointF>, 3> lockDataPlot;
+
+		double currentVoltage = 0;
+
+		enum class liveViewPlotTypes {
+			CHANNEL_A,
+			CHANNEL_B
+		};
+		enum class scanViewPlotTypes {
+			INTENSITY,
+			ERRORSIGNAL
+		};
+		enum class lockViewPlotTypes {
+			VOLTAGE,
+			ERRORSIGNAL,
+			INTENSITY
+		};
 
 	private slots:
 
 	signals:
 		void scanDone();
 		void collectedData();
-		void locked();
+		void locked(std::array<QVector<QPointF>, 3> &);
 		void collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &);
 		void acquisitionParametersChanged(ACQUISITION_PARAMETERS);
 
@@ -119,11 +138,11 @@ class daq : public QObject {
 		QTimer timer;
 		QTimer lockingTimer;
 		QVector<QPointF> points;
-		SCAN_PARAMETERS scanParameters;
 		ACQUISITION_PARAMETERS acquisitionParameters;
-		SCAN_RESULTS scanResults;
-		LOCKING_RESULTS lockingResults;
-		LOCKIN_PARAMETERS lockInParameters;
+		SCAN_PARAMETERS scanParameters;
+		SCAN_DATA scanData;
+		LOCK_PARAMETERS lockParameters;
+		LOCK_DATA lockData;
 };
 
 #endif // DAQ_H

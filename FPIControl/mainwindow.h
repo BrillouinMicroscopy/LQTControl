@@ -44,7 +44,7 @@ private slots:
 	// SLOTS for updating the plots
 	void updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &data);
 	void updateScanView();
-	void updateLockView();
+	void updateLockView(std::array<QVector<QPointF>, 3> &data);
 
 	// SLOTS for updating the acquisition parameters
 	void updateAcquisitionParameters(ACQUISITION_PARAMETERS acquisitionParameters);
@@ -55,14 +55,6 @@ public slots:
 
 private:
     Ui::MainWindow *ui;
-	enum class liveViewPlotTypes {
-		CHANNEL_A,
-		CHANNEL_B
-	};
-	enum class scanViewPlotTypes {
-		INTENSITY,
-		ERRORSIGNAL
-	};
 	QtCharts::QChart *liveViewChart;
 	QtCharts::QChart *lockViewChart;
 	QtCharts::QChart *scanViewChart;
