@@ -169,7 +169,8 @@ void daq::setNumberSamples(int32_t no_of_samples) {
 }
 
 void daq::setCoupling(int index, int ch) {
-	unitOpened.channelSettings[ch].DCcoupled = (bool) index;
+	acquisitionParameters.channelSettings[ch].DCcoupled = index;
+	unitOpened.channelSettings[ch].DCcoupled = (bool)index;
 	daq::set_defaults();
 }
 
@@ -204,7 +205,16 @@ void daq::setScanParameters(int type, int value) {
 	}
 }
 
-ACQUISITION_PARAMETERS daq::setAcquisitionParameters() {
+void daq::setAcquisitionParameters() {
+
+	int16_t maxChannels = (2 < unitOpened.noOfChannels) ? 2 : unitOpened.noOfChannels;
+
+	for (int16_t ch(0); ch < maxChannels; ch++) {
+		unitOpened.channelSettings[ch].enabled = acquisitionParameters.channelSettings[ch].enabled;
+		unitOpened.channelSettings[ch].DCcoupled = acquisitionParameters.channelSettings[ch].DCcoupled;
+		unitOpened.channelSettings[ch].range = acquisitionParameters.channelSettings[ch].range;
+	}
+	
 	// initialize the ADC
 	set_defaults();
 
@@ -228,8 +238,6 @@ ACQUISITION_PARAMETERS daq::setAcquisitionParameters() {
 	};
 
 	emit acquisitionParametersChanged(acquisitionParameters);
-
-	return acquisitionParameters;
 }
 
 std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq::collectBlockData() {
@@ -664,6 +672,7 @@ bool daq::connect() {
 		if (!unitOpened.handle) {
 			return false;
 		} else {
+			daq::setAcquisitionParameters();
 			return true;
 		}
 	} else {
