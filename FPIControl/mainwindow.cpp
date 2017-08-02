@@ -275,6 +275,25 @@ void MainWindow::on_scanSteps_valueChanged(const int value) {
 	d.setScanParameters(4, value);
 }
 
+/***********************************
+ * Set parameters for cavity locking 
+ ***********************************/
+void MainWindow::on_proportionalTerm_valueChanged(const double value) {
+	d.setLockParameters(0, value);
+}
+void MainWindow::on_integralTerm_valueChanged(const double value) {
+	d.setLockParameters(1, value);
+}
+void MainWindow::on_derivativeTerm_valueChanged(const double value) {
+	d.setLockParameters(2, value);
+}
+void MainWindow::on_frequency_valueChanged(const double value) {
+	d.setLockParameters(3, value);
+}
+void MainWindow::on_phase_valueChanged(const double value) {
+	d.setLockParameters(4, value);
+}
+
 void MainWindow::updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &data) {
 	if (view == 0) {
 		int channel = 0;

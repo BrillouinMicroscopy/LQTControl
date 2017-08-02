@@ -96,6 +96,7 @@ class daq : public QObject {
 		void setRange(int index, int ch);
 		void setNumberSamples(int32_t no_of_samples);
 		void setScanParameters(int type, int value);
+		void setLockParameters(int type, double value);
 		void scanManual();
 		SCAN_PARAMETERS getScanParameters();
 		SCAN_DATA getScanData();

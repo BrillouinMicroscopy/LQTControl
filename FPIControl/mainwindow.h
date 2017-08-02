@@ -42,6 +42,12 @@ private slots:
 	void on_scanFrequency_valueChanged(const double value);
 	void on_scanSteps_valueChanged(const int value);
 
+	void on_proportionalTerm_valueChanged(const double value);
+	void on_integralTerm_valueChanged(const double value);
+	void on_derivativeTerm_valueChanged(const double value);
+	void on_frequency_valueChanged(const double value);
+	void on_phase_valueChanged(const double value);
+
 	// SLOTS for updating the plots
 	void updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &data);
 	void updateScanView();

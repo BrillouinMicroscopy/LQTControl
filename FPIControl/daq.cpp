@@ -210,6 +210,26 @@ void daq::setScanParameters(int type, int value) {
 	}
 }
 
+void daq::setLockParameters(int type, double value) {
+	switch (type) {
+		case 0:
+			lockParameters.proportional = value;
+			break;
+		case 1:
+			lockParameters.integral = value;
+			break;
+		case 2:
+			lockParameters.derivative = value;
+			break;
+		case 3:
+			lockParameters.frequency = value;
+			break;
+		case 4:
+			lockParameters.phase = value;
+			break;
+	}
+}
+
 void daq::setAcquisitionParameters() {
 
 	int16_t maxChannels = (2 < unitOpened.noOfChannels) ? 2 : unitOpened.noOfChannels;
@@ -407,7 +427,7 @@ void daq::lock() {
 	double error = pdh.getError(tau, reference);
 
 	if (lockParameters.active) {
-		currentVoltage = currentVoltage + 0.01 * error / 100;
+		currentVoltage = currentVoltage + lockParameters.proportional * error / 100;
 
 		ps2000_set_sig_gen_built_in(
 			unitOpened.handle,				// handle of the oscilloscope
