@@ -306,7 +306,7 @@
           <x>10</x>
           <y>530</y>
           <width>250</width>
-          <height>151</height>
+          <height>181</height>
          </rect>
         </property>
         <property name="title">
@@ -354,9 +354,9 @@
         <widget class="QPushButton" name="lockButton">
          <property name="geometry">
           <rect>
-           <x>130</x>
-           <y>110</y>
-           <width>112</width>
+           <x>165</x>
+           <y>140</y>
+           <width>75</width>
            <height>34</height>
           </rect>
          </property>
@@ -385,6 +385,9 @@
          <property name="singleStep">
           <double>0.005000000000000</double>
          </property>
+         <property name="value">
+          <double>0.010000000000000</double>
+         </property>
         </widget>
         <widget class="QDoubleSpinBox" name="integralTerm">
          <property name="geometry">
@@ -406,6 +409,9 @@
          </property>
          <property name="singleStep">
           <double>0.005000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.010000000000000</double>
          </property>
         </widget>
         <widget class="QDoubleSpinBox" name="derivativeTerm">
@@ -429,18 +435,72 @@
          <property name="singleStep">
           <double>0.005000000000000</double>
          </property>
+         <property name="value">
+          <double>0.010000000000000</double>
+         </property>
         </widget>
         <widget class="QPushButton" name="acquireLockButton">
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>110</y>
-           <width>112</width>
+           <y>140</y>
+           <width>75</width>
            <height>34</height>
           </rect>
          </property>
          <property name="text">
           <string>Acquire</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="derivativeTerm_2">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>110</y>
+           <width>90</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="decimals">
+          <number>1</number>
+         </property>
+         <property name="minimum">
+          <double>0.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>360.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>1.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.000000000000000</double>
+         </property>
+        </widget>
+        <widget class="QLabel" name="derivativeLabel_2">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>110</y>
+           <width>131</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Phase [°]</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="resetLockButton">
+         <property name="geometry">
+          <rect>
+           <x>88</x>
+           <y>140</y>
+           <width>74</width>
+           <height>34</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Reset</string>
          </property>
         </widget>
        </widget>
@@ -928,8 +988,6 @@
            <height>400</height>
           </size>
          </property>
-         <zorder>settingsArea</zorder>
-         <zorder>scanButtonManual</zorder>
         </widget>
        </item>
       </layout>
