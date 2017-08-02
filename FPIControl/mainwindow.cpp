@@ -124,6 +124,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->proportionalTerm->setValue(lockParameters.proportional);
 	ui->integralTerm->setValue(lockParameters.integral);
 	ui->derivativeTerm->setValue(lockParameters.derivative);
+	ui->frequency->setValue(lockParameters.frequency);
+	ui->phase->setValue(lockParameters.phase);
+	ui->offsetCheckBox->setChecked(lockParameters.compensate);
 
 	// connect legend marker to toggle visibility of plots
 	MainWindow::connectMarkers();

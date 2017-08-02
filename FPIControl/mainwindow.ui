@@ -306,7 +306,7 @@
           <x>10</x>
           <y>530</y>
           <width>250</width>
-          <height>181</height>
+          <height>241</height>
          </rect>
         </property>
         <property name="title">
@@ -355,7 +355,7 @@
          <property name="geometry">
           <rect>
            <x>165</x>
-           <y>140</y>
+           <y>200</y>
            <width>75</width>
            <height>34</height>
           </rect>
@@ -443,7 +443,7 @@
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>140</y>
+           <y>200</y>
            <width>75</width>
            <height>34</height>
           </rect>
@@ -452,11 +452,62 @@
           <string>Acquire</string>
          </property>
         </widget>
-        <widget class="QDoubleSpinBox" name="derivativeTerm_2">
+        <widget class="QDoubleSpinBox" name="frequency">
          <property name="geometry">
           <rect>
            <x>150</x>
            <y>110</y>
+           <width>90</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="decimals">
+          <number>0</number>
+         </property>
+         <property name="minimum">
+          <double>0.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>100000.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.000000000000000</double>
+         </property>
+        </widget>
+        <widget class="QLabel" name="frequencyLabel">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>110</y>
+           <width>131</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Frequency [Hz]</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="resetLockButton">
+         <property name="geometry">
+          <rect>
+           <x>88</x>
+           <y>200</y>
+           <width>74</width>
+           <height>34</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Reset</string>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="phase">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>140</y>
            <width>90</width>
            <height>25</height>
           </rect>
@@ -477,11 +528,11 @@
           <double>0.000000000000000</double>
          </property>
         </widget>
-        <widget class="QLabel" name="derivativeLabel_2">
+        <widget class="QLabel" name="phaseLabel">
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>110</y>
+           <y>140</y>
            <width>131</width>
            <height>25</height>
           </rect>
@@ -490,17 +541,36 @@
           <string>Phase [°]</string>
          </property>
         </widget>
-        <widget class="QPushButton" name="resetLockButton">
+        <widget class="QCheckBox" name="offsetCheckBox">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
          <property name="geometry">
           <rect>
-           <x>88</x>
-           <y>140</y>
-           <width>74</width>
-           <height>34</height>
+           <x>218</x>
+           <y>170</y>
+           <width>20</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+        <widget class="QLabel" name="offsetLabel">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>170</y>
+           <width>131</width>
+           <height>25</height>
           </rect>
          </property>
          <property name="text">
-          <string>Reset</string>
+          <string>Offset Compensation</string>
          </property>
         </widget>
        </widget>

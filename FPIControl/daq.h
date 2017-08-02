@@ -57,10 +57,13 @@ typedef struct {
 } SCAN_DATA;
 
 typedef struct {
-	double proportional = 1.0;
-	double integral = 1.0;
-	double derivative = 1.0;
-	bool active = FALSE;
+	double proportional = 0.01;		//		control parameter of the proportional part
+	double integral = 0.01;			//		control parameter of the integral part
+	double derivative = 0.01;		//		control parameter of the derivative part
+	double frequency = 5000;		// [Hz] approx. frequency of the reference signal
+	double phase = 0;				// [°]	phase shift between reference and detector signal
+	bool compensate = FALSE;		//		compensate the offset?
+	bool active = FALSE;			//		locking enabled?
 } LOCK_PARAMETERS;
 
 typedef struct {
