@@ -181,10 +181,14 @@ void daq::setCoupling(int index, int ch) {
 
 void daq::setRange(int index, int ch) {
 	if (index < 9) {
+		acquisitionParameters.channelSettings[ch].enabled = TRUE;
+		unitOpened.channelSettings[ch].enabled = TRUE;
+		acquisitionParameters.channelSettings[ch].range = index + 2;
 		unitOpened.channelSettings[ch].range = index + 2;
 	} else if (index == 9) {
 		// set auto range
 	} else {
+		acquisitionParameters.channelSettings[ch].enabled = FALSE;
 		unitOpened.channelSettings[ch].enabled = FALSE;
 	}
 	daq::set_defaults();

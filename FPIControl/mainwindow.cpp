@@ -349,7 +349,7 @@ void MainWindow::updateAcquisitionParameters(ACQUISITION_PARAMETERS acquisitionP
 	ui->sampleNumber->setValue(acquisitionParameters.no_of_samples);
 	// set range
 	ui->chARange->setCurrentIndex(acquisitionParameters.channelSettings[0].range - 2);
-	ui->chBRange->setCurrentIndex(acquisitionParameters.channelSettings[0].range - 2);
+	ui->chBRange->setCurrentIndex(acquisitionParameters.channelSettings[1].range - 2);
 	// set coupling
 	ui->chACoupling->setCurrentIndex(acquisitionParameters.channelSettings[0].DCcoupled);
 	ui->chBCoupling->setCurrentIndex(acquisitionParameters.channelSettings[1].DCcoupled);
