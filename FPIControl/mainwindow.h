@@ -47,6 +47,7 @@ private slots:
 	void on_derivativeTerm_valueChanged(const double value);
 	void on_frequency_valueChanged(const double value);
 	void on_phase_valueChanged(const double value);
+	void on_resetLockButton_clicked();
 
 	// SLOTS for updating the plots
 	void updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &data);

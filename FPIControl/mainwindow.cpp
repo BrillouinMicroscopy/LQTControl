@@ -293,6 +293,9 @@ void MainWindow::on_frequency_valueChanged(const double value) {
 void MainWindow::on_phase_valueChanged(const double value) {
 	d.setLockParameters(4, value);
 }
+void MainWindow::on_resetLockButton_clicked() {
+	d.resetLock();
+}
 
 void MainWindow::updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &data) {
 	if (view == 0) {

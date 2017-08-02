@@ -71,6 +71,7 @@ typedef struct {
 	std::vector<int32_t> voltage;	// [µV]	output voltage (<int32_t> is sufficient for this)
 	std::vector<int32_t> intensity;	// [µV]	measured intensity (<int32_t> is fine)
 	std::vector<double> error;		// [1]	PDH error signal
+	double iError = 0;				// [1]	integral value of the error signal
 } LOCK_DATA;
 
 class daq : public QObject {
@@ -83,6 +84,7 @@ class daq : public QObject {
 		bool startStopLocking();
 		void getBlockData();
 		void lock();
+		void resetLock();
 		QVector<QPointF> getStreamingBuffer(int ch);
 		bool connect();
 		bool disconnect();

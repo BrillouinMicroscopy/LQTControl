@@ -402,12 +402,6 @@ void daq::lock() {
 
 	std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
 
-	// write data to struct for storage
-	lockData.time.push_back(now);
-
-
-	double passed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lockData.time[0]).count() / 1e3;	// store passed time in seconds
-
 	std::vector<double> tau(values[0].begin(), values[0].end());
 	std::vector<double> reference(values[1].begin(), values[1].end());
 
@@ -427,7 +421,13 @@ void daq::lock() {
 	double error = pdh.getError(tau, reference);
 
 	if (lockParameters.active) {
-		currentVoltage = currentVoltage + lockParameters.proportional * error / 100;
+		double dError = 0;
+		if (lockData.error.size() > 0) {
+			double dt = std::chrono::duration_cast<std::chrono::milliseconds>(now - lockData.time.back()).count() / 1e3;
+			lockData.iError += ( lockData.error.back() + error ) * (dt) / 2;
+			dError = (error - lockData.error.back()) / dt;
+		}
+		currentVoltage = currentVoltage + (lockParameters.proportional * error + lockParameters.integral * lockData.iError + lockParameters.derivative * dError) / 100;
 
 		ps2000_set_sig_gen_built_in(
 			unitOpened.handle,				// handle of the oscilloscope
@@ -443,12 +443,24 @@ void daq::lock() {
 		);
 	}
 
+	// write data to struct for storage
+	lockData.time.push_back(now);
+	lockData.error.push_back(error);
+	lockData.intensity.push_back(intensity);
+	lockData.voltage.push_back(currentVoltage);
+
+	double passed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lockData.time[0]).count() / 1e3;	// store passed time in seconds
+
 	// write data to array for plotting
 	lockDataPlot[static_cast<int>(daq::lockViewPlotTypes::VOLTAGE)].append(QPointF(passed, currentVoltage));
 	lockDataPlot[static_cast<int>(daq::lockViewPlotTypes::ERRORSIGNAL)].append(QPointF(passed, error / 100));
 	lockDataPlot[static_cast<int>(daq::lockViewPlotTypes::INTENSITY)].append(QPointF(passed, intensity));
 
 	emit locked(lockDataPlot);
+}
+
+void daq::resetLock() {
+	lockData.iError = 0;
 }
 
 QVector<QPointF> daq::getStreamingBuffer(int ch) {
