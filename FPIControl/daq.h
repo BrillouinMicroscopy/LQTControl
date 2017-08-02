@@ -36,7 +36,7 @@ typedef struct {
 	int32_t 	time_indisposed_ms;
 	int16_t		timebase = 10;
 	DEFAULT_CHANNEL_SETTINGS channelSettings[2] = {
-		{0, PS2000_RANGE::PS2000_500MV, TRUE},
+		{0, PS2000_RANGE::PS2000_200MV, TRUE},
 		{0, PS2000_RANGE::PS2000_500MV, TRUE}
 	};
 } ACQUISITION_PARAMETERS;
@@ -58,8 +58,8 @@ typedef struct {
 
 typedef struct {
 	double proportional = 0.01;		//		control parameter of the proportional part
-	double integral = 0.01;			//		control parameter of the integral part
-	double derivative = 0.01;		//		control parameter of the derivative part
+	double integral = 0.005;			//		control parameter of the integral part
+	double derivative = 0.0;		//		control parameter of the derivative part
 	double frequency = 5000;		// [Hz] approx. frequency of the reference signal
 	double phase = 0;				// [°]	phase shift between reference and detector signal
 	bool compensate = FALSE;		//		compensate the offset?
