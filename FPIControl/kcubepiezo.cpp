@@ -1,7 +1,5 @@
 #include "kcubepiezo.h"
 
-char const * serialNo = "45850894";
-
 void kcubepiezo::connect() {
 	PCC_Open(serialNo);
 	// start the device polling at 200ms intervals

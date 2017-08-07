@@ -23,7 +23,7 @@ public:
 
 	double outputVoltage = 0.0;
 
-	char const * serialNo;
+	char const * serialNo = "29501039";	// serial number of the KCube Piezo device (can be found in Kinesis) TODO: make this a changeable parameter
 
 	DEFAULT_SETTINGS defaultSettings;
 
