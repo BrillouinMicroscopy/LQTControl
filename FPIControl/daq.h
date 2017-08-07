@@ -65,8 +65,8 @@ typedef struct {
 	bool active = FALSE;			//		locking enabled?
 	bool compensate = FALSE;		//		compensate the offset?
 	bool compensating = FALSE;		//		is it currently compensating?
-	double maxOffset = 1.0;			// [V]	maximum voltage of the external input before the offset compensation kicks in
-	double targetOffset = 0.2;		// [V]	target voltage of the offset compensation
+	double maxOffset = 0.4;			// [V]	maximum voltage of the external input before the offset compensation kicks in
+	double targetOffset = 0.1;		// [V]	target voltage of the offset compensation
 } LOCK_PARAMETERS;
 
 typedef struct {
@@ -88,8 +88,8 @@ class daq : public QObject {
 		void getBlockData();
 		void lock();
 		void resetLock();
-		void enablePiezo();
-		void disablePiezo();
+		bool enablePiezo();
+		bool disablePiezo();
 		QVector<QPointF> getStreamingBuffer(int ch);
 		bool connect();
 		bool disconnect();
@@ -106,6 +106,7 @@ class daq : public QObject {
 		void setNumberSamples(int32_t no_of_samples);
 		void setScanParameters(int type, int value);
 		void setLockParameters(int type, double value);
+		void toggleOffsetCompensation(bool compensate);
 		void scanManual();
 		SCAN_PARAMETERS getScanParameters();
 		SCAN_DATA getScanData();
@@ -115,6 +116,7 @@ class daq : public QObject {
 		std::array<QVector<QPointF>, 3> lockDataPlot;
 
 		double currentVoltage = 0;
+		int compensationTimer = 0;
 
 		enum class liveViewPlotTypes {
 			CHANNEL_A,

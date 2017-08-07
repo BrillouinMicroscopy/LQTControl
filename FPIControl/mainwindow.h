@@ -28,6 +28,8 @@ private slots:
 	void on_actionDisconnect_triggered();
 	void on_actionConnect_Piezo_triggered();
 	void on_actionDisconnect_Piezo_triggered();
+	void on_actionEnable_Piezo_triggered();
+	void on_actionDisable_Piezo_triggered();
 	void on_scanButton_clicked();
 	void on_scanButtonManual_clicked();
 	// SLOTS for setting the acquisitionParameters

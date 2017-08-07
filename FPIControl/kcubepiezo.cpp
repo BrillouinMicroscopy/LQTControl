@@ -35,6 +35,10 @@ double kcubepiezo::getVoltage() {
 	return maxVoltage * relativeVoltage / (pow(2, 15) - 1) / 10;
 }
 
+void kcubepiezo::setVoltageSource(PZ_InputSourceFlags source) {
+	PCC_SetVoltageSource(serialNo, source);
+}
+
 void kcubepiezo::setVoltage(double voltage) {
 	double maxVoltage = PCC_GetMaxOutputVoltage(serialNo);
 	double relativeVoltage = voltage / maxVoltage * (pow(2, 15) - 1) * 10;
@@ -43,5 +47,6 @@ void kcubepiezo::setVoltage(double voltage) {
 
 void kcubepiezo::incrementVoltage(int direction) {
 	int relativeVoltage = PCC_GetOutputVoltage(serialNo);
-	PCC_SetOutputVoltage(serialNo, relativeVoltage + direction);
+	int newVoltage = relativeVoltage + direction;
+	PCC_SetOutputVoltage(serialNo, newVoltage);
 }

@@ -296,14 +296,12 @@ void MainWindow::on_phase_valueChanged(const double value) {
 void MainWindow::on_resetLockButton_clicked() {
 	d.resetLock();
 }
-
 void MainWindow::on_offsetCheckBox_clicked(const bool checked) {
 	if (checked) {
-		d.enablePiezo();
+		d.toggleOffsetCompensation(checked);
 	} else {
-		d.disablePiezo();
+		d.toggleOffsetCompensation(checked);
 	}
-	
 }
 
 void MainWindow::updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &data) {
@@ -464,6 +462,30 @@ void MainWindow::on_actionDisconnect_Piezo_triggered() {
 	else {
 		ui->actionConnect_Piezo->setEnabled(true);
 		ui->actionDisconnect_Piezo->setEnabled(false);
+	}
+}
+
+void MainWindow::on_actionEnable_Piezo_triggered() {
+	bool enabled = d.enablePiezo();
+	if (enabled) {
+		ui->actionEnable_Piezo->setEnabled(false);
+		ui->actionDisable_Piezo->setEnabled(true);
+	}
+	else {
+		ui->actionEnable_Piezo->setEnabled(true);
+		ui->actionDisable_Piezo->setEnabled(false);
+	}
+}
+
+void MainWindow::on_actionDisable_Piezo_triggered() {
+	bool enabled = d.disablePiezo();
+	if (enabled) {
+		ui->actionEnable_Piezo->setEnabled(false);
+		ui->actionDisable_Piezo->setEnabled(true);
+	}
+	else {
+		ui->actionEnable_Piezo->setEnabled(true);
+		ui->actionDisable_Piezo->setEnabled(false);
 	}
 }
 

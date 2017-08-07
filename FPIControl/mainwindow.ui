@@ -53,7 +53,7 @@
          <x>0</x>
          <y>0</y>
          <width>278</width>
-         <height>916</height>
+         <height>944</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -1071,7 +1071,7 @@
      <x>0</x>
      <y>0</y>
      <width>1335</width>
-     <height>31</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">
@@ -1093,6 +1093,8 @@
     <addaction name="separator"/>
     <addaction name="actionConnect_Piezo"/>
     <addaction name="actionDisconnect_Piezo"/>
+    <addaction name="actionEnable_Piezo"/>
+    <addaction name="actionDisable_Piezo"/>
    </widget>
    <addaction name="menuFiles"/>
    <addaction name="menuDevice"/>
@@ -1137,8 +1139,24 @@
    </property>
   </action>
   <action name="actionDisconnect_Piezo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Disconnect Piezo</string>
+   </property>
+  </action>
+  <action name="actionEnable_Piezo">
+   <property name="text">
+    <string>Enable Piezo Output</string>
+   </property>
+  </action>
+  <action name="actionDisable_Piezo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Disable Piezo Output</string>
    </property>
   </action>
  </widget>

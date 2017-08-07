@@ -6,7 +6,7 @@
 
 typedef struct {
 	short maxVoltage = 750;										// maximum output voltage
-	PZ_InputSourceFlags source = PZ_InputSourceFlags::PZ_All;	// voltage input source
+	PZ_InputSourceFlags source = PZ_InputSourceFlags::PZ_Potentiometer;	// voltage input source
 	PZ_ControlModeTypes mode = PZ_ControlModeTypes::PZ_OpenLoop;// mode type
 } DEFAULT_SETTINGS;
 
@@ -19,6 +19,7 @@ public:
 	void disable();
 	void setDefaults();
 	double getVoltage();
+	void setVoltageSource(PZ_InputSourceFlags source);
 	void setVoltage(double voltage);
 	void incrementVoltage(int direction);
 

@@ -158,6 +158,12 @@ bool daq::startStopAcquireLocking() {
 
 bool daq::startStopLocking() {
 	lockParameters.active = !lockParameters.active;
+	// set voltage source to potentiometer when locking is not active
+	if (lockParameters.active) {
+		piezo.setVoltageSource(PZ_InputSourceFlags::PZ_ExternalSignal);
+	} else {
+		piezo.setVoltageSource(PZ_InputSourceFlags::PZ_Potentiometer);
+	}
 	return lockParameters.active;
 }
 
@@ -234,6 +240,10 @@ void daq::setLockParameters(int type, double value) {
 			lockParameters.phase = value;
 			break;
 	}
+}
+
+void daq::toggleOffsetCompensation(bool compensate) {
+	lockParameters.compensate = compensate;
 }
 
 void daq::setAcquisitionParameters() {
@@ -437,13 +447,15 @@ void daq::lock() {
 
 		// check if offset compensation is necessary and set piezo voltage
 		if (lockParameters.compensate) {
+			compensationTimer++;
 			if (abs(currentVoltage) > lockParameters.maxOffset) {
 				lockParameters.compensating = TRUE;
 			}
 			if (abs(currentVoltage) < lockParameters.targetOffset) {
 				lockParameters.compensating = FALSE;
 			}
-			if (lockParameters.compensating) {
+			if (lockParameters.compensating & (compensationTimer > 200)) {
+				compensationTimer = 0;
 				if (currentVoltage > 0) {
 					piezo.incrementVoltage(1);
 				}
@@ -490,12 +502,14 @@ void daq::resetLock() {
 	lockData.iError = 0;
 }
 
-void daq::enablePiezo() {
+bool daq::enablePiezo() {
 	piezo.enable();
+	return TRUE;
 }
 
-void daq::disablePiezo() {
+bool daq::disablePiezo() {
 	piezo.disable();
+	return FALSE;
 }
 
 QVector<QPointF> daq::getStreamingBuffer(int ch) {
