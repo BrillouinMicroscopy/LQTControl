@@ -85,9 +85,13 @@ class daq : public QObject {
 		void getBlockData();
 		void lock();
 		void resetLock();
+		void enablePiezo();
+		void disablePiezo();
 		QVector<QPointF> getStreamingBuffer(int ch);
 		bool connect();
 		bool disconnect();
+		bool connectPiezo();
+		bool disconnectPiezo();
 		void startStreaming();
 		void collectStreamingData();
 		void stopStreaming();

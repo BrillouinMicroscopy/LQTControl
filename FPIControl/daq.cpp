@@ -1,4 +1,5 @@
 #include "daq.h"
+#include "kcubepiezo.h"
 #include "FPI.h"
 #include "PDH.h"
 #include <QtWidgets>
@@ -120,6 +121,7 @@ int32_t input_ranges[PS2000_MAX_RANGES] = { 10, 20, 50, 100, 200, 500, 1000, 200
 
 FPI fpi;
 PDH pdh;
+kcubepiezo piezo;
 
 daq::daq(QObject *parent) :
 	QObject(parent) {
@@ -467,6 +469,14 @@ void daq::resetLock() {
 	lockData.iError = 0;
 }
 
+void daq::enablePiezo() {
+	piezo.enable();
+}
+
+void daq::disablePiezo() {
+	piezo.disable();
+}
+
 QVector<QPointF> daq::getStreamingBuffer(int ch) {
 	QVector<QPointF> data;
 	//data.reserve(unitOpened.trigger.advanced.totalSamples);
@@ -729,6 +739,16 @@ bool daq::disconnect() {
 		unitOpened.handle = NULL;
 	}
 	return false;
+}
+
+bool daq::connectPiezo() {
+	piezo.connect();
+	return TRUE;
+}
+
+bool daq::disconnectPiezo() {
+	piezo.disconnect();
+	return FALSE;
 }
 
 void daq::get_info(void) {
