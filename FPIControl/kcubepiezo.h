@@ -20,6 +20,7 @@ public:
 	void setDefaults();
 	double getVoltage();
 	void setVoltage(double voltage);
+	void incrementVoltage(int direction);
 
 	double outputVoltage = 0.0;
 

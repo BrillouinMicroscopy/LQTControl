@@ -62,8 +62,11 @@ typedef struct {
 	double derivative = 0.0;		//		control parameter of the derivative part
 	double frequency = 5000;		// [Hz] approx. frequency of the reference signal
 	double phase = 0;				// [°]	phase shift between reference and detector signal
-	bool compensate = FALSE;		//		compensate the offset?
 	bool active = FALSE;			//		locking enabled?
+	bool compensate = FALSE;		//		compensate the offset?
+	bool compensating = FALSE;		//		is it currently compensating?
+	double maxOffset = 1.0;			// [V]	maximum voltage of the external input before the offset compensation kicks in
+	double targetOffset = 0.2;		// [V]	target voltage of the offset compensation
 } LOCK_PARAMETERS;
 
 typedef struct {

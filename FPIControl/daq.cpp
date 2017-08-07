@@ -435,6 +435,27 @@ void daq::lock() {
 		}
 		currentVoltage = currentVoltage + (lockParameters.proportional * error + lockParameters.integral * lockData.iError + lockParameters.derivative * dError) / 100;
 
+		// check if offset compensation is necessary and set piezo voltage
+		if (lockParameters.compensate) {
+			if (abs(currentVoltage) > lockParameters.maxOffset) {
+				lockParameters.compensating = TRUE;
+			}
+			if (abs(currentVoltage) < lockParameters.targetOffset) {
+				lockParameters.compensating = FALSE;
+			}
+			if (lockParameters.compensating) {
+				if (currentVoltage > 0) {
+					piezo.incrementVoltage(1);
+				}
+				else {
+					piezo.incrementVoltage(-1);
+				}
+			}
+		} else {
+			lockParameters.compensating = FALSE;
+		}
+
+		// set output voltage of the DAQ
 		ps2000_set_sig_gen_built_in(
 			unitOpened.handle,				// handle of the oscilloscope
 			currentVoltage * 1e6,			// offsetVoltage in microvolt
