@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1335</width>
-    <height>1005</height>
+    <height>959</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,7 +28,7 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>280</width>
+        <width>290</width>
         <height>0</height>
        </size>
       </property>
@@ -52,8 +52,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>278</width>
-         <height>944</height>
+         <width>288</width>
+         <height>870</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -64,8 +64,8 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>250</width>
-         <height>685</height>
+         <width>260</width>
+         <height>870</height>
         </size>
        </property>
        <widget class="QGroupBox" name="ScanBox">
@@ -306,7 +306,7 @@
           <x>10</x>
           <y>530</y>
           <width>250</width>
-          <height>241</height>
+          <height>211</height>
          </rect>
         </property>
         <property name="title">
@@ -355,7 +355,7 @@
          <property name="geometry">
           <rect>
            <x>165</x>
-           <y>200</y>
+           <y>170</y>
            <width>75</width>
            <height>34</height>
           </rect>
@@ -443,7 +443,7 @@
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>200</y>
+           <y>170</y>
            <width>75</width>
            <height>34</height>
           </rect>
@@ -494,7 +494,7 @@
          <property name="geometry">
           <rect>
            <x>88</x>
-           <y>200</y>
+           <y>170</y>
            <width>74</width>
            <height>34</height>
           </rect>
@@ -539,64 +539,6 @@
          </property>
          <property name="text">
           <string>Phase [°]</string>
-         </property>
-        </widget>
-        <widget class="QCheckBox" name="offsetCheckBox">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="geometry">
-          <rect>
-           <x>218</x>
-           <y>170</y>
-           <width>20</width>
-           <height>25</height>
-          </rect>
-         </property>
-         <property name="layoutDirection">
-          <enum>Qt::RightToLeft</enum>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-        <widget class="QLabel" name="offsetLabel">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>170</y>
-           <width>161</width>
-           <height>25</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Offset Compensation</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="incrementVoltage">
-         <property name="geometry">
-          <rect>
-           <x>120</x>
-           <y>165</y>
-           <width>51</width>
-           <height>34</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Up</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="decrementVoltage">
-         <property name="geometry">
-          <rect>
-           <x>170</x>
-           <y>165</y>
-           <width>51</width>
-           <height>34</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Down</string>
          </property>
         </widget>
        </widget>
@@ -987,6 +929,122 @@
          </item>
         </widget>
        </widget>
+       <widget class="QGroupBox" name="PiezoBox">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>750</y>
+          <width>250</width>
+          <height>111</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Piezo Control</string>
+        </property>
+        <widget class="QCheckBox" name="offsetCheckBox">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>219</x>
+           <y>80</y>
+           <width>20</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+        <widget class="QLabel" name="offsetLabel">
+         <property name="geometry">
+          <rect>
+           <x>12</x>
+           <y>80</y>
+           <width>191</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Auto offset compensation</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="decrementVoltage">
+         <property name="geometry">
+          <rect>
+           <x>155</x>
+           <y>45</y>
+           <width>40</width>
+           <height>34</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>-</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="incrementVoltage">
+         <property name="geometry">
+          <rect>
+           <x>200</x>
+           <y>45</y>
+           <width>40</width>
+           <height>34</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>+</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="enablePiezoLabel">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>161</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Enable output</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="enablePiezoCheckBox">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>219</x>
+           <y>20</y>
+           <width>20</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+        <widget class="QLabel" name="incrementVoltageLabel">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>50</y>
+           <width>131</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Increment voltage</string>
+         </property>
+        </widget>
+       </widget>
       </widget>
      </widget>
     </item>
@@ -1080,7 +1138,7 @@
         <widget class="QtCharts::QChartView" name="plotAxes" native="true">
          <property name="minimumSize">
           <size>
-           <width>700</width>
+           <width>270</width>
            <height>400</height>
           </size>
          </property>
@@ -1097,7 +1155,7 @@
      <x>0</x>
      <y>0</y>
      <width>1335</width>
-     <height>21</height>
+     <height>31</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">
@@ -1119,8 +1177,6 @@
     <addaction name="separator"/>
     <addaction name="actionConnect_Piezo"/>
     <addaction name="actionDisconnect_Piezo"/>
-    <addaction name="actionEnable_Piezo"/>
-    <addaction name="actionDisable_Piezo"/>
    </widget>
    <addaction name="menuFiles"/>
    <addaction name="menuDevice"/>

@@ -473,27 +473,12 @@ void MainWindow::on_actionDisconnect_Piezo_triggered() {
 	}
 }
 
-void MainWindow::on_actionEnable_Piezo_triggered() {
-	bool enabled = d.enablePiezo();
-	if (enabled) {
-		ui->actionEnable_Piezo->setEnabled(false);
-		ui->actionDisable_Piezo->setEnabled(true);
+void MainWindow::on_enablePiezoCheckBox_clicked(const bool checked) {
+	if (checked) {
+		d.enablePiezo();
 	}
 	else {
-		ui->actionEnable_Piezo->setEnabled(true);
-		ui->actionDisable_Piezo->setEnabled(false);
-	}
-}
-
-void MainWindow::on_actionDisable_Piezo_triggered() {
-	bool enabled = d.disablePiezo();
-	if (enabled) {
-		ui->actionEnable_Piezo->setEnabled(false);
-		ui->actionDisable_Piezo->setEnabled(true);
-	}
-	else {
-		ui->actionEnable_Piezo->setEnabled(true);
-		ui->actionDisable_Piezo->setEnabled(false);
+		d.disablePiezo();
 	}
 }
 
