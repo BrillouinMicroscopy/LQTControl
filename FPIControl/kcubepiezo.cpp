@@ -54,6 +54,10 @@ void kcubepiezo::storeOutputVoltageIncrement() {
 	outputVoltageIncrement = getVoltageIncrement();
 }
 
+void kcubepiezo::restoreOutputVoltageIncrement() {
+	PCC_SetOutputVoltage(serialNo, outputVoltageIncrement);
+}
+
 void kcubepiezo::setVoltageIncrement(int voltage) {
 	PCC_SetOutputVoltage(serialNo, voltage);
 }

@@ -25,6 +25,7 @@ public:
 	void setVoltageSource(PZ_InputSourceFlags source);
 	void incrementVoltage(int direction);
 	void storeOutputVoltageIncrement();
+	void restoreOutputVoltageIncrement();
 
 	char const * serialNo = "29501039";	// serial number of the KCube Piezo device (can be found in Kinesis) TODO: make this a changeable parameter
 

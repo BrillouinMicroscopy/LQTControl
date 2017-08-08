@@ -160,7 +160,11 @@ bool daq::startStopLocking() {
 	lockParameters.active = !lockParameters.active;
 	// set voltage source to potentiometer when locking is not active
 	if (lockParameters.active) {
+		// store and immediately restore output voltage
 		piezo.storeOutputVoltageIncrement();
+		// this is necessary, because it seems, that getting the output voltage takes the external signal into account
+		// whereas setting it does not
+		piezo.restoreOutputVoltageIncrement();
 		piezo.setVoltageSource(PZ_InputSourceFlags::PZ_ExternalSignal);
 	} else {
 		piezo.setVoltageSource(PZ_InputSourceFlags::PZ_Potentiometer);
