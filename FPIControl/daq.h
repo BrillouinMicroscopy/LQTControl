@@ -90,6 +90,8 @@ class daq : public QObject {
 		void resetLock();
 		bool enablePiezo();
 		bool disablePiezo();
+		void incrementPiezoVoltage();
+		void decrementPiezoVoltage();
 		QVector<QPointF> getStreamingBuffer(int ch);
 		bool connect();
 		bool disconnect();

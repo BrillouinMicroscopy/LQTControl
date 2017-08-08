@@ -54,6 +54,9 @@ private slots:
 	void on_resetLockButton_clicked();
 	void on_offsetCheckBox_clicked(const bool checked);
 
+	void on_incrementVoltage_clicked();
+	void on_decrementVoltage_clicked();
+
 	// SLOTS for updating the plots
 	void updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &data);
 	void updateScanView();

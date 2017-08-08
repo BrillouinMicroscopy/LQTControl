@@ -19,16 +19,19 @@ public:
 	void disable();
 	void setDefaults();
 	double getVoltage();
-	void setVoltageSource(PZ_InputSourceFlags source);
 	void setVoltage(double voltage);
+	void setVoltageIncrement(int voltage);
+	int getVoltageIncrement();
+	void setVoltageSource(PZ_InputSourceFlags source);
 	void incrementVoltage(int direction);
-
-	double outputVoltage = 0.0;
+	void storeOutputVoltageIncrement();
 
 	char const * serialNo = "29501039";	// serial number of the KCube Piezo device (can be found in Kinesis) TODO: make this a changeable parameter
 
 	DEFAULT_SETTINGS defaultSettings;
 
+private:
+	int outputVoltageIncrement = 0;
 };
 
 #endif // KCUBEPIEZO_H

@@ -573,6 +573,32 @@
           <string>Offset Compensation</string>
          </property>
         </widget>
+        <widget class="QPushButton" name="incrementVoltage">
+         <property name="geometry">
+          <rect>
+           <x>120</x>
+           <y>165</y>
+           <width>51</width>
+           <height>34</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Up</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="decrementVoltage">
+         <property name="geometry">
+          <rect>
+           <x>170</x>
+           <y>165</y>
+           <width>51</width>
+           <height>34</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Down</string>
+         </property>
+        </widget>
        </widget>
        <widget class="QGroupBox" name="AcquisitionBox">
         <property name="geometry">

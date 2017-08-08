@@ -304,6 +304,14 @@ void MainWindow::on_offsetCheckBox_clicked(const bool checked) {
 	}
 }
 
+void MainWindow::on_incrementVoltage_clicked() {
+	d.incrementPiezoVoltage();
+}
+
+void MainWindow::on_decrementVoltage_clicked() {
+	d.decrementPiezoVoltage();
+}
+
 void MainWindow::updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &data) {
 	if (view == 0) {
 		int channel = 0;

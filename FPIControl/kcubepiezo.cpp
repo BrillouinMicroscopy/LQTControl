@@ -46,7 +46,18 @@ void kcubepiezo::setVoltage(double voltage) {
 }
 
 void kcubepiezo::incrementVoltage(int direction) {
-	int relativeVoltage = PCC_GetOutputVoltage(serialNo);
-	int newVoltage = relativeVoltage + direction;
-	PCC_SetOutputVoltage(serialNo, newVoltage);
+	outputVoltageIncrement += direction;
+	PCC_SetOutputVoltage(serialNo, outputVoltageIncrement);
+}
+
+void kcubepiezo::storeOutputVoltageIncrement() {
+	outputVoltageIncrement = getVoltageIncrement();
+}
+
+void kcubepiezo::setVoltageIncrement(int voltage) {
+	PCC_SetOutputVoltage(serialNo, voltage);
+}
+
+int kcubepiezo::getVoltageIncrement() {
+	return PCC_GetOutputVoltage(serialNo);
 }
