@@ -1,4 +1,5 @@
 #include "daq.h"
+#include "kcubepiezo.h"
 #include "FPI.h"
 #include "PDH.h"
 #include <QtWidgets>
@@ -120,6 +121,7 @@ int32_t input_ranges[PS2000_MAX_RANGES] = { 10, 20, 50, 100, 200, 500, 1000, 200
 
 FPI fpi;
 PDH pdh;
+kcubepiezo piezo;
 
 daq::daq(QObject *parent) :
 	QObject(parent) {
@@ -156,6 +158,17 @@ bool daq::startStopAcquireLocking() {
 
 bool daq::startStopLocking() {
 	lockParameters.active = !lockParameters.active;
+	// set voltage source to potentiometer when locking is not active
+	if (lockParameters.active) {
+		// store and immediately restore output voltage
+		piezo.storeOutputVoltageIncrement();
+		// this is necessary, because it seems, that getting the output voltage takes the external signal into account
+		// whereas setting it does not
+		piezo.restoreOutputVoltageIncrement();
+		piezo.setVoltageSource(PZ_InputSourceFlags::PZ_ExternalSignal);
+	} else {
+		piezo.setVoltageSource(PZ_InputSourceFlags::PZ_Potentiometer);
+	}
 	return lockParameters.active;
 }
 
@@ -232,6 +245,10 @@ void daq::setLockParameters(int type, double value) {
 			lockParameters.phase = value;
 			break;
 	}
+}
+
+void daq::toggleOffsetCompensation(bool compensate) {
+	lockParameters.compensate = compensate;
 }
 
 void daq::setAcquisitionParameters() {
@@ -433,6 +450,34 @@ void daq::lock() {
 		}
 		currentVoltage = currentVoltage + (lockParameters.proportional * error + lockParameters.integral * lockData.iError + lockParameters.derivative * dError) / 100;
 
+		// check if offset compensation is necessary and set piezo voltage
+		if (lockParameters.compensate) {
+			compensationTimer++;
+			if (abs(currentVoltage) > lockParameters.maxOffset) {
+				lockParameters.compensating = TRUE;
+			}
+			if (abs(currentVoltage) < lockParameters.targetOffset) {
+				lockParameters.compensating = FALSE;
+			}
+			if (lockParameters.compensating & (compensationTimer > 50)) {
+				compensationTimer = 0;
+				if (currentVoltage > 0) {
+					piezo.incrementVoltage(1);
+				}
+				else {
+					piezo.incrementVoltage(-1);
+				}
+			}
+		} else {
+			lockParameters.compensating = FALSE;
+		}
+
+		// abort locking if output voltage is over 2 V
+		if (abs(currentVoltage) > 2) {
+			lockParameters.active = FALSE;
+		}
+
+		// set output voltage of the DAQ
 		ps2000_set_sig_gen_built_in(
 			unitOpened.handle,				// handle of the oscilloscope
 			currentVoltage * 1e6,			// offsetVoltage in microvolt
@@ -465,6 +510,24 @@ void daq::lock() {
 
 void daq::resetLock() {
 	lockData.iError = 0;
+}
+
+bool daq::enablePiezo() {
+	piezo.enable();
+	return TRUE;
+}
+
+bool daq::disablePiezo() {
+	piezo.disable();
+	return FALSE;
+}
+
+void daq::incrementPiezoVoltage() {
+	piezo.incrementVoltage(1);
+}
+
+void daq::decrementPiezoVoltage() {
+	piezo.incrementVoltage(-1);
 }
 
 QVector<QPointF> daq::getStreamingBuffer(int ch) {
@@ -729,6 +792,16 @@ bool daq::disconnect() {
 		unitOpened.handle = NULL;
 	}
 	return false;
+}
+
+bool daq::connectPiezo() {
+	piezo.connect();
+	return TRUE;
+}
+
+bool daq::disconnectPiezo() {
+	piezo.disconnect();
+	return FALSE;
 }
 
 void daq::get_info(void) {

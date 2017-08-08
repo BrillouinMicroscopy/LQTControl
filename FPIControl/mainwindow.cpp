@@ -296,6 +296,21 @@ void MainWindow::on_phase_valueChanged(const double value) {
 void MainWindow::on_resetLockButton_clicked() {
 	d.resetLock();
 }
+void MainWindow::on_offsetCheckBox_clicked(const bool checked) {
+	if (checked) {
+		d.toggleOffsetCompensation(checked);
+	} else {
+		d.toggleOffsetCompensation(checked);
+	}
+}
+
+void MainWindow::on_incrementVoltage_clicked() {
+	d.incrementPiezoVoltage();
+}
+
+void MainWindow::on_decrementVoltage_clicked() {
+	d.decrementPiezoVoltage();
+}
 
 void MainWindow::updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &data) {
 	if (view == 0) {
@@ -431,6 +446,39 @@ void MainWindow::on_actionDisconnect_triggered() {
 		ui->actionConnect->setEnabled(true);
 		ui->actionDisconnect->setEnabled(false);
 		ui->statusBar->showMessage("Successfully disconnected", 2000);
+	}
+}
+
+void MainWindow::on_actionConnect_Piezo_triggered() {
+	bool connected = d.connectPiezo();
+	if (connected) {
+		ui->actionConnect_Piezo->setEnabled(false);
+		ui->actionDisconnect_Piezo->setEnabled(true);
+	}
+	else {
+		ui->actionConnect_Piezo->setEnabled(true);
+		ui->actionDisconnect_Piezo->setEnabled(false);
+	}
+}
+
+void MainWindow::on_actionDisconnect_Piezo_triggered() {
+	bool connected = d.disconnectPiezo();
+	if (connected) {
+		ui->actionConnect_Piezo->setEnabled(false);
+		ui->actionDisconnect_Piezo->setEnabled(true);
+	}
+	else {
+		ui->actionConnect_Piezo->setEnabled(true);
+		ui->actionDisconnect_Piezo->setEnabled(false);
+	}
+}
+
+void MainWindow::on_enablePiezoCheckBox_clicked(const bool checked) {
+	if (checked) {
+		d.enablePiezo();
+	}
+	else {
+		d.disablePiezo();
 	}
 }
 
