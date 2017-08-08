@@ -468,6 +468,11 @@ void daq::lock() {
 			lockParameters.compensating = FALSE;
 		}
 
+		// abort locking if output voltage is over 2 V
+		if (abs(currentVoltage) > 2) {
+			lockParameters.active = FALSE;
+		}
+
 		// set output voltage of the DAQ
 		ps2000_set_sig_gen_built_in(
 			unitOpened.handle,				// handle of the oscilloscope
