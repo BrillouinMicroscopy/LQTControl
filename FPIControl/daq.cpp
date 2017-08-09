@@ -441,6 +441,17 @@ void daq::lock() {
 
 	double intensity = generalmath::absSum(tau);
 
+	// adjust for requested phase
+	double samplingRate = 200e6 / pow(2, acquisitionParameters.timebase);
+	int phaseStep = (int)lockParameters.phase * samplingRate / (360 * lockParameters.frequency);
+	if (phaseStep > 0) {
+		// simple rotation to the left
+		std::rotate(reference.begin(), reference.begin() + phaseStep, reference.end());
+	} else if (phaseStep < 0) {
+		// simple rotation to the right
+		std::rotate(reference.rbegin(), reference.rbegin() + phaseStep, reference.rend());
+	}
+
 	double error = pdh.getError(tau, reference);
 
 	if (lockParameters.active) {
