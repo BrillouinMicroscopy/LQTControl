@@ -160,6 +160,8 @@ bool daq::startStopLocking() {
 	lockParameters.active = !lockParameters.active;
 	// set voltage source to potentiometer when locking is not active
 	if (lockParameters.active) {
+		// set integral error to zero before starting to lock
+		lockData.iError = 0;
 		// store and immediately restore output voltage
 		piezo.storeOutputVoltageIncrement();
 		// this is necessary, because it seems, that getting the output voltage takes the external signal into account
@@ -445,10 +447,10 @@ void daq::lock() {
 		double dError = 0;
 		if (lockData.error.size() > 0) {
 			double dt = std::chrono::duration_cast<std::chrono::milliseconds>(now - lockData.time.back()).count() / 1e3;
-			lockData.iError += ( lockData.error.back() + error ) * (dt) / 2;
+			lockData.iError += lockParameters.integral * ( lockData.error.back() + error ) * (dt) / 2;
 			dError = (error - lockData.error.back()) / dt;
 		}
-		currentVoltage = currentVoltage + (lockParameters.proportional * error + lockParameters.integral * lockData.iError + lockParameters.derivative * dError) / 100;
+		currentVoltage = currentVoltage + (lockParameters.proportional * error + lockData.iError + lockParameters.derivative * dError) / 100;
 
 		// check if offset compensation is necessary and set piezo voltage
 		if (lockParameters.compensate) {
