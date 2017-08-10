@@ -146,7 +146,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->statusBar->addPermanentWidget(lockInfo, 1);
 
 	// Locking indicator
-	IndicatorWidget *lockIndicator = new IndicatorWidget();
+	lockIndicator = new IndicatorWidget();
 	lockIndicator->turnOn();
 	lockIndicator->setMinimumSize(26, 24);
 	ui->statusBar->addPermanentWidget(lockIndicator, 0);

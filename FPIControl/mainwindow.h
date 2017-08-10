@@ -24,13 +24,13 @@ public:
 		return m_on;
 	}
 
-	public slots:
-		void turnOff() { setOn(false); }
-		void turnOn() { setOn(true); }
-		/* states */
-		void failure() { setColor(QColor(246, 12, 0)); }	// failure
-		void inactive() { setColor(QColor(246, 180, 0)); }	// inactive
-		void active() { setColor(QColor(177, 243, 0)); }	// active, no error
+public slots:
+	void turnOff() { setOn(false); }
+	void turnOn() { setOn(true); }
+	/* states */
+	void failure() { setColor(QColor(246, 12, 0)); }	// failure
+	void inactive() { setColor(QColor(246, 180, 0)); }	// inactive
+	void active() { setColor(QColor(177, 243, 0)); }	// active, no error
 
 protected:
 	void paintEvent(QPaintEvent *) override {
