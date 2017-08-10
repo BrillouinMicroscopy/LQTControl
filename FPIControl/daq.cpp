@@ -168,8 +168,10 @@ bool daq::startStopLocking() {
 		// whereas setting it does not
 		piezo.restoreOutputVoltageIncrement();
 		piezo.setVoltageSource(PZ_InputSourceFlags::PZ_ExternalSignal);
+		emit(lockStateChanged(LOCKSTATE::ACTIVE));
 	} else {
 		piezo.setVoltageSource(PZ_InputSourceFlags::PZ_Potentiometer);
+		emit(lockStateChanged(LOCKSTATE::INACTIVE));
 	}
 	return lockParameters.active;
 }
@@ -488,6 +490,7 @@ void daq::lock() {
 		// abort locking if output voltage is over 2 V
 		if (abs(currentVoltage) > 2) {
 			lockParameters.active = FALSE;
+			emit(lockStateChanged(LOCKSTATE::FAILURE));
 		}
 
 		// set output voltage of the DAQ

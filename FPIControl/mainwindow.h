@@ -12,6 +12,51 @@ namespace Ui {
 	class MainWindow;
 }
 
+
+class IndicatorWidget : public QWidget {
+	Q_OBJECT
+		Q_PROPERTY(bool on READ isOn WRITE setOn)
+public:
+	IndicatorWidget(const QColor &color = QColor(246, 180, 0), QWidget *parent = 0)
+		: QWidget(parent), m_color(color), m_on(false) {}
+
+	bool isOn() const {
+		return m_on;
+	}
+
+	public slots:
+		void turnOff() { setOn(false); }
+		void turnOn() { setOn(true); }
+		/* states */
+		void failure() { setColor(QColor(246, 12, 0)); }	// failure
+		void inactive() { setColor(QColor(246, 180, 0)); }	// inactive
+		void active() { setColor(QColor(177, 243, 0)); }	// active, no error
+
+protected:
+	void paintEvent(QPaintEvent *) override {
+		if (!m_on)
+			return;
+		QPainter painter(this);
+		painter.setRenderHint(QPainter::Antialiasing);
+		painter.setBrush(m_color);
+		painter.drawEllipse(2, 2, 20, 20);
+	}
+
+private:
+	QColor m_color;
+	bool m_on;
+	void setOn(bool on) {
+		if (on == m_on)
+			return;
+		m_on = on;
+		update();
+	}
+	void setColor(QColor color) {
+		m_color = color;
+		update();
+	}
+};
+
 class MainWindow : public QMainWindow {
 	Q_OBJECT
 
@@ -64,6 +109,9 @@ private slots:
 	// SLOTS for updating the acquisition parameters
 	void updateAcquisitionParameters(ACQUISITION_PARAMETERS acquisitionParameters);
 
+	// SLOTS for updating the locking state
+	void updateLockState(LOCKSTATE lockState);
+
 public slots:
 	void connectMarkers();
 	void handleMarkerClicked();
@@ -78,6 +126,9 @@ private:
 	QList<QtCharts::QLineSeries *> scanViewPlots;
 	daq d;
 	int view = 0;	// selection of the view
+	IndicatorWidget *lockIndicator;
+	QLabel *lockInfo;
+	QLabel *statusInfo;
 };
 
 #endif // MAINWINDOW_H

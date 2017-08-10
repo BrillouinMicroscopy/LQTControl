@@ -77,6 +77,13 @@ typedef struct {
 	double iError = 0;				// [1]	integral value of the error signal
 } LOCK_DATA;
 
+typedef enum enLockState
+{
+	INACTIVE,
+	ACTIVE,
+	FAILURE
+}  LOCKSTATE;
+
 class daq : public QObject {
 	Q_OBJECT
 
@@ -142,6 +149,7 @@ class daq : public QObject {
 		void locked(std::array<QVector<QPointF>, 3> &);
 		void collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &);
 		void acquisitionParametersChanged(ACQUISITION_PARAMETERS);
+		void lockStateChanged(LOCKSTATE);
 
 	private:
 		static void __stdcall ps2000FastStreamingReady2(

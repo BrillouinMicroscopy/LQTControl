@@ -29,6 +29,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	QWidget::connect(&d, SIGNAL(acquisitionParametersChanged(ACQUISITION_PARAMETERS)), this,
 		SLOT(updateAcquisitionParameters(ACQUISITION_PARAMETERS)));
+
+	QWidget::connect(&d, SIGNAL(lockStateChanged(LOCKSTATE)), this,
+		SLOT(updateLockState(LOCKSTATE)));
 	
 	// set up live view plots
 	QtCharts::QLineSeries *channelA = new QtCharts::QLineSeries();
@@ -130,6 +133,26 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	// connect legend marker to toggle visibility of plots
 	MainWindow::connectMarkers();
+
+	/* Add labels and indicator to status bar */
+	// Status info
+	statusInfo = new QLabel("");
+	statusInfo->setAlignment(Qt::AlignLeft);
+	ui->statusBar->addPermanentWidget(statusInfo, 1);
+
+	// Locking info
+	lockInfo = new QLabel("Locking Inactive");
+	lockInfo->setAlignment(Qt::AlignRight);
+	ui->statusBar->addPermanentWidget(lockInfo, 1);
+
+	// Locking indicator
+	IndicatorWidget *lockIndicator = new IndicatorWidget();
+	lockIndicator->turnOn();
+	lockIndicator->setMinimumSize(26, 24);
+	ui->statusBar->addPermanentWidget(lockIndicator, 0);
+
+	// style status bar to not show items borders
+	ui->statusBar->setStyleSheet(QString("QStatusBar::item { border: none; }"));
 }
 
 MainWindow::~MainWindow() {
@@ -370,6 +393,23 @@ void MainWindow::updateAcquisitionParameters(ACQUISITION_PARAMETERS acquisitionP
 	ui->chBCoupling->setCurrentIndex(acquisitionParameters.channelSettings[1].DCcoupled);
 }
 
+void MainWindow::updateLockState(LOCKSTATE lockState) {
+	switch (lockState) {
+		case LOCKSTATE::ACTIVE:
+			lockInfo->setText("Locking active");
+			lockIndicator->active();
+			break;
+		case LOCKSTATE::INACTIVE:
+			lockInfo->setText("Locking inactive");
+			lockIndicator->inactive();
+			break;
+		case LOCKSTATE::FAILURE:
+			lockInfo->setText("Locking failure");
+			lockIndicator->failure();
+			break;
+	}
+}
+
 void MainWindow::on_scanButtonManual_clicked() {
 	d.scanManual();
 }
@@ -430,7 +470,7 @@ void MainWindow::on_actionConnect_triggered() {
 	if (connected) {
 		ui->actionConnect->setEnabled(false);
 		ui->actionDisconnect->setEnabled(true);
-		ui->statusBar->showMessage("Successfully connected", 2000);
+		statusInfo->setText("Successfully connected");
 	} else {
 		ui->actionConnect->setEnabled(true);
 		ui->actionDisconnect->setEnabled(false);
@@ -445,7 +485,7 @@ void MainWindow::on_actionDisconnect_triggered() {
 	}  else {
 		ui->actionConnect->setEnabled(true);
 		ui->actionDisconnect->setEnabled(false);
-		ui->statusBar->showMessage("Successfully disconnected", 2000);
+		statusInfo->setText("Successfully disconnected");
 	}
 }
 
