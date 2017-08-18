@@ -1126,7 +1126,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="floatingViewCheckbox">
+           <widget class="QCheckBox" name="floatingViewCheckBox">
             <property name="enabled">
              <bool>true</bool>
             </property>

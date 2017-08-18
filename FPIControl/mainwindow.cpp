@@ -173,7 +173,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	// hide floating view elements by default
 	ui->floatingViewLabel->hide();
-	ui->floatingViewCheckbox->hide();
+	ui->floatingViewCheckBox->hide();
 }
 
 MainWindow::~MainWindow() {
@@ -470,7 +470,7 @@ void MainWindow::on_selectDisplay_activated(const int index) {
 			}
 			ui->plotAxes->setChart(liveViewChart);
 			ui->floatingViewLabel->hide();
-			ui->floatingViewCheckbox->hide();
+			ui->floatingViewCheckBox->hide();
 			//MainWindow::updateLiveView();
 			break;
 		case 1:
@@ -487,7 +487,7 @@ void MainWindow::on_selectDisplay_activated(const int index) {
 			}
 			ui->plotAxes->setChart(lockViewChart);
 			ui->floatingViewLabel->show();
-			ui->floatingViewCheckbox->show();
+			ui->floatingViewCheckBox->show();
 			//MainWindow::updateScanView();
 			break;
 		case 2:
@@ -504,7 +504,7 @@ void MainWindow::on_selectDisplay_activated(const int index) {
 			}
 			ui->plotAxes->setChart(scanViewChart);
 			ui->floatingViewLabel->hide();
-			ui->floatingViewCheckbox->hide();
+			ui->floatingViewCheckBox->hide();
 			MainWindow::updateScanView();
 			break;
 	}
