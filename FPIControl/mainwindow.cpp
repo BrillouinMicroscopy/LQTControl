@@ -33,8 +33,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	QWidget::connect(&d, SIGNAL(lockStateChanged(LOCKSTATE)), this,
 		SLOT(updateLockState(LOCKSTATE)));
 
-	QWidget::connect(&d, SIGNAL(compensationStateChanged(LOCKSTATE)), this,
-		SLOT(updateCompensationState(LOCKSTATE)));
+	QWidget::connect(&d, SIGNAL(compensationStateChanged(bool)), this,
+		SLOT(updateCompensationState(bool)));
 	
 	// set up live view plots
 	QtCharts::QLineSeries *channelA = new QtCharts::QLineSeries();
