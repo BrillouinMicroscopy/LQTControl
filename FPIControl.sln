@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FPIControl", "FPIControl.vcxproj", "{DB653017-A984-35AB-B851-8A555650205B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FPIControl", "FPIControl\FPIControl.vcxproj", "{DB653017-A984-35AB-B851-8A555650205B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FPIControlUnitTest", "..\FPIControlUnitTest\FPIControlUnitTest.vcxproj", "{9BCA4BAB-7D1A-4025-998E-7A9B0E57360D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FPIControlUnitTest", "FPIControlUnitTest\FPIControlUnitTest.vcxproj", "{9BCA4BAB-7D1A-4025-998E-7A9B0E57360D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{DB653017-A984-35AB-B851-8A555650205B} = {DB653017-A984-35AB-B851-8A555650205B}
 	EndProjectSection
