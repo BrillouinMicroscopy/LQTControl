@@ -22,8 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
 	QWidget::connect(&d, SIGNAL(scanDone()), this, SLOT(updateScanView()));
-	QWidget::connect(&d, SIGNAL(locked(std::array<QVector<QPointF>, 6> &)), this,
-		SLOT(updateLockView(std::array<QVector<QPointF>, 6> &)));
+	QWidget::connect(&d, SIGNAL(locked(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &)), this,
+		SLOT(updateLockView(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &)));
 	QWidget::connect(&d, SIGNAL(collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &)), this,
 		SLOT(updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &)));
 
@@ -72,14 +72,12 @@ MainWindow::MainWindow(QWidget *parent) :
 	voltage->setUseOpenGL(true);
 	voltage->setColor(colors.orange);
 	voltage->setName(QString("Voltage"));
-	lockViewPlots.append(voltage);
 	lockViewPlots[static_cast<int>(lockViewPlotTypes::VOLTAGE)] = voltage;
 
 	QtCharts::QLineSeries *errorLock = new QtCharts::QLineSeries();
 	errorLock->setUseOpenGL(true);
 	errorLock->setColor(colors.yellow);
 	errorLock->setName(QString("Error signal"));
-	lockViewPlots.append(errorLock);
 	lockViewPlots[static_cast<int>(lockViewPlotTypes::ERRORSIGNAL)] = errorLock;
 
 	// set up lock view chart
@@ -375,7 +373,7 @@ void MainWindow::updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS
 	}
 }
 
-void MainWindow::updateLockView(std::array<QVector<QPointF>, 6> &data) {
+void MainWindow::updateLockView(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &data) {
 	if (view == 1) {
 		int channel = 0;
 		foreach(QtCharts::QLineSeries* series, lockViewPlots) {

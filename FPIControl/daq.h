@@ -151,7 +151,7 @@ class daq : public QObject {
 	signals:
 		void scanDone();
 		void collectedData();
-		void locked(std::array<QVector<QPointF>, 6> &);
+		void locked(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &);
 		void collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &);
 		void acquisitionParametersChanged(ACQUISITION_PARAMETERS);
 		void lockStateChanged(LOCKSTATE);
