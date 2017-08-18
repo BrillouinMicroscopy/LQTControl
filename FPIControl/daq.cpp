@@ -147,7 +147,7 @@ bool daq::startStopAcquisition() {
 
 bool daq::startStopAcquireLocking() {
 	if (lockingTimer.isActive()) {
-		lockParameters.active = FALSE;
+		daq::disableLocking();
 		lockingTimer.stop();
 		return false;
 	} else {
@@ -170,10 +170,31 @@ bool daq::startStopLocking() {
 		piezo.setVoltageSource(PZ_InputSourceFlags::PZ_ExternalSignal);
 		emit(lockStateChanged(LOCKSTATE::ACTIVE));
 	} else {
-		piezo.setVoltageSource(PZ_InputSourceFlags::PZ_Potentiometer);
-		emit(lockStateChanged(LOCKSTATE::INACTIVE));
+		daq::disableLocking();
 	}
 	return lockParameters.active;
+}
+
+void daq::disableLocking(LOCKSTATE lockstate) {
+	piezo.setVoltageSource(PZ_InputSourceFlags::PZ_Potentiometer);
+	currentVoltage = 0;
+	// set output voltage of the DAQ
+	ps2000_set_sig_gen_built_in(
+		unitOpened.handle,				// handle of the oscilloscope
+		currentVoltage * 1e6,			// offsetVoltage in microvolt
+		0,								// peak to peak voltage in microvolt
+		(PS2000_WAVE_TYPE)5,			// type of waveform
+		(float)0,						// startFrequency in Hertz
+		(float)0,						// stopFrequency in Hertz
+		0,								// increment
+		0,								// dwellTime, time in seconds between frequency changes in sweep mode
+		PS2000_UPDOWN,					// sweepType
+		0								// sweeps, number of times to sweep the frequency
+	);
+	lockParameters.active = FALSE;
+	lockParameters.compensating = FALSE;
+	emit(compensationStateChanged(false));
+	emit(lockStateChanged(lockstate));
 }
 
 SCAN_PARAMETERS daq::getScanParameters() {
@@ -492,10 +513,7 @@ void daq::lock() {
 
 		// abort locking if output voltage is over 2 V
 		if (abs(currentVoltage) > 2) {
-			lockParameters.active = FALSE;
-			emit(lockStateChanged(LOCKSTATE::FAILURE));
-			lockParameters.compensating = FALSE;
-			emit(compensationStateChanged(false));
+			daq::disableLocking(LOCKSTATE::FAILURE);
 		}
 
 		// set output voltage of the DAQ
@@ -527,10 +545,6 @@ void daq::lock() {
 	lockDataPlot[static_cast<int>(daq::lockViewPlotTypes::INTENSITY)].append(QPointF(passed, intensity));
 
 	emit locked(lockDataPlot);
-}
-
-void daq::resetLock() {
-	lockData.iError = 0;
 }
 
 bool daq::enablePiezo() {

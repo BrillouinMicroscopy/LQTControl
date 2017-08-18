@@ -260,13 +260,13 @@ void MainWindow::on_acquireLockButton_clicked() {
 }
 
 void MainWindow::on_lockButton_clicked() {
-	bool running = d.startStopLocking();
-	if (running) {
-		ui->lockButton->setText(QString("Unlock"));
-	}
-	else {
-		ui->lockButton->setText(QString("Lock"));
-	}
+	d.startStopLocking();
+	//if (running) {
+	//	ui->lockButton->setText(QString("Unlock"));
+	//}
+	//else {
+	//	ui->lockButton->setText(QString("Lock"));
+	//}
 }
 
 void MainWindow::on_sampleRate_activated(const int index) {
@@ -332,9 +332,6 @@ void MainWindow::on_frequency_valueChanged(const double value) {
 }
 void MainWindow::on_phase_valueChanged(const double value) {
 	d.setLockParameters(4, value);
-}
-void MainWindow::on_resetLockButton_clicked() {
-	d.resetLock();
 }
 void MainWindow::on_offsetCheckBox_clicked(const bool checked) {
 	if (checked) {
@@ -414,14 +411,17 @@ void MainWindow::updateLockState(LOCKSTATE lockState) {
 	switch (lockState) {
 		case LOCKSTATE::ACTIVE:
 			lockInfo->setText("Locking active");
+			ui->lockButton->setText(QString("Unlock"));
 			lockIndicator->active();
 			break;
 		case LOCKSTATE::INACTIVE:
 			lockInfo->setText("Locking inactive");
+			ui->lockButton->setText(QString("Lock"));
 			lockIndicator->inactive();
 			break;
 		case LOCKSTATE::FAILURE:
 			lockInfo->setText("Locking failure");
+			ui->lockButton->setText(QString("Lock"));
 			lockIndicator->failure();
 			break;
 	}

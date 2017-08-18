@@ -94,7 +94,6 @@ private slots:
 	void on_derivativeTerm_valueChanged(const double value);
 	void on_frequency_valueChanged(const double value);
 	void on_phase_valueChanged(const double value);
-	void on_resetLockButton_clicked();
 
 	void on_enablePiezoCheckBox_clicked(const bool checked);
 	void on_incrementVoltage_clicked();

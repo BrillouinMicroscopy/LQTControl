@@ -92,9 +92,9 @@ class daq : public QObject {
 		bool startStopAcquisition();
 		bool startStopAcquireLocking();
 		bool startStopLocking();
+		void disableLocking(LOCKSTATE lockstate = LOCKSTATE::INACTIVE);
 		void getBlockData();
 		void lock();
-		void resetLock();
 		bool enablePiezo();
 		bool disablePiezo();
 		void incrementPiezoVoltage();
