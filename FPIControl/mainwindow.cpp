@@ -32,6 +32,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	QWidget::connect(&d, SIGNAL(lockStateChanged(LOCKSTATE)), this,
 		SLOT(updateLockState(LOCKSTATE)));
+
+	QWidget::connect(&d, SIGNAL(compensationStateChanged(LOCKSTATE)), this,
+		SLOT(updateCompensationState(LOCKSTATE)));
 	
 	// set up live view plots
 	QtCharts::QLineSeries *channelA = new QtCharts::QLineSeries();
@@ -140,10 +143,24 @@ MainWindow::MainWindow(QWidget *parent) :
 	statusInfo->setAlignment(Qt::AlignLeft);
 	ui->statusBar->addPermanentWidget(statusInfo, 1);
 
+	// Compensating info
+	compensationInfo = new QLabel("Compensating voltage offset");
+	compensationInfo->setAlignment(Qt::AlignRight);
+	compensationInfo->hide();
+	ui->statusBar->addPermanentWidget(compensationInfo, 0);
+
+	// Compensating indicator
+	compensationIndicator = new QLabel;
+	QMovie *movie = new QMovie(QDir::currentPath() + "/loader.gif");
+	compensationIndicator->setMovie(movie);
+	compensationIndicator->hide();
+	movie->start();
+	ui->statusBar->addPermanentWidget(compensationIndicator, 0);
+
 	// Locking info
 	lockInfo = new QLabel("Locking Inactive");
 	lockInfo->setAlignment(Qt::AlignRight);
-	ui->statusBar->addPermanentWidget(lockInfo, 1);
+	ui->statusBar->addPermanentWidget(lockInfo, 0);
 
 	// Locking indicator
 	lockIndicator = new IndicatorWidget();
@@ -407,6 +424,16 @@ void MainWindow::updateLockState(LOCKSTATE lockState) {
 			lockInfo->setText("Locking failure");
 			lockIndicator->failure();
 			break;
+	}
+}
+
+void MainWindow::updateCompensationState(bool compensating) {
+	if (compensating) {
+		compensationIndicator->show();
+		compensationInfo->show();
+	} else {
+		compensationIndicator->hide();
+		compensationInfo->hide();
 	}
 }
 

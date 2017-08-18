@@ -112,6 +112,9 @@ private slots:
 	// SLOTS for updating the locking state
 	void updateLockState(LOCKSTATE lockState);
 
+	// SLOT for updating the compensation state
+	void updateCompensationState(bool compensating);
+
 public slots:
 	void connectMarkers();
 	void handleMarkerClicked();
@@ -127,7 +130,9 @@ private:
 	daq d;
 	int view = 0;	// selection of the view
 	IndicatorWidget *lockIndicator;
+	QLabel *compensationIndicator;
 	QLabel *lockInfo;
+	QLabel *compensationInfo;
 	QLabel *statusInfo;
 };
 

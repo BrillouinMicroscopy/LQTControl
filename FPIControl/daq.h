@@ -150,6 +150,7 @@ class daq : public QObject {
 		void collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &);
 		void acquisitionParametersChanged(ACQUISITION_PARAMETERS);
 		void lockStateChanged(LOCKSTATE);
+		void compensationStateChanged(bool);
 
 	private:
 		static void __stdcall ps2000FastStreamingReady2(

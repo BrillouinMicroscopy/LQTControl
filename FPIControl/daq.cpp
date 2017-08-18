@@ -470,9 +470,11 @@ void daq::lock() {
 			compensationTimer++;
 			if (abs(currentVoltage) > lockParameters.maxOffset) {
 				lockParameters.compensating = TRUE;
+				emit(compensationStateChanged(true));
 			}
 			if (abs(currentVoltage) < lockParameters.targetOffset) {
 				lockParameters.compensating = FALSE;
+				emit(compensationStateChanged(false));
 			}
 			if (lockParameters.compensating & (compensationTimer > 50)) {
 				compensationTimer = 0;
@@ -485,12 +487,15 @@ void daq::lock() {
 			}
 		} else {
 			lockParameters.compensating = FALSE;
+			emit(compensationStateChanged(false));
 		}
 
 		// abort locking if output voltage is over 2 V
 		if (abs(currentVoltage) > 2) {
 			lockParameters.active = FALSE;
 			emit(lockStateChanged(LOCKSTATE::FAILURE));
+			lockParameters.compensating = FALSE;
+			emit(compensationStateChanged(false));
 		}
 
 		// set output voltage of the DAQ
