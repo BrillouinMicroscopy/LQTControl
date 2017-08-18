@@ -170,6 +170,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	// style status bar to not show items borders
 	ui->statusBar->setStyleSheet(QString("QStatusBar::item { border: none; }"));
+
+	// hide floating view elements by default
+	ui->floatingViewLabel->hide();
+	ui->floatingViewCheckbox->hide();
 }
 
 MainWindow::~MainWindow() {
@@ -371,7 +375,15 @@ void MainWindow::updateLockView(std::array<QVector<QPointF>, 3> &data) {
 			}
 			++channel;
 		}
-		lockViewChart->axisX()->setRange(data[0][0].x(), data[0].back().x());
+		if (viewSettings.floatingView) {
+			// show last 60 seconds
+			double minX = data[0].back().x() - 60;
+			minX = (minX < 0) ? 0 : minX;
+			lockViewChart->axisX()->setRange(minX, data[0].back().x());
+		} else {
+			lockViewChart->axisX()->setRange(data[0][0].x(), data[0].back().x());
+		}
+		
 	}
 }
 
@@ -457,6 +469,8 @@ void MainWindow::on_selectDisplay_activated(const int index) {
 				series->setVisible(true);
 			}
 			ui->plotAxes->setChart(liveViewChart);
+			ui->floatingViewLabel->hide();
+			ui->floatingViewCheckbox->hide();
 			//MainWindow::updateLiveView();
 			break;
 		case 1:
@@ -472,6 +486,8 @@ void MainWindow::on_selectDisplay_activated(const int index) {
 				series->setVisible(true);
 			}
 			ui->plotAxes->setChart(lockViewChart);
+			ui->floatingViewLabel->show();
+			ui->floatingViewCheckbox->show();
 			//MainWindow::updateScanView();
 			break;
 		case 2:
@@ -487,9 +503,15 @@ void MainWindow::on_selectDisplay_activated(const int index) {
 				series->setVisible(true);
 			}
 			ui->plotAxes->setChart(scanViewChart);
+			ui->floatingViewLabel->hide();
+			ui->floatingViewCheckbox->hide();
 			MainWindow::updateScanView();
 			break;
 	}
+}
+
+void MainWindow::on_floatingViewCheckBox_clicked(const bool checked) {
+	viewSettings.floatingView = checked;
 }
 
 void MainWindow::on_actionConnect_triggered() {

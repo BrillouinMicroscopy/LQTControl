@@ -53,7 +53,7 @@
          <x>0</x>
          <y>0</y>
          <width>288</width>
-         <height>898</height>
+         <height>870</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -1118,6 +1118,26 @@
             </property>
            </spacer>
           </item>
+          <item>
+           <widget class="QLabel" name="floatingViewLabel">
+            <property name="text">
+             <string>Floating view</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="floatingViewCheckbox">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::RightToLeft</enum>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -1142,7 +1162,7 @@
      <x>0</x>
      <y>0</y>
      <width>1335</width>
-     <height>21</height>
+     <height>31</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">

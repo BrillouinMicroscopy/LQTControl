@@ -57,6 +57,21 @@ private:
 	}
 };
 
+typedef struct {
+	bool automatic = TRUE;
+	double xmin;
+	double xmax;
+	double ymin;
+	double ymax;
+} AXIS_RANGE;
+
+typedef struct {
+	bool floatingView = FALSE;
+	AXIS_RANGE liveView;
+	AXIS_RANGE lockView;
+	AXIS_RANGE scanView;
+} VIEW_SETTINGS;
+
 class MainWindow : public QMainWindow {
 	Q_OBJECT
 
@@ -66,6 +81,8 @@ public:
 
 private slots:
 	void on_selectDisplay_activated(const int index);
+	void on_floatingViewCheckBox_clicked(const bool checked);
+
 	void on_acquisitionButton_clicked();
 	void on_lockButton_clicked();
 	void on_acquireLockButton_clicked();
@@ -133,6 +150,7 @@ private:
 	QLabel *lockInfo;
 	QLabel *compensationInfo;
 	QLabel *statusInfo;
+	VIEW_SETTINGS viewSettings;
 };
 
 #endif // MAINWINDOW_H
