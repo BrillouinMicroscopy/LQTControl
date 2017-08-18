@@ -540,9 +540,12 @@ void daq::lock() {
 	double passed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lockData.time[0]).count() / 1e3;	// store passed time in seconds
 
 	// write data to array for plotting
-	lockDataPlot[static_cast<int>(daq::lockViewPlotTypes::VOLTAGE)].append(QPointF(passed, currentVoltage));
-	lockDataPlot[static_cast<int>(daq::lockViewPlotTypes::ERRORSIGNAL)].append(QPointF(passed, error / 100));
-	lockDataPlot[static_cast<int>(daq::lockViewPlotTypes::INTENSITY)].append(QPointF(passed, intensity));
+	lockDataPlot[static_cast<int>(lockViewPlotTypes::VOLTAGE)].append(QPointF(passed, currentVoltage));
+	lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNAL)].append(QPointF(passed, error / 100));
+	lockDataPlot[static_cast<int>(lockViewPlotTypes::INTENSITY)].append(QPointF(passed, intensity));
+	lockDataPlot[static_cast<int>(lockViewPlotTypes::PIEZOVOLTAGE)].append(QPointF(passed, 0));
+	lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNALMEAN)].append(QPointF(passed, 0));
+	lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNALSTD)].append(QPointF(passed, 0));
 
 	emit locked(lockDataPlot);
 }

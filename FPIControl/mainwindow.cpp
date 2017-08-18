@@ -22,8 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
 	QWidget::connect(&d, SIGNAL(scanDone()), this, SLOT(updateScanView()));
-	QWidget::connect(&d, SIGNAL(locked(std::array<QVector<QPointF>, 3> &)), this,
-		SLOT(updateLockView(std::array<QVector<QPointF>, 3> &)));
+	QWidget::connect(&d, SIGNAL(locked(std::array<QVector<QPointF>, 6> &)), this,
+		SLOT(updateLockView(std::array<QVector<QPointF>, 6> &)));
 	QWidget::connect(&d, SIGNAL(collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &)), this,
 		SLOT(updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &)));
 
@@ -37,17 +37,19 @@ MainWindow::MainWindow(QWidget *parent) :
 		SLOT(updateCompensationState(bool)));
 	
 	// set up live view plots
+	liveViewPlots.resize(static_cast<int>(liveViewPlotTypes::COUNT));
+
 	QtCharts::QLineSeries *channelA = new QtCharts::QLineSeries();
 	channelA->setUseOpenGL(true);
 	channelA->setColor(colors.blue);
 	channelA->setName(QString("Detector signal"));
-	liveViewPlots.append(channelA);
+	liveViewPlots[static_cast<int>(liveViewPlotTypes::CHANNEL_A)] = channelA;
 
 	QtCharts::QLineSeries *channelB = new QtCharts::QLineSeries();
 	channelB->setUseOpenGL(true);
 	channelB->setColor(colors.orange);
 	channelB->setName(QString("Reference Signal"));
-	liveViewPlots.append(channelB);
+	liveViewPlots[static_cast<int>(liveViewPlotTypes::CHANNEL_B)] = channelB;
 	
 	// set up live view chart
 	liveViewChart = new QtCharts::QChart();
@@ -63,17 +65,22 @@ MainWindow::MainWindow(QWidget *parent) :
 	liveViewChart->layout()->setContentsMargins(0, 0, 0, 0);
 
 	// set up lock view plots
+	//lockViewPlots.resize(static_cast<int>(lockViewPlotTypes::COUNT));
+	lockViewPlots.resize(2);
+
 	QtCharts::QLineSeries *voltage = new QtCharts::QLineSeries();
 	voltage->setUseOpenGL(true);
 	voltage->setColor(colors.orange);
 	voltage->setName(QString("Voltage"));
 	lockViewPlots.append(voltage);
+	lockViewPlots[static_cast<int>(lockViewPlotTypes::VOLTAGE)] = voltage;
 
 	QtCharts::QLineSeries *errorLock = new QtCharts::QLineSeries();
 	errorLock->setUseOpenGL(true);
 	errorLock->setColor(colors.yellow);
 	errorLock->setName(QString("Error signal"));
 	lockViewPlots.append(errorLock);
+	lockViewPlots[static_cast<int>(lockViewPlotTypes::ERRORSIGNAL)] = errorLock;
 
 	// set up lock view chart
 	lockViewChart = new QtCharts::QChart();
@@ -88,17 +95,19 @@ MainWindow::MainWindow(QWidget *parent) :
 	lockViewChart->layout()->setContentsMargins(0, 0, 0, 0);
 
 	// set up scan view plots
+	scanViewPlots.resize(static_cast<int>(scanViewPlotTypes::COUNT));
+
 	QtCharts::QLineSeries *intensity = new QtCharts::QLineSeries();
 	intensity->setUseOpenGL(true);
 	intensity->setColor(colors.orange);
 	intensity->setName(QString("Intensity"));
-	scanViewPlots.append(intensity);
+	scanViewPlots[static_cast<int>(scanViewPlotTypes::INTENSITY)] = intensity;
 
 	QtCharts::QLineSeries *error = new QtCharts::QLineSeries();
 	error->setUseOpenGL(true);
 	error->setColor(colors.yellow);
 	error->setName(QString("Error signal"));
-	scanViewPlots.append(error);
+	scanViewPlots[static_cast<int>(scanViewPlotTypes::ERRORSIGNAL)] = error;
 
 	// set up live view chart
 	scanViewChart = new QtCharts::QChart();
@@ -366,7 +375,7 @@ void MainWindow::updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS
 	}
 }
 
-void MainWindow::updateLockView(std::array<QVector<QPointF>, 3> &data) {
+void MainWindow::updateLockView(std::array<QVector<QPointF>, 6> &data) {
 	if (view == 1) {
 		int channel = 0;
 		foreach(QtCharts::QLineSeries* series, lockViewPlots) {
@@ -398,8 +407,8 @@ void MainWindow::updateScanView() {
 			intensity.append(QPointF(scanData.voltages[j] / static_cast<double>(1e6), scanData.intensity[j] / static_cast<double>(1000)));
 			error.append(QPointF(scanData.voltages[j] / static_cast<double>(1e6), std::real(scanData.error[j])));
 		}
-		scanViewPlots[static_cast<int>(daq::scanViewPlotTypes::INTENSITY)]->replace(intensity);
-		scanViewPlots[static_cast<int>(daq::scanViewPlotTypes::ERRORSIGNAL)]->replace(error);
+		scanViewPlots[static_cast<int>(scanViewPlotTypes::INTENSITY)]->replace(intensity);
+		scanViewPlots[static_cast<int>(scanViewPlotTypes::ERRORSIGNAL)]->replace(error);
 
 		scanViewChart->axisX()->setRange(0, 2);
 		scanViewChart->axisY()->setRange(-0.4, 1.2);

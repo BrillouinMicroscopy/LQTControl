@@ -120,7 +120,7 @@ private slots:
 	// SLOTS for updating the plots
 	void updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &data);
 	void updateScanView();
-	void updateLockView(std::array<QVector<QPointF>, 3> &data);
+	void updateLockView(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &data);
 
 	// SLOTS for updating the acquisition parameters
 	void updateAcquisitionParameters(ACQUISITION_PARAMETERS acquisitionParameters);
@@ -140,9 +140,9 @@ private:
 	QtCharts::QChart *liveViewChart;
 	QtCharts::QChart *lockViewChart;
 	QtCharts::QChart *scanViewChart;
-	QList<QtCharts::QLineSeries *> liveViewPlots;
-	QList<QtCharts::QLineSeries *> lockViewPlots;
-	QList<QtCharts::QLineSeries *> scanViewPlots;
+	QVector<QtCharts::QLineSeries *> liveViewPlots;
+	QVector<QtCharts::QLineSeries *> lockViewPlots;
+	QVector<QtCharts::QLineSeries *> scanViewPlots;
 	daq d;
 	int view = 0;	// selection of the view
 	IndicatorWidget *lockIndicator;

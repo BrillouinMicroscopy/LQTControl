@@ -77,12 +77,31 @@ typedef struct {
 	double iError = 0;				// [1]	integral value of the error signal
 } LOCK_DATA;
 
-typedef enum enLockState
-{
+typedef enum enLockState {
 	INACTIVE,
 	ACTIVE,
 	FAILURE
-}  LOCKSTATE;
+} LOCKSTATE;
+
+enum class liveViewPlotTypes {
+	CHANNEL_A,
+	CHANNEL_B,
+	COUNT
+};
+enum class scanViewPlotTypes {
+	INTENSITY,
+	ERRORSIGNAL,
+	COUNT
+};
+enum class lockViewPlotTypes {
+	VOLTAGE,
+	ERRORSIGNAL,
+	INTENSITY,
+	PIEZOVOLTAGE,
+	ERRORSIGNALMEAN,
+	ERRORSIGNALSTD,
+	COUNT
+};
 
 class daq : public QObject {
 	Q_OBJECT
@@ -122,31 +141,17 @@ class daq : public QObject {
 		LOCK_PARAMETERS getLockParameters();
 
 		std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> data;
-		std::array<QVector<QPointF>, 3> lockDataPlot;
+		std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> lockDataPlot;
 
 		double currentVoltage = 0;
 		int compensationTimer = 0;
-
-		enum class liveViewPlotTypes {
-			CHANNEL_A,
-			CHANNEL_B
-		};
-		enum class scanViewPlotTypes {
-			INTENSITY,
-			ERRORSIGNAL
-		};
-		enum class lockViewPlotTypes {
-			VOLTAGE,
-			ERRORSIGNAL,
-			INTENSITY
-		};
 
 	private slots:
 
 	signals:
 		void scanDone();
 		void collectedData();
-		void locked(std::array<QVector<QPointF>, 3> &);
+		void locked(std::array<QVector<QPointF>, 6> &);
 		void collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &);
 		void acquisitionParametersChanged(ACQUISITION_PARAMETERS);
 		void lockStateChanged(LOCKSTATE);
