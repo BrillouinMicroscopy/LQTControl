@@ -33,5 +33,34 @@ namespace FPIControlUnitTest {
 				Assert::AreEqual(expected.real(), actual.real());
 				Assert::AreEqual(expected.imag(), actual.imag());
 			}
+
+			TEST_METHOD(TestMethodFloatingMeanDoubleExact) {
+				std::vector<double> vector = {
+					1.0, 2.0, 3.0, 4.0, 5.0,
+					6.0, 7.0, 8.0, 9.0, 10.0
+				};
+				Assert::AreEqual(5.5, generalmath::floatingMean(vector,10));
+			}
+
+			TEST_METHOD(TestMethodFloatingMeanDoubleShort) {
+				std::vector<double> vector = {
+					1.0, 2.0, 3.0, 4.0, 5.0,
+					6.0, 7.0, 8.0, 9.0, 10.0
+				};
+				Assert::AreEqual(8.0, generalmath::floatingMean(vector, 5));
+			}
+
+			TEST_METHOD(TestMethodFloatingMeanDoubleLong) {
+				std::vector<double> vector = {
+					1.0, 2.0, 3.0, 4.0, 5.0,
+					6.0, 7.0, 8.0, 9.0, 10.0
+				};
+				Assert::AreEqual(5.5, generalmath::floatingMean(vector, 15));
+			}
+
+			TEST_METHOD(TestMethodFloatingMeanDoubleEmpty) {
+				std::vector<double> vector = {};
+				Assert::IsTrue(isnan(generalmath::floatingMean(vector, 15)));
+			}
 	};
 }

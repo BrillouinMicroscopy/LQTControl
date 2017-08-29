@@ -77,6 +77,14 @@ public:
 		}
 		return sum;
 	}
+
+	static double floatingMean(std::vector<double> vector, int nrValues) {
+		nrValues = (nrValues > vector.size()) ? vector.size() : nrValues;
+		if (nrValues == 0) {
+			return nan("1");
+		}
+		return std::accumulate(std::prev(std::end(vector), nrValues), std::end(vector), 0.0) / nrValues;
+	}
 };
 
 #endif // GENERALMATH_H
