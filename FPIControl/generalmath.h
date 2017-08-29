@@ -85,6 +85,19 @@ public:
 		}
 		return std::accumulate(std::prev(std::end(vector), nrValues), std::end(vector), 0.0) / nrValues;
 	}
+
+	static double standardDeviation(std::vector<double> vector) {
+		if (vector.size() == 0) {
+			return nan("1");
+		}
+		double m = mean(vector);
+		double accum = 0.0;
+		std::for_each(std::begin(vector), std::end(vector), [&](const double d) {
+			accum += (d - m) * (d - m);
+		});
+
+		return sqrt(accum / (vector.size() - 1));
+	}
 };
 
 #endif // GENERALMATH_H

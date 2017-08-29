@@ -62,5 +62,32 @@ namespace FPIControlUnitTest {
 				std::vector<double> vector = {};
 				Assert::IsTrue(isnan(generalmath::floatingMean(vector, 15)));
 			}
+
+			TEST_METHOD(TestMethodStandardDeviationDoubleZero) {
+				std::vector<double> vector = {
+					1.0, 1.0, 1.0
+				};
+				Assert::AreEqual(0.0, generalmath::standardDeviation(vector));
+			}
+
+			TEST_METHOD(TestMethodStandardDeviationDoubleOne) {
+				std::vector<double> vector = {
+					1.0, 2.0, 3.0
+				};
+				Assert::AreEqual(1.0, generalmath::standardDeviation(vector));
+			}
+
+			TEST_METHOD(TestMethodStandardDeviationDoubleHalf) {
+				std::vector<double> vector = {
+					1.0, 2.0, 1.0, 2.0, 1.0,
+					2.0, 1.0, 2.0, 1.0, 2.0, 1.5
+				};
+				Assert::AreEqual(0.5, generalmath::standardDeviation(vector));
+			}
+
+			TEST_METHOD(TestMethodStandardDeviationDoubleEmpty) {
+				std::vector<double> vector = {};
+				Assert::IsTrue(isnan(generalmath::standardDeviation(vector)));
+			}
 	};
 }
