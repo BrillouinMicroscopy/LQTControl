@@ -65,8 +65,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	liveViewChart->layout()->setContentsMargins(0, 0, 0, 0);
 
 	// set up lock view plots
-	//lockViewPlots.resize(static_cast<int>(lockViewPlotTypes::COUNT));
-	lockViewPlots.resize(2);
+	lockViewPlots.resize(static_cast<int>(lockViewPlotTypes::COUNT));
 
 	QtCharts::QLineSeries *voltage = new QtCharts::QLineSeries();
 	voltage->setUseOpenGL(true);
@@ -79,6 +78,30 @@ MainWindow::MainWindow(QWidget *parent) :
 	errorLock->setColor(colors.yellow);
 	errorLock->setName(QString("Error signal"));
 	lockViewPlots[static_cast<int>(lockViewPlotTypes::ERRORSIGNAL)] = errorLock;
+
+	QtCharts::QLineSeries *intensityLock = new QtCharts::QLineSeries();
+	intensityLock->setUseOpenGL(true);
+	intensityLock->setColor(colors.blue);
+	intensityLock->setName(QString("Intensity"));
+	lockViewPlots[static_cast<int>(lockViewPlotTypes::INTENSITY)] = intensityLock;
+
+	QtCharts::QLineSeries *piezoVoltage = new QtCharts::QLineSeries();
+	piezoVoltage->setUseOpenGL(true);
+	piezoVoltage->setColor(colors.purple);
+	piezoVoltage->setName(QString("Piezo Voltage"));
+	lockViewPlots[static_cast<int>(lockViewPlotTypes::PIEZOVOLTAGE)] = piezoVoltage;
+
+	QtCharts::QLineSeries *errorMean = new QtCharts::QLineSeries();
+	errorMean->setUseOpenGL(true);
+	errorMean->setColor(colors.green);
+	errorMean->setName(QString("Error signal mean"));
+	lockViewPlots[static_cast<int>(lockViewPlotTypes::ERRORSIGNALMEAN)] = errorMean;
+
+	QtCharts::QLineSeries *errorStd = new QtCharts::QLineSeries();
+	errorStd->setUseOpenGL(true);
+	errorStd->setColor(colors.red);
+	errorStd->setName(QString("Error signal standard deviation"));
+	lockViewPlots[static_cast<int>(lockViewPlotTypes::ERRORSIGNALSTD)] = errorStd;
 
 	// set up lock view chart
 	lockViewChart = new QtCharts::QChart();
