@@ -78,7 +78,7 @@ public:
 		return sum;
 	}
 
-	static double floatingMean(std::vector<double> vector, int nrValues) {
+	static double floatingMean(std::vector<double> vector, size_t nrValues) {
 		nrValues = (nrValues > vector.size()) ? vector.size() : nrValues;
 		if (nrValues == 0) {
 			return nan("1");
