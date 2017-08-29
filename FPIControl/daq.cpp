@@ -168,6 +168,7 @@ bool daq::startStopLocking() {
 		// whereas setting it does not
 		piezo.restoreOutputVoltageIncrement();
 		piezo.setVoltageSource(PZ_InputSourceFlags::PZ_ExternalSignal);
+		piezoVoltage = piezo.getVoltage();
 		emit(lockStateChanged(LOCKSTATE::ACTIVE));
 	} else {
 		daq::disableLocking();
@@ -444,7 +445,7 @@ void daq::getBlockData() {
 }
 
 void daq::lock() {
-	std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectBlockData();
+	std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectBlockData();			// [mV]
 
 	std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
 
@@ -454,15 +455,13 @@ void daq::lock() {
 	//double tau_mean = generalmath::mean(tau);
 	double tau_max = generalmath::max(tau);
 	double tau_min = generalmath::min(tau);
-	double dtau = tau_max - tau_min;
+	double amplitude = tau_max - tau_min;
 
-	if (dtau != 0) {
+	if (amplitude != 0) {
 		for (int kk(0); kk < tau.size(); kk++) {
-			tau[kk] = (tau[kk] - tau_min) / dtau;
+			tau[kk] = (tau[kk] - tau_min) / amplitude;
 		}
 	}
-
-	double intensity = generalmath::absSum(tau);
 
 	// adjust for requested phase
 	double samplingRate = 200e6 / pow(2, acquisitionParameters.timebase);
@@ -501,9 +500,11 @@ void daq::lock() {
 				compensationTimer = 0;
 				if (currentVoltage > 0) {
 					piezo.incrementVoltage(1);
+					piezoVoltage = piezo.getVoltage();
 				}
 				else {
 					piezo.incrementVoltage(-1);
+					piezoVoltage = piezo.getVoltage();
 				}
 			}
 		} else {
@@ -534,7 +535,7 @@ void daq::lock() {
 	// write data to struct for storage
 	lockData.time.push_back(now);
 	lockData.error.push_back(error);
-	lockData.intensity.push_back(intensity);
+	lockData.intensity.push_back(amplitude);
 	lockData.voltage.push_back(currentVoltage);
 
 	double passed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lockData.time[0]).count() / 1e3;	// store passed time in seconds
@@ -542,8 +543,8 @@ void daq::lock() {
 	// write data to array for plotting
 	lockDataPlot[static_cast<int>(lockViewPlotTypes::VOLTAGE)].append(QPointF(passed, currentVoltage));
 	lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNAL)].append(QPointF(passed, error / 100));
-	lockDataPlot[static_cast<int>(lockViewPlotTypes::INTENSITY)].append(QPointF(passed, intensity));
-	lockDataPlot[static_cast<int>(lockViewPlotTypes::PIEZOVOLTAGE)].append(QPointF(passed, 0));
+	lockDataPlot[static_cast<int>(lockViewPlotTypes::AMPLITUDE)].append(QPointF(passed, amplitude / static_cast<double>(1000)));
+	lockDataPlot[static_cast<int>(lockViewPlotTypes::PIEZOVOLTAGE)].append(QPointF(passed, piezoVoltage));
 	lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNALMEAN)].append(QPointF(passed, 0));
 	lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNALSTD)].append(QPointF(passed, 0));
 

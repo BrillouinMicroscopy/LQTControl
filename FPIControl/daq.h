@@ -96,7 +96,7 @@ enum class scanViewPlotTypes {
 enum class lockViewPlotTypes {
 	VOLTAGE,
 	ERRORSIGNAL,
-	INTENSITY,
+	AMPLITUDE,
 	PIEZOVOLTAGE,
 	ERRORSIGNALMEAN,
 	ERRORSIGNALSTD,
@@ -144,6 +144,7 @@ class daq : public QObject {
 		std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> lockDataPlot;
 
 		double currentVoltage = 0;
+		double piezoVoltage = 0;
 		int compensationTimer = 0;
 
 	private slots:

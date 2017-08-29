@@ -32,7 +32,7 @@ void kcubepiezo::setDefaults() {
 double kcubepiezo::getVoltage() {
 	double maxVoltage = PCC_GetMaxOutputVoltage(serialNo);
 	double relativeVoltage = PCC_GetOutputVoltage(serialNo);
-	return maxVoltage * relativeVoltage / (pow(2, 15) - 1) / 10;
+	return maxVoltage * relativeVoltage / (pow(2, 15) - 1) / 10;	// [V] output voltage
 }
 
 void kcubepiezo::setVoltageSource(PZ_InputSourceFlags source) {

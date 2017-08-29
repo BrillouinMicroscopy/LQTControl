@@ -82,8 +82,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	QtCharts::QLineSeries *intensityLock = new QtCharts::QLineSeries();
 	intensityLock->setUseOpenGL(true);
 	intensityLock->setColor(colors.blue);
-	intensityLock->setName(QString("Intensity"));
-	lockViewPlots[static_cast<int>(lockViewPlotTypes::INTENSITY)] = intensityLock;
+	intensityLock->setName(QString("Signal amplitude"));
+	lockViewPlots[static_cast<int>(lockViewPlotTypes::AMPLITUDE)] = intensityLock;
 
 	QtCharts::QLineSeries *piezoVoltage = new QtCharts::QLineSeries();
 	piezoVoltage->setUseOpenGL(true);
