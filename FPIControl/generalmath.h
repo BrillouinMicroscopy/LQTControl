@@ -98,6 +98,20 @@ public:
 
 		return sqrt(accum / (vector.size() - 1));
 	}
+
+	static double floatingStandardDeviation(std::vector<double> vector, size_t nrValues) {
+		if (vector.size() == 0) {
+			return nan("1");
+		}
+		nrValues = (nrValues > vector.size()) ? vector.size() : nrValues;
+		double m = floatingMean(vector, nrValues);
+		double accum = 0.0;
+		std::for_each(std::prev(std::end(vector), nrValues), std::end(vector), [&](const double d) {
+			accum += (d - m) * (d - m);
+		});
+
+		return sqrt(accum / (nrValues - 1));
+	}
 };
 
 #endif // GENERALMATH_H

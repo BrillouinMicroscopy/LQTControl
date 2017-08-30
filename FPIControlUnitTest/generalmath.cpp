@@ -6,7 +6,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace FPIControlUnitTest {		
 	TEST_CLASS(UnitTest1) {
 		public:
-		
+			// Tests for mean()
 			TEST_METHOD(TestMethodMeanInt) {
 				std::vector<int> vector;
 				vector.push_back(1);
@@ -33,7 +33,7 @@ namespace FPIControlUnitTest {
 				Assert::AreEqual(expected.real(), actual.real());
 				Assert::AreEqual(expected.imag(), actual.imag());
 			}
-
+			// Tests for floatingMean()
 			TEST_METHOD(TestMethodFloatingMeanDoubleExact) {
 				std::vector<double> vector = {
 					1.0, 2.0, 3.0, 4.0, 5.0,
@@ -62,7 +62,7 @@ namespace FPIControlUnitTest {
 				std::vector<double> vector = {};
 				Assert::IsTrue(isnan(generalmath::floatingMean(vector, 15)));
 			}
-
+			// Tests for standardDeviation()
 			TEST_METHOD(TestMethodStandardDeviationDoubleZero) {
 				std::vector<double> vector = {
 					1.0, 1.0, 1.0
@@ -88,6 +88,34 @@ namespace FPIControlUnitTest {
 			TEST_METHOD(TestMethodStandardDeviationDoubleEmpty) {
 				std::vector<double> vector = {};
 				Assert::IsTrue(isnan(generalmath::standardDeviation(vector)));
+			}
+
+			// Tests for floatingStandardDeviation
+			TEST_METHOD(TestMethodFloatingStandardDeviationDoubleZeroExact) {
+				std::vector<double> vector = {
+					1.0, 1.0, 1.0
+				};
+				Assert::AreEqual(0.0, generalmath::floatingStandardDeviation(vector, 3));
+			}
+
+			TEST_METHOD(TestMethodFloatingStandardDeviationDoubleOneLong) {
+				std::vector<double> vector = {
+					1.0, 2.0, 3.0
+				};
+				Assert::AreEqual(1.0, generalmath::floatingStandardDeviation(vector, 10));
+			}
+
+			TEST_METHOD(TestMethodFloatingStandardDeviationDoubleHalfShort) {
+				std::vector<double> vector = {
+					0.0, 1.0, 2.0, 1.0, 2.0, 1.0,
+					2.0, 1.0, 2.0, 1.0, 2.0, 1.5
+				};
+				Assert::AreEqual(0.5, generalmath::floatingStandardDeviation(vector, 11));
+			}
+
+			TEST_METHOD(TestMethodFloatingStandardDeviationDoubleEmpty) {
+				std::vector<double> vector = {};
+				Assert::IsTrue(isnan(generalmath::floatingStandardDeviation(vector, 10)));
 			}
 	};
 }
