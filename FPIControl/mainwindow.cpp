@@ -14,6 +14,7 @@
 #include <string>
 #include <QtCharts/QLegendMarker>
 #include <QtCharts/QXYLegendMarker>
+#include "version.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -208,6 +209,19 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow() {
     delete ui;
+}
+
+void MainWindow::on_actionAbout_triggered() {
+	QString str = QString("FPIControl Version %1.%2.%3 <br> Build from commit: <a href='%4'>%5</a><br>Author: %6<br>Date: %7")
+		.arg(Version::MAJOR)
+		.arg(Version::MINOR)
+		.arg(Version::PATCH)
+		.arg(Version::Url.c_str())
+		.arg(Version::Commit.c_str())
+		.arg(Version::Author.c_str())
+		.arg(Version::Date.c_str());
+
+	QMessageBox::about(this, tr("About FPIControl"), str);
 }
 
 void MainWindow::connectMarkers() {

@@ -1185,8 +1185,15 @@
     <addaction name="actionConnect_Piezo"/>
     <addaction name="actionDisconnect_Piezo"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
    <addaction name="menuFiles"/>
    <addaction name="menuDevice"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionSave">
@@ -1246,6 +1253,11 @@
    </property>
    <property name="text">
     <string>Disable Piezo Output</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
    </property>
   </action>
  </widget>

@@ -131,6 +131,8 @@ private slots:
 	// SLOT for updating the compensation state
 	void updateCompensationState(bool compensating);
 
+	void on_actionAbout_triggered();
+
 public slots:
 	void connectMarkers();
 	void handleMarkerClicked();

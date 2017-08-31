@@ -156,6 +156,9 @@ copy "$(ProgramW6432)\Thorlabs\Kinesis\Thorlabs.MotionControl.DeviceManager.DLL"
 copy "$(ProgramW6432)\Thorlabs\Kinesis\Thorlabs.MotionControl.KCube.Piezo.DLL" "$(TargetDir)"
 copy "$(ProjectDir)assets\loader.gif" "$(TargetDir)"</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>powershell -ExecutionPolicy ByPass -File "$(SolutionDir)FPIControl\generateVersionHeader.ps1"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="daq.cpp" />
@@ -232,6 +235,7 @@ copy "$(ProjectDir)assets\loader.gif" "$(TargetDir)"</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="colors.h" />
+    <ClInclude Include="version.h" />
     <CustomBuild Include="kcubepiezo.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </Message>
