@@ -72,7 +72,7 @@ typedef struct {
 typedef struct {
 	std::vector<std::chrono::time_point<std::chrono::system_clock>> time;		// [s]	time vector
 	std::vector<int32_t> voltage;	// [µV]	output voltage (<int32_t> is sufficient for this)
-	std::vector<int32_t> intensity;	// [µV]	measured intensity (<int32_t> is fine)
+	std::vector<int32_t> amplitude;	// [µV]	measured intensity (<int32_t> is fine)
 	std::vector<double> error;		// [1]	PDH error signal
 	double iError = 0;				// [1]	integral value of the error signal
 } LOCK_DATA;

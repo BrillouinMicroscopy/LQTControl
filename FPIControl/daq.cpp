@@ -476,6 +476,11 @@ void daq::lock() {
 
 	double error = pdh.getError(tau, reference);
 
+	// write data to struct for storage
+	lockData.time.push_back(now);
+	lockData.error.push_back(error);
+	lockData.amplitude.push_back(amplitude);
+
 	if (lockParameters.active) {
 		double dError = 0;
 		if (lockData.error.size() > 0) {
@@ -512,8 +517,10 @@ void daq::lock() {
 			emit(compensationStateChanged(false));
 		}
 
-		// abort locking if output voltage is over 2 V
-		if (abs(currentVoltage) > 2) {
+		// abort locking if
+		// - output voltage is over 2 V
+		// - maximum of the signal amplitude in the last 50 measurements is below 0.05 V
+		if ((abs(currentVoltage) > 2) || (generalmath::floatingMax(lockData.amplitude, 50) / static_cast<double>(1000) < 0.05)) {
 			daq::disableLocking(LOCKSTATE::FAILURE);
 		}
 
@@ -533,9 +540,6 @@ void daq::lock() {
 	}
 
 	// write data to struct for storage
-	lockData.time.push_back(now);
-	lockData.error.push_back(error);
-	lockData.intensity.push_back(amplitude);
 	lockData.voltage.push_back(currentVoltage);
 
 	double passed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lockData.time[0]).count() / 1e3;	// store passed time in seconds

@@ -117,5 +117,60 @@ namespace FPIControlUnitTest {
 				std::vector<double> vector = {};
 				Assert::IsTrue(isnan(generalmath::floatingStandardDeviation(vector, 10)));
 			}
+
+			// Test for floatingMax<int>
+			TEST_METHOD(TestMethodFloatingMaxIntShort) {
+				std::vector<int> vector = {
+					2, -1, 1, 0
+				};
+				Assert::AreEqual(1, generalmath::floatingMax(vector, 2));
+			}
+
+			TEST_METHOD(TestMethodFloatingMaxIntLong) {
+				std::vector<int> vector = {
+					2, -1, 1, 0
+				};
+				Assert::AreEqual(2, generalmath::floatingMax(vector, 10));
+			}
+
+			TEST_METHOD(TestMethodFloatingMaxIntExact) {
+				std::vector<int> vector = {
+					2, -1, 1, 0
+				};
+				Assert::AreEqual(2, generalmath::floatingMax(vector, 4));
+			}
+
+			TEST_METHOD(TestMethodFloatingMaxIntEmpty) {
+				std::vector<int> vector = {};
+				// no NaN for <int>
+				Assert::AreEqual(0, generalmath::floatingMax(vector, 2));
+			}
+
+			// Test for floatingMax<double>
+			TEST_METHOD(TestMethodFloatingMaxDoubleShort) {
+				std::vector<double> vector = {
+					2.0, -1.0, 1.0, 0.0
+				};
+				Assert::AreEqual(1.0, generalmath::floatingMax(vector, 2));
+			}
+
+			TEST_METHOD(TestMethodFloatingMaxDoubleLong) {
+				std::vector<double> vector = {
+					2.0, -1.0, 1.0, 0.0
+				};
+				Assert::AreEqual(2.0, generalmath::floatingMax(vector, 10));
+			}
+
+			TEST_METHOD(TestMethodFloatingMaxDoubleExact) {
+				std::vector<double> vector = {
+					2.0, -1.0, 1.0, 0.0
+				};
+				Assert::AreEqual(2.0, generalmath::floatingMax(vector, 4));
+			}
+
+			TEST_METHOD(TestMethodFloatingMaxDoubleEmpty) {
+				std::vector<double> vector = {};
+				Assert::IsTrue(isnan(generalmath::floatingMax(vector, 2)));
+			}
 	};
 }

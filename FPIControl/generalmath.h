@@ -112,6 +112,35 @@ public:
 
 		return sqrt(accum / (nrValues - 1));
 	}
+
+	static double floatingMax(std::vector<double> vector, size_t nrValues) {
+		if (vector.size() == 0) {
+			return nan("1");
+		}
+		nrValues = (nrValues > vector.size()) ? vector.size() : nrValues;
+		double max = *std::prev(std::end(vector), nrValues);
+		std::for_each(std::prev(std::end(vector), nrValues), std::end(vector), [&](const double d) {
+			if (d > max) {
+				max = d;
+			}
+		});
+		return max;
+	}
+
+	static int32_t floatingMax(std::vector<int32_t> vector, size_t nrValues) {
+		if (vector.size() == 0) {
+			// should return NaN, but there is no NaN implementation for int/int32_t
+			return 0;
+		}
+		nrValues = (nrValues > vector.size()) ? vector.size() : nrValues;
+		int32_t max = *std::prev(std::end(vector), nrValues);
+		std::for_each(std::prev(std::end(vector), nrValues), std::end(vector), [&](const int32_t d) {
+			if (d > max) {
+				max = d;
+			}
+		});
+		return max;
+	}
 };
 
 #endif // GENERALMATH_H
