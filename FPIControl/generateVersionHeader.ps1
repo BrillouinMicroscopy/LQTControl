@@ -5,7 +5,8 @@ Param (
   [String]$VERSION_PATCH = 0,
   [String]$Namespace = 'Version',
   [String]$GitRoot,
-  $Author = "Raimund Schlüßler <raimund.schluessler@tu-dresden.de>",
+  $Author = "Raimund Schlüßler",
+  $AuthorEmail = "raimund.schluessler@tu-dresden.de",
   [String]$HeaderFile = "version.h",
   [String]$VerPrefix = "https://gitlab.rschluessler.com/BrillouinMicroscopy/FPIControl/commit/"
 )
@@ -20,7 +21,8 @@ $VerMinor = "  const int MINOR = "+$VERSION_MINOR+";" | Out-String
 $VerPatch = "  const int PATCH = "+$VERSION_PATCH+";" | Out-String
 $VerCommit = git log -n 1 --format=format:"  const std::string Commit = `\`"%H`\`";%n" | Out-String
 #$VerBy   = git log -n 1 --format=format:"  const std::string Author = `\`"%an `<%ae`>`\`";%n" | Out-String
-$VerBy = "  const std::string Author = `""+$Author+"`";" | Out-String
+$VerAuthor = "  const std::string Author = `""+$Author+"`";" | Out-String
+$VerEmail = "  const std::string AuthorEmail = `""+$AuthorEmail+"`";" | Out-String
 $VerUrl  = git log -n 1 --format=format:"  const std::string Url = `\`"$VerPrefix%H`\`";%n" | Out-String
 $VerDate = git log -n 1 --format=format:"  const std::string Date = `\`"%ai`\`";%n" | Out-String
 $VerSubj = git log -n 1 --format=format:"  const std::string Subject = `\`"%f`\`";%n" | Out-String
@@ -34,7 +36,7 @@ if ($VerChgs -gt 0) {
 }
 
 "Written $Project\" + (
-  New-Item -Force -Path "$Project" -Name "$HeaderFile" -ItemType "file" -Value "$VerFileHead$VerMajor$VerMinor$VerPatch$VerCommit$VerUrl$VerDate$VerSubj$VerBy$VerDirty$VerFileTail"
+  New-Item -Force -Path "$Project" -Name "$HeaderFile" -ItemType "file" -Value "$VerFileHead$VerMajor$VerMinor$VerPatch$VerCommit$VerUrl$VerDate$VerSubj$VerAuthor$VerEmail$VerDirty$VerFileTail"
 ).Name + " as:"
 ""
 Get-Content "$Project\$HeaderFile" -Encoding UTF8

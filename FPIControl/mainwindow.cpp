@@ -212,12 +212,13 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::on_actionAbout_triggered() {
-	QString str = QString("FPIControl Version %1.%2.%3 <br> Build from commit: <a href='%4'>%5</a><br>Author: %6<br>Date: %7")
+	QString str = QString("FPIControl Version %1.%2.%3 <br> Build from commit: <a href='%4'>%5</a><br>Author: <a href='mailto:%6?subject=FPIControl'>%7</a><br>Date: %8")
 		.arg(Version::MAJOR)
 		.arg(Version::MINOR)
 		.arg(Version::PATCH)
 		.arg(Version::Url.c_str())
 		.arg(Version::Commit.c_str())
+		.arg(Version::AuthorEmail.c_str())
 		.arg(Version::Author.c_str())
 		.arg(Version::Date.c_str());
 
