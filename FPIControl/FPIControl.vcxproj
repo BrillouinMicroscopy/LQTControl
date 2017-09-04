@@ -107,6 +107,9 @@ copy "$(QTDIR)\bin\Qt5Widgets.dll" "$(TargetDir)"
 copy "$(ProjectDir)assets\loader.gif" "$(TargetDir)"
 </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>powershell -ExecutionPolicy ByPass -File "$(SolutionDir)FPIControl\generateVersionHeader.ps1"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
