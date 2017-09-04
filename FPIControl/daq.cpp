@@ -477,8 +477,6 @@ void daq::lock() {
 	double error = pdh.getError(tau, reference);
 
 	// write data to struct for storage
-	lockData.time.push_back(now);
-	lockData.error.push_back(error);
 	lockData.amplitude.push_back(amplitude);
 
 	if (lockParameters.active) {
@@ -540,6 +538,8 @@ void daq::lock() {
 	}
 
 	// write data to struct for storage
+	lockData.time.push_back(now);
+	lockData.error.push_back(error);
 	lockData.voltage.push_back(currentVoltage);
 
 	double passed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lockData.time[0]).count() / 1e3;	// store passed time in seconds
