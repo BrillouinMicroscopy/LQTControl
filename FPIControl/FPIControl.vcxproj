@@ -258,6 +258,9 @@ copy "$(ProjectDir)assets\loader.gif" "$(TargetDir)"</Command>
     <ClInclude Include="GeneratedFiles\ui_mainwindow.h" />
     <ClInclude Include="generalmath.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="FPIControl.rc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
   <ProjectExtensions>
