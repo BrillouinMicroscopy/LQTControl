@@ -40,7 +40,7 @@ class FPI {
 			std::vector<double> frequencies;
 			frequencies.resize(acquisitionParameters.no_of_samples);
 
-			for (int kk(0); kk < acquisitionParameters.no_of_samples; kk++) {
+			for (int kk(0); kk < static_cast<int32_t>(acquisitionParameters.no_of_samples); kk++) {
 				frequencies[kk] = laserParams.f0 + laserParams.fa  * cos(2 * M_PI * laserParams.fm * kk / (200e6 / pow(2.0, acquisitionParameters.timebase)));
 			}
 			return frequencies;
