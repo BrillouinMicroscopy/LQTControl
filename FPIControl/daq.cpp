@@ -671,13 +671,6 @@ bool daq::connect() {
 			return false;
 		} else {
 			daq::setAcquisitionParameters();
-
-			for (int16_t ch(0); ch < 4; ch++) {
-
-				buffers[ch * 2] = (int16_t*)malloc(BUFFER_SIZE * sizeof(int16_t));
-				buffers[ch * 2 + 1] = (int16_t*)malloc(BUFFER_SIZE * sizeof(int16_t));
-			};
-
 			return true;
 		}
 	} else {
