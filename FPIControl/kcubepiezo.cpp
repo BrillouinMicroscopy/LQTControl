@@ -23,7 +23,7 @@ void kcubepiezo::disable() {
 }
 
 void kcubepiezo::setDefaults() {
-	PCC_SetZero(serialNo);											// set zero reference voltage
+	//PCC_SetZero(serialNo);											// set zero reference voltage
 	PCC_SetPositionControlMode(serialNo, defaultSettings.mode);		// set open loop mode
 	PCC_SetMaxOutputVoltage(serialNo, defaultSettings.maxVoltage);	// set maximum output voltage
 	PCC_SetVoltageSource(serialNo, defaultSettings.source);			// set voltage source
