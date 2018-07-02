@@ -1,9 +1,9 @@
 #include "stdafx.h"
-#include "..\FPIControl\generalmath.h"
+#include "..\LQTControl\generalmath.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-namespace FPIControlUnitTest {		
+namespace LQTControlUnitTest {		
 	TEST_CLASS(UnitTest1) {
 		public:
 			// Tests for mean()

@@ -3,7 +3,7 @@
 # ------------------------------------------------------
 
 TEMPLATE = app
-TARGET = FPIControl
+TARGET = LQTControl
 DESTDIR = ./debug
 QT += core widgets gui charts
 CONFIG += debug

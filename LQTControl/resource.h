@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by FPIControl.rc
+// Used by LQTControl.rc
 
 // Next default values for new objects
 // 

@@ -12,7 +12,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DB653017-A984-35AB-B851-8A555650205B}</ProjectGuid>
-    <RootNamespace>FPIControl</RootNamespace>
+    <RootNamespace>LQTControl</RootNamespace>
     <Keyword>Qt4VSv1.0</Keyword>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -24,7 +24,7 @@
     <CharacterSet>NotSet</CharacterSet>
     <ConfigurationType>Application</ConfigurationType>
     <IntermediateDirectory>release\</IntermediateDirectory>
-    <PrimaryOutput>FPIControl</PrimaryOutput>
+    <PrimaryOutput>LQTControl</PrimaryOutput>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <PlatformToolSet>v141</PlatformToolSet>
@@ -33,7 +33,7 @@
     <CharacterSet>NotSet</CharacterSet>
     <ConfigurationType>Application</ConfigurationType>
     <IntermediateDirectory>debug\</IntermediateDirectory>
-    <PrimaryOutput>FPIControl</PrimaryOutput>
+    <PrimaryOutput>LQTControl</PrimaryOutput>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
@@ -47,12 +47,12 @@
   <PropertyGroup>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">release\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">FPIControl</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">LQTControl</TargetName>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</IgnoreImportLibrary>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">debug\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">FPIControl</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">LQTControl</TargetName>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</IgnoreImportLibrary>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -83,7 +83,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreImportLibrary>true</IgnoreImportLibrary>
       <LinkIncremental>false</LinkIncremental>
-      <OutputFile>$(OutDir)\FPIControl.exe</OutputFile>
+      <OutputFile>$(OutDir)\LQTControl.exe</OutputFile>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <SubSystem>Windows</SubSystem>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -108,7 +108,7 @@ copy "$(ProjectDir)assets\loader.gif" "$(TargetDir)"
 </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>powershell -ExecutionPolicy ByPass -File "$(SolutionDir)FPIControl\generateVersionHeader.ps1"</Command>
+      <Command>powershell -ExecutionPolicy ByPass -File "$(SolutionDir)LQTControl\generateVersionHeader.ps1"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -140,7 +140,7 @@ copy "$(ProjectDir)assets\loader.gif" "$(TargetDir)"
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreImportLibrary>true</IgnoreImportLibrary>
-      <OutputFile>$(OutDir)\FPIControl.exe</OutputFile>
+      <OutputFile>$(OutDir)\LQTControl.exe</OutputFile>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <SubSystem>Windows</SubSystem>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -160,7 +160,7 @@ copy "$(ProgramW6432)\Thorlabs\Kinesis\Thorlabs.MotionControl.KCube.Piezo.DLL" "
 copy "$(ProjectDir)assets\loader.gif" "$(TargetDir)"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>powershell -ExecutionPolicy ByPass -File "$(SolutionDir)FPIControl\generateVersionHeader.ps1"</Command>
+      <Command>powershell -ExecutionPolicy ByPass -File "$(SolutionDir)LQTControl\generateVersionHeader.ps1"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -259,7 +259,7 @@ copy "$(ProjectDir)assets\loader.gif" "$(TargetDir)"</Command>
     <ClInclude Include="generalmath.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="FPIControl.rc" />
+    <ResourceCompile Include="LQTControl.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
