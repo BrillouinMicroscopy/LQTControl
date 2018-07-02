@@ -8,7 +8,7 @@ Param (
   $Author = "Raimund Schlüßler",
   $AuthorEmail = "raimund.schluessler@tu-dresden.de",
   [String]$HeaderFile = "version.h",
-  [String]$VerPrefix = "https://github.com/BrillouinMicroscopy/FPIControl/commit/"
+  [String]$VerPrefix = "https://github.com/BrillouinMicroscopy/LQTControl/commit/"
 )
 
 Push-Location -LiteralPath $GitRoot

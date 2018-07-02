@@ -212,7 +212,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::on_actionAbout_triggered() {
-	QString str = QString("FPIControl Version %1.%2.%3 <br> Build from commit: <a href='%4'>%5</a><br>Author: <a href='mailto:%6?subject=FPIControl'>%7</a><br>Date: %8")
+	QString str = QString("LQTControl Version %1.%2.%3 <br> Build from commit: <a href='%4'>%5</a><br>Author: <a href='mailto:%6?subject=LQTControl'>%7</a><br>Date: %8")
 		.arg(Version::MAJOR)
 		.arg(Version::MINOR)
 		.arg(Version::PATCH)
@@ -222,7 +222,7 @@ void MainWindow::on_actionAbout_triggered() {
 		.arg(Version::Author.c_str())
 		.arg(Version::Date.c_str());
 
-	QMessageBox::about(this, tr("About FPIControl"), str);
+	QMessageBox::about(this, tr("About LQTControl"), str);
 }
 
 void MainWindow::connectMarkers() {

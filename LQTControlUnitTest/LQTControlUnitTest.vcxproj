@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9BCA4BAB-7D1A-4025-998E-7A9B0E57360D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>FPIControlUnitTest</RootNamespace>
+    <RootNamespace>LQTControlUnitTest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -106,7 +106,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <UseFullPaths>true</UseFullPaths>
-      <AdditionalIncludeDirectories>$(ProgramW6432)\Pico Technology\SDK\inc;$(QTDIR)\include;$(QTDIR)\mkspecs\win32-msvc2015;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtWidgets;..\FPIControl\;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProgramW6432)\Pico Technology\SDK\inc;$(QTDIR)\include;$(QTDIR)\mkspecs\win32-msvc2015;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtWidgets;..\LQTControl\;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
