@@ -139,7 +139,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	scanViewChart->createDefaultAxes();
 	scanViewChart->axisX()->setRange(0, 1024);
 	scanViewChart->axisY()->setRange(-1, 4);
-	scanViewChart->axisX()->setTitleText("Piezo Voltage [V]");
+	scanViewChart->axisX()->setTitleText("Temperature Offset [K]");
 	scanViewChart->setTitle("Scan View");
 	scanViewChart->layout()->setContentsMargins(0, 0, 0, 0);
 
@@ -150,20 +150,16 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	// set default values of GUI elements
 	SCAN_PARAMETERS scanParameters = d.getScanParameters();
-	ui->scanAmplitude->setValue(scanParameters.amplitude / static_cast<double>(1e6));
-	ui->scanOffset->setValue(scanParameters.offset / static_cast<double>(1e6));
-	ui->scanFrequency->setValue(scanParameters.frequency);
+	ui->scanStart->setValue(scanParameters.low);
+	ui->scanEnd->setValue(scanParameters.high);
 	ui->scanSteps->setValue(scanParameters.nrSteps);
-	ui->scanWaveform->setCurrentIndex(scanParameters.waveform);
 
 	// set default values of lockin parameters
 	LOCK_PARAMETERS lockParameters = d.getLockParameters();
 	ui->proportionalTerm->setValue(lockParameters.proportional);
 	ui->integralTerm->setValue(lockParameters.integral);
 	ui->derivativeTerm->setValue(lockParameters.derivative);
-	ui->frequency->setValue(lockParameters.frequency);
-	ui->phase->setValue(lockParameters.phase);
-	ui->offsetCheckBox->setChecked(lockParameters.compensate);
+	ui->temperatureOffset->setValue(lockParameters.frequency);
 
 	// connect legend marker to toggle visibility of plots
 	MainWindow::connectMarkers();
@@ -173,20 +169,6 @@ MainWindow::MainWindow(QWidget *parent) :
 	statusInfo = new QLabel("");
 	statusInfo->setAlignment(Qt::AlignLeft);
 	ui->statusBar->addPermanentWidget(statusInfo, 1);
-
-	// Compensating info
-	compensationInfo = new QLabel("Compensating voltage offset");
-	compensationInfo->setAlignment(Qt::AlignRight);
-	compensationInfo->hide();
-	ui->statusBar->addPermanentWidget(compensationInfo, 0);
-
-	// Compensating indicator
-	compensationIndicator = new QLabel;
-	QMovie *movie = new QMovie(QDir::currentPath() + "/loader.gif");
-	compensationIndicator->setMovie(movie);
-	compensationIndicator->hide();
-	movie->start();
-	ui->statusBar->addPermanentWidget(compensationIndicator, 0);
 
 	// Locking info
 	lockInfo = new QLabel("Locking Inactive");
@@ -382,20 +364,9 @@ void MainWindow::on_frequency_valueChanged(const double value) {
 void MainWindow::on_phase_valueChanged(const double value) {
 	d.setLockParameters(4, value);
 }
-void MainWindow::on_offsetCheckBox_clicked(const bool checked) {
-	if (checked) {
-		d.toggleOffsetCompensation(checked);
-	} else {
-		d.toggleOffsetCompensation(checked);
-	}
-}
 
-void MainWindow::on_incrementVoltage_clicked() {
-	d.incrementPiezoVoltage();
-}
-
-void MainWindow::on_decrementVoltage_clicked() {
-	d.decrementPiezoVoltage();
+void MainWindow::on_temperatureOffset_valueChanged(const double offset) {
+	
 }
 
 void MainWindow::updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &data) {
@@ -440,8 +411,8 @@ void MainWindow::updateScanView() {
 		QVector<QPointF> error;
 		error.reserve(scanData.nrSteps);
 		for (int j(0); j < scanData.nrSteps; j++) {
-			intensity.append(QPointF(scanData.voltages[j] / static_cast<double>(1e6), scanData.intensity[j] / static_cast<double>(1000)));
-			error.append(QPointF(scanData.voltages[j] / static_cast<double>(1e6), std::real(scanData.error[j])));
+			intensity.append(QPointF(scanData.temperatures[j] / static_cast<double>(1e6), scanData.intensity[j] / static_cast<double>(1000)));
+			error.append(QPointF(scanData.temperatures[j] / static_cast<double>(1e6), std::real(scanData.error[j])));
 		}
 		scanViewPlots[static_cast<int>(scanViewPlotTypes::INTENSITY)]->replace(intensity);
 		scanViewPlots[static_cast<int>(scanViewPlotTypes::ERRORSIGNAL)]->replace(error);
@@ -583,39 +554,39 @@ void MainWindow::on_actionDisconnect_triggered() {
 	}
 }
 
-void MainWindow::on_actionConnect_Piezo_triggered() {
-	bool connected = d.connectPiezo();
-	if (connected) {
-		ui->actionConnect_Piezo->setEnabled(false);
-		ui->actionDisconnect_Piezo->setEnabled(true);
-	}
-	else {
-		ui->actionConnect_Piezo->setEnabled(true);
-		ui->actionDisconnect_Piezo->setEnabled(false);
-	}
+void MainWindow::on_actionConnect_Laser_triggered() {
+	//bool connected = d.connectPiezo();
+	//if (connected) {
+	//	ui->actionConnect_Piezo->setEnabled(false);
+	//	ui->actionDisconnect_Piezo->setEnabled(true);
+	//}
+	//else {
+	//	ui->actionConnect_Piezo->setEnabled(true);
+	//	ui->actionDisconnect_Piezo->setEnabled(false);
+	//}
 }
 
-void MainWindow::on_actionDisconnect_Piezo_triggered() {
-	bool connected = d.disconnectPiezo();
-	if (connected) {
-		ui->actionConnect_Piezo->setEnabled(false);
-		ui->actionDisconnect_Piezo->setEnabled(true);
-	}
-	else {
-		ui->actionConnect_Piezo->setEnabled(true);
-		ui->actionDisconnect_Piezo->setEnabled(false);
-	}
+void MainWindow::on_actionDisconnect_Laser_triggered() {
+	//bool connected = d.disconnectPiezo();
+	//if (connected) {
+	//	ui->actionConnect_Piezo->setEnabled(false);
+	//	ui->actionDisconnect_Piezo->setEnabled(true);
+	//}
+	//else {
+	//	ui->actionConnect_Piezo->setEnabled(true);
+	//	ui->actionDisconnect_Piezo->setEnabled(false);
+	//}
 }
 
-void MainWindow::on_enablePiezoCheckBox_clicked(const bool checked) {
+void MainWindow::on_enableTemperatureControlCheckbox_clicked(const bool checked) {
 	if (checked) {
-		d.enablePiezo();
+		
 	}
 	else {
-		d.disablePiezo();
+		
 	}
 }
 
 void MainWindow::on_scanButton_clicked() {
-	d.set_sig_gen();
+	
 }

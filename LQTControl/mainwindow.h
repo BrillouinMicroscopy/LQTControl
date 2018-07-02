@@ -88,8 +88,8 @@ private slots:
 	void on_acquireLockButton_clicked();
 	void on_actionConnect_triggered();
 	void on_actionDisconnect_triggered();
-	void on_actionConnect_Piezo_triggered();
-	void on_actionDisconnect_Piezo_triggered();
+	void on_actionConnect_Laser_triggered();
+	void on_actionDisconnect_Laser_triggered();
 	void on_scanButton_clicked();
 	void on_scanButtonManual_clicked();
 	// SLOTS for setting the acquisitionParameters
@@ -112,10 +112,8 @@ private slots:
 	void on_frequency_valueChanged(const double value);
 	void on_phase_valueChanged(const double value);
 
-	void on_enablePiezoCheckBox_clicked(const bool checked);
-	void on_incrementVoltage_clicked();
-	void on_decrementVoltage_clicked();
-	void on_offsetCheckBox_clicked(const bool checked);
+	void on_enableTemperatureControlCheckbox_clicked(const bool checked);
+	void on_temperatureOffset_valueChanged(const double offset);
 
 	// SLOTS for updating the plots
 	void updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &data);

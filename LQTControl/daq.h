@@ -42,18 +42,16 @@ typedef struct {
 } ACQUISITION_PARAMETERS;
 
 typedef struct {
-	int32_t amplitude = 2e6;		// [µV] peak to peak voltage
-	int32_t offset = 0;				// 
-	int16_t waveform = 3;			// type of waveform
-	int32_t frequency = 100;		// frequency of the scan
-	int32_t	nrSteps = 100;			// number of steps for the manual scan
+	double low = -5;		// [K] offset start
+	double high = 5;		// [K] offset end
+	int32_t	nrSteps = 100;	// number of steps
 } SCAN_PARAMETERS;
 
 typedef struct {
 	int32_t nrSteps = 0;
-	std::vector<int32_t> voltages;	// [µV] output voltage (<int32_t> is sufficient for this)
-	std::vector<int32_t> intensity;	// [µV] measured intensity (<int32_t> is fine)
-	std::vector<double> error;		// PDH error signal
+	std::vector<double> temperatures;	// [K] temperature offset
+	std::vector<int32_t> intensity;		// [µV] measured intensity (<int32_t> is fine)
+	std::vector<double> error;			// PDH error signal
 } SCAN_DATA;
 
 typedef struct {
@@ -114,19 +112,14 @@ class daq : public QObject {
 		void disableLocking(LOCKSTATE lockstate = LOCKSTATE::INACTIVE);
 		void getBlockData();
 		void lock();
-		bool enablePiezo();
-		bool disablePiezo();
-		void incrementPiezoVoltage();
-		void decrementPiezoVoltage();
 		QVector<QPointF> getStreamingBuffer(int ch);
 		bool connect();
 		bool disconnect();
-		bool connectPiezo();
-		bool disconnectPiezo();
+		bool connectLaser();
+		bool disconnectLaser();
 		void startStreaming();
 		void collectStreamingData();
 		void stopStreaming();
-		void set_sig_gen();
 		void set_trigger_advanced();
 		void setSampleRate(int index);
 		void setCoupling(int index, int ch);

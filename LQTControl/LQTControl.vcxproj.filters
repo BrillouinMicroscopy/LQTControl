@@ -68,7 +68,7 @@
     <ClCompile Include="daq.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="kcubepiezo.cpp">
+    <ClCompile Include="LQT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -77,9 +77,6 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="daq.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="kcubepiezo.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -106,10 +103,10 @@
     <ClInclude Include="generalmath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PDH.h">
+    <ClInclude Include="version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="version.h">
+    <ClInclude Include="LQT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,6 +1,5 @@
 #include "daq.h"
-#include "kcubepiezo.h"
-#include "PDH.h"
+#include "LQT.h"
 #include <QtWidgets>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMainWindow>
@@ -118,8 +117,7 @@ BUFFER_INFO bufferInfo;
 
 int32_t input_ranges[PS2000_MAX_RANGES] = { 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000 };
 
-PDH pdh;
-kcubepiezo piezo;
+LQT laser;
 
 daq::daq(QObject *parent) :
 	QObject(parent) {
@@ -160,13 +158,13 @@ bool daq::startStopLocking() {
 	if (lockParameters.active) {
 		// set integral error to zero before starting to lock
 		lockData.iError = 0;
-		// store and immediately restore output voltage
-		piezo.storeOutputVoltageIncrement();
-		// this is necessary, because it seems, that getting the output voltage takes the external signal into account
-		// whereas setting it does not
-		piezo.restoreOutputVoltageIncrement();
-		piezo.setVoltageSource(PZ_InputSourceFlags::PZ_ExternalSignal);
-		piezoVoltage = piezo.getVoltage();
+		//// store and immediately restore output voltage
+		//piezo.storeOutputVoltageIncrement();
+		//// this is necessary, because it seems, that getting the output voltage takes the external signal into account
+		//// whereas setting it does not
+		//piezo.restoreOutputVoltageIncrement();
+		//piezo.setVoltageSource(PZ_InputSourceFlags::PZ_ExternalSignal);
+		//piezoVoltage = piezo.getVoltage();
 		emit(lockStateChanged(LOCKSTATE::ACTIVE));
 	} else {
 		daq::disableLocking();
@@ -175,7 +173,7 @@ bool daq::startStopLocking() {
 }
 
 void daq::disableLocking(LOCKSTATE lockstate) {
-	piezo.setVoltageSource(PZ_InputSourceFlags::PZ_Potentiometer);
+	/*piezo.setVoltageSource(PZ_InputSourceFlags::PZ_Potentiometer);*/
 	currentVoltage = 0;
 	// set output voltage of the DAQ
 	ps2000_set_sig_gen_built_in(
@@ -234,18 +232,12 @@ void daq::setRange(int index, int ch) {
 void daq::setScanParameters(int type, int value) {
 	switch (type) {
 		case 0:
-			scanParameters.amplitude = value;
+			scanParameters.low = value;
 			break;
 		case 1:
-			scanParameters.offset = value;
+			scanParameters.high = value;
 			break;
 		case 2:
-			scanParameters.waveform = value;
-			break;
-		case 3:
-			scanParameters.frequency = value;
-			break;
-		case 4:
 			scanParameters.nrSteps = value;
 			break;
 	}
@@ -360,7 +352,7 @@ std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq::collectBlockData() {
 
 void daq::scanManual() {
 	scanData.nrSteps = scanParameters.nrSteps;
-	scanData.voltages.resize(scanParameters.nrSteps);
+	scanData.temperatures = generalmath::linspace<double>(scanParameters.low, scanParameters.high, scanParameters.nrSteps);
 	scanData.intensity.resize(scanParameters.nrSteps);
 	scanData.error.resize(scanParameters.nrSteps);
 
@@ -368,26 +360,11 @@ void daq::scanManual() {
 
 	// generate voltage values
 	for (int j(0); j < scanData.nrSteps; j++) {
-		// create voltages, store in array
-		scanData.voltages[j] = j*scanParameters.amplitude / (scanParameters.nrSteps - 1) + scanParameters.offset;
-
-		// set voltages as DC value on the signal generator
-		ps2000_set_sig_gen_built_in(
-			unitOpened.handle,		// handle of the oscilloscope
-			scanData.voltages[j],// offsetVoltage in microvolt
-			0,						// peak to peak voltage in microvolt
-			(PS2000_WAVE_TYPE)0,	// type of waveform
-			(float)0,				// startFrequency in Hertz
-			(float)0,				// stopFrequency in Hertz
-			0,						// increment
-			0,						// dwellTime, time in seconds between frequency changes in sweep mode
-			PS2000_UPDOWN,			// sweepType
-			0						// sweeps, number of times to sweep the frequency
-		);
-
 		if (j == 0) {
 			Sleep(5000);
 		}
+
+		laser.setTemperature(scanData.temperatures[j]);
 
 		// acquire detector and reference signal, store and process it
 		std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectBlockData();
@@ -404,8 +381,6 @@ void daq::scanManual() {
 		}
 
 		scanData.intensity[j] = generalmath::absSum(tau);
-
-		scanData.error[j] = pdh.getError(tau, reference);
 	}
 
 	// normalize error
@@ -415,7 +390,6 @@ void daq::scanManual() {
 	}
 
 	// reset signal generator to start values
-	daq::set_sig_gen();
 	emit scanDone();
 }
 
@@ -470,7 +444,7 @@ void daq::lock() {
 		std::rotate(reference.rbegin(), reference.rbegin() + phaseStep, reference.rend());
 	}
 
-	double error = pdh.getError(tau, reference);
+	double error = 0;
 
 	// write data to struct for storage
 	lockData.amplitude.push_back(amplitude);
@@ -484,33 +458,6 @@ void daq::lock() {
 		}
 		currentVoltage = currentVoltage + (lockParameters.proportional * error + lockData.iError + lockParameters.derivative * dError) / 100;
 
-		// check if offset compensation is necessary and set piezo voltage
-		if (lockParameters.compensate) {
-			compensationTimer++;
-			if (abs(currentVoltage) > lockParameters.maxOffset) {
-				lockParameters.compensating = TRUE;
-				emit(compensationStateChanged(true));
-			}
-			if (abs(currentVoltage) < lockParameters.targetOffset) {
-				lockParameters.compensating = FALSE;
-				emit(compensationStateChanged(false));
-			}
-			if (lockParameters.compensating & (compensationTimer > 50)) {
-				compensationTimer = 0;
-				if (currentVoltage > 0) {
-					piezo.incrementVoltage(1);
-					piezoVoltage = piezo.getVoltage();
-				}
-				else {
-					piezo.incrementVoltage(-1);
-					piezoVoltage = piezo.getVoltage();
-				}
-			}
-		} else {
-			lockParameters.compensating = FALSE;
-			emit(compensationStateChanged(false));
-		}
-
 		// abort locking if
 		// - output voltage is over 2 V
 		// - maximum of the signal amplitude in the last 50 measurements is below 0.05 V
@@ -518,19 +465,8 @@ void daq::lock() {
 			daq::disableLocking(LOCKSTATE::FAILURE);
 		}
 
-		// set output voltage of the DAQ
-		ps2000_set_sig_gen_built_in(
-			unitOpened.handle,				// handle of the oscilloscope
-			currentVoltage * 1e6,			// offsetVoltage in microvolt
-			0,								// peak to peak voltage in microvolt
-			(PS2000_WAVE_TYPE)5,			// type of waveform
-			(float)0,						// startFrequency in Hertz
-			(float)0,						// stopFrequency in Hertz
-			0,								// increment
-			0,								// dwellTime, time in seconds between frequency changes in sweep mode
-			PS2000_UPDOWN,					// sweepType
-			0								// sweeps, number of times to sweep the frequency
-		);
+		// set laser temperature
+		laser.setTemperature(currentVoltage);
 	}
 
 	// write data to struct for storage
@@ -549,24 +485,6 @@ void daq::lock() {
 	lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNALSTD)].append(QPointF(passed, generalmath::floatingStandardDeviation(lockData.error, 50) / 100));
 
 	emit locked(lockDataPlot);
-}
-
-bool daq::enablePiezo() {
-	piezo.enable();
-	return TRUE;
-}
-
-bool daq::disablePiezo() {
-	piezo.disable();
-	return FALSE;
-}
-
-void daq::incrementPiezoVoltage() {
-	piezo.incrementVoltage(1);
-}
-
-void daq::decrementPiezoVoltage() {
-	piezo.incrementVoltage(-1);
 }
 
 QVector<QPointF> daq::getStreamingBuffer(int ch) {
@@ -833,13 +751,13 @@ bool daq::disconnect() {
 	return false;
 }
 
-bool daq::connectPiezo() {
-	piezo.connect();
+bool daq::connectLaser() {
+	laser.connect();
 	return TRUE;
 }
 
-bool daq::disconnectPiezo() {
-	piezo.disconnect();
+bool daq::disconnectLaser() {
+	laser.disconnect();
 	return FALSE;
 }
 
@@ -1020,25 +938,6 @@ void daq::get_info(void) {
 		unitOpened.timebases = PS2105_MAX_TIMEBASE;
 		unitOpened.noOfChannels = SINGLE_CH_SCOPE;
 	}
-}
-
-void daq::set_sig_gen() {
-
-	currentVoltage = scanParameters.offset / 1e6;
-
-	ps2000_set_sig_gen_built_in(
-		unitOpened.handle,				// handle of the oscilloscope
-		scanParameters.offset,			// offsetVoltage in microvolt
-		scanParameters.amplitude,		// peak to peak voltage in microvolt
-		(PS2000_WAVE_TYPE) scanParameters.waveform,	// type of waveform
-		(float) scanParameters.frequency,	// startFrequency in Hertz
-		(float) scanParameters.frequency,	// stopFrequency in Hertz
-		0,								// increment
-		0,								// dwellTime, time in seconds between frequency changes in sweep mode
-		PS2000_UPDOWN,					// sweepType
-		0								// sweeps, number of times to sweep the frequency
-	);
-
 }
 
 void daq::set_trigger_advanced(void) {
