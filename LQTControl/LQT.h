@@ -2,12 +2,14 @@
 #define LQT_H
 
 #include <QSerialPort>
+#include "fmt/format.h"
 
 class LQT {
 
 private:
 	QSerialPort *m_laserPort;
 	bool m_isConnected = false;
+	std::string m_terminator = "\r";
 
 	double m_temperature = 0;
 	double m_maxTemperature = 5;
@@ -21,17 +23,35 @@ public:
 	void connect();
 	void disconnect();
 
-	// control temperature feature
-	void enableTemperatureControl();
-	void disableTemperatureControl();
+	/*
+	* Functions regarding the serial communication
+	*/
+
+	std::string receive(std::string request);
+	void send(std::string message);
+	qint64 writeToDevice(const char * data);
+
+	/*
+	* Functions for setting and getting the temperature
+	*/
 
 	// temperature
 	void setTemperature(double temperature);
-	void getTemperature(double temperature);
+	double getTemperature();
 
 	// maximum temperature
 	void setMaxTemperature(double temperature);
-	void getMaxTemperature(double temperature);
+	double getMaxTemperature();
+
+	/*
+	* Functions for setting and getting the lock states
+	*/
+
+	void setFeature(std::string feature, bool value);
+	bool getFeature(std::string feature);
+
+	// control temperature feature
+	void enableTemperatureControl(bool enable);
 
 	// mod status
 	void setMod(bool mod);

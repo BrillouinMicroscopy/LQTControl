@@ -7,8 +7,8 @@
 /* Definitions of PS2000 driver routines */
 #include "ps2000.h"
 
-int16_t		values_a[BUFFER_SIZE]; // block mode buffer, Channel A
-int16_t		values_b[BUFFER_SIZE]; // block mode buffer, Channel B
+int16_t		values_a[DAQ_BUFFER_SIZE]; // block mode buffer, Channel A
+int16_t		values_b[DAQ_BUFFER_SIZE]; // block mode buffer, Channel B
 
 int16_t		overflow;
 int32_t		scale_to_mv = 1;
@@ -82,7 +82,7 @@ typedef struct {
 	int16_t DCcoupled;
 	int16_t range;
 	int16_t enabled;
-	int16_t values[BUFFER_SIZE];
+	int16_t values[DAQ_BUFFER_SIZE];
 } CHANNEL_SETTINGS;
 
 typedef struct {
@@ -304,7 +304,7 @@ void daq::setAcquisitionParameters() {
 
 std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq::collectBlockData() {
 
-	int32_t times[BUFFER_SIZE];
+	int32_t times[DAQ_BUFFER_SIZE];
 
 	/* Start collecting data,
 	*  wait for completion */

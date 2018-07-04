@@ -71,6 +71,9 @@
     <ClCompile Include="LQT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="external\fmt\src\format.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mainwindow.h">

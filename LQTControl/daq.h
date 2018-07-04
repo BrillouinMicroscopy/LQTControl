@@ -13,7 +13,7 @@
 #include "PDH.h"
 #include "generalmath.h"
 
-#define BUFFER_SIZE 	8000
+#define DAQ_BUFFER_SIZE 	8000
 #define BUFFER_SIZE_STREAMING 50000		// Overview buffer size
 #define NUM_STREAMING_SAMPLES 100000	// Number of streaming samples to collect
 #define MAX_CHANNELS 4
