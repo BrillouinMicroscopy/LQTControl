@@ -79,6 +79,9 @@ typedef enum enViews {
 	SCAN
 } VIEWS;
 
+Q_DECLARE_METATYPE(ACQUISITION_PARAMETERS);
+Q_DECLARE_METATYPE(LOCKSTATE);
+
 class MainWindow : public QMainWindow {
 	Q_OBJECT
 

@@ -22,6 +22,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
+	qRegisterMetaType<ACQUISITION_PARAMETERS>("ACQUISITION_PARAMETERS");
+	qRegisterMetaType<LOCKSTATE>("LOCKSTATE");
+
 	// slot laser connection
 	static QMetaObject::Connection connection = QWidget::connect(
 		m_laserControl,
@@ -38,20 +41,45 @@ MainWindow::MainWindow(QWidget *parent) :
 		SLOT(daqConnectionChanged(bool))
 	);
 
-	QWidget::connect(m_dataAcquisition, SIGNAL(scanDone()), this, SLOT(updateScanView()));
-	QWidget::connect(m_dataAcquisition, SIGNAL(locked(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &)), this,
-		SLOT(updateLockView(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &)));
-	QWidget::connect(m_dataAcquisition, SIGNAL(collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &)), this,
-		SLOT(updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &)));
+	QWidget::connect(
+		m_dataAcquisition,
+		SIGNAL(scanDone()),
+		this, 
+		SLOT(updateScanView())
+	);
+	QWidget::connect(
+		m_dataAcquisition,
+		SIGNAL(locked(std::array<QVector<QPointF>,static_cast<int>(lockViewPlotTypes::COUNT)> &)),
+		this,
+		SLOT(updateLockView(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &))
+	);
+	QWidget::connect(
+		m_dataAcquisition,
+		SIGNAL(collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &)),
+		this,
+		SLOT(updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &))
+	);
 
-	QWidget::connect(m_dataAcquisition, SIGNAL(acquisitionParametersChanged(ACQUISITION_PARAMETERS)), this,
-		SLOT(updateAcquisitionParameters(ACQUISITION_PARAMETERS)));
+	QWidget::connect(
+		m_dataAcquisition,
+		SIGNAL(acquisitionParametersChanged(ACQUISITION_PARAMETERS)),
+		this,
+		SLOT(updateAcquisitionParameters(ACQUISITION_PARAMETERS))
+	);
 
-	QWidget::connect(m_dataAcquisition, SIGNAL(lockStateChanged(LOCKSTATE)), this,
-		SLOT(updateLockState(LOCKSTATE)));
+	QWidget::connect(
+		m_dataAcquisition,
+		SIGNAL(lockStateChanged(LOCKSTATE)),
+		this,
+		SLOT(updateLockState(LOCKSTATE))
+	);
 
-	QWidget::connect(m_dataAcquisition, SIGNAL(compensationStateChanged(bool)), this,
-		SLOT(updateCompensationState(bool)));
+	QWidget::connect(
+		m_dataAcquisition,
+		SIGNAL(compensationStateChanged(bool)),
+		this,
+		SLOT(updateCompensationState(bool))
+	);
 	
 	// set up live view plots
 	liveViewPlots.resize(static_cast<int>(liveViewPlotTypes::COUNT));
