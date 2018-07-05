@@ -9,6 +9,7 @@ LQT::~LQT() {
 
 void LQT::connect() {
 	if (!m_isConnected) {
+		m_laserPort->setPortName("COM1");
 		m_laserPort->setBaudRate(QSerialPort::Baud19200);
 		m_laserPort->setStopBits(QSerialPort::OneStop);
 		m_laserPort->setParity(QSerialPort::NoParity);
