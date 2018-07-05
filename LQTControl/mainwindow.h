@@ -7,11 +7,12 @@
 #include <QtCharts/QChart>
 
 #include "daq.h"
+#include "LQT.h"
+#include "thread.h"
 
 namespace Ui {
 	class MainWindow;
 }
-
 
 class IndicatorWidget : public QWidget {
 	Q_OBJECT
@@ -72,6 +73,12 @@ typedef struct {
 	AXIS_RANGE scanView;
 } VIEW_SETTINGS;
 
+typedef enum enViews {
+	LIVE,
+	LOCK,
+	SCAN
+} VIEWS;
+
 class MainWindow : public QMainWindow {
 	Q_OBJECT
 
@@ -80,16 +87,20 @@ public:
     ~MainWindow();
 
 private slots:
-	void on_selectDisplay_activated(const int index);
+	void on_selectDisplay_activated(const VIEWS index);
 	void on_floatingViewCheckBox_clicked(const bool checked);
+
+	// handle laser connection
+	void on_actionConnect_Laser_triggered();
+	void on_actionDisconnect_Laser_triggered();
+
+	// handle data acquisition connection
+	void on_actionConnect_DAQ_triggered();
+	void on_actionDisconnect_DAQ_triggered();
 
 	void on_acquisitionButton_clicked();
 	void on_lockButton_clicked();
 	void on_acquireLockButton_clicked();
-	void on_actionConnect_triggered();
-	void on_actionDisconnect_triggered();
-	void on_actionConnect_Laser_triggered();
-	void on_actionDisconnect_Laser_triggered();
 	void on_scanButton_clicked();
 	void on_scanButtonManual_clicked();
 	// SLOTS for setting the acquisitionParameters
@@ -99,18 +110,17 @@ private slots:
 	void on_chARange_activated(const int index);
 	void on_chBRange_activated(const int index);
 	void on_sampleNumber_valueChanged(const int no_of_samples);
-	// SLOTS for setting the scanParameters
-	void on_scanAmplitude_valueChanged(const double value);
-	void on_scanOffset_valueChanged(const double value);
-	void on_scanWaveform_activated(const int index);
-	void on_scanFrequency_valueChanged(const double value);
+
+	// SLOTS for setting the scanSettings
+	void on_scanStart_valueChanged(const double value);
+	void on_scanEnd_valueChanged(const double value);
 	void on_scanSteps_valueChanged(const int value);
 
+	// SLOTS for setting the lockSettings
 	void on_proportionalTerm_valueChanged(const double value);
 	void on_integralTerm_valueChanged(const double value);
 	void on_derivativeTerm_valueChanged(const double value);
-	void on_frequency_valueChanged(const double value);
-	void on_phase_valueChanged(const double value);
+	void on_transmission_valueChanged(const double value);
 
 	void on_enableTemperatureControlCheckbox_clicked(const bool checked);
 	void on_temperatureOffset_valueChanged(const double offset);
@@ -131,20 +141,25 @@ private slots:
 
 	void on_actionAbout_triggered();
 
+	void laserConnectionChanged(bool connected);
+	void daqConnectionChanged(bool connected);
+
 public slots:
 	void connectMarkers();
 	void handleMarkerClicked();
 
 private:
     Ui::MainWindow *ui;
+	Thread m_acquisitionThread;
 	QtCharts::QChart *liveViewChart;
 	QtCharts::QChart *lockViewChart;
 	QtCharts::QChart *scanViewChart;
 	QVector<QtCharts::QLineSeries *> liveViewPlots;
 	QVector<QtCharts::QLineSeries *> lockViewPlots;
 	QVector<QtCharts::QLineSeries *> scanViewPlots;
-	daq d;
-	int view = 0;	// selection of the view
+	LQT *m_laserControl = new LQT();
+	daq *m_dataAcquisition = new daq(nullptr, m_laserControl);
+	VIEWS m_selectedView = VIEWS::LIVE;	// selection of the view
 	IndicatorWidget *lockIndicator;
 	QLabel *compensationIndicator;
 	QLabel *lockInfo;

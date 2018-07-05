@@ -22,19 +22,35 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
-	QWidget::connect(&d, SIGNAL(scanDone()), this, SLOT(updateScanView()));
-	QWidget::connect(&d, SIGNAL(locked(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &)), this,
+	// slot laser connection
+	static QMetaObject::Connection connection = QWidget::connect(
+		m_laserControl,
+		SIGNAL(connected(bool)),
+		this,
+		SLOT(laserConnectionChanged(bool))
+	);
+
+	// slot daq connection
+	connection = QWidget::connect(
+		m_dataAcquisition,
+		SIGNAL(connected(bool)),
+		this,
+		SLOT(daqConnectionChanged(bool))
+	);
+
+	QWidget::connect(m_dataAcquisition, SIGNAL(scanDone()), this, SLOT(updateScanView()));
+	QWidget::connect(m_dataAcquisition, SIGNAL(locked(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &)), this,
 		SLOT(updateLockView(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &)));
-	QWidget::connect(&d, SIGNAL(collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &)), this,
+	QWidget::connect(m_dataAcquisition, SIGNAL(collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &)), this,
 		SLOT(updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &)));
 
-	QWidget::connect(&d, SIGNAL(acquisitionParametersChanged(ACQUISITION_PARAMETERS)), this,
+	QWidget::connect(m_dataAcquisition, SIGNAL(acquisitionParametersChanged(ACQUISITION_PARAMETERS)), this,
 		SLOT(updateAcquisitionParameters(ACQUISITION_PARAMETERS)));
 
-	QWidget::connect(&d, SIGNAL(lockStateChanged(LOCKSTATE)), this,
+	QWidget::connect(m_dataAcquisition, SIGNAL(lockStateChanged(LOCKSTATE)), this,
 		SLOT(updateLockState(LOCKSTATE)));
 
-	QWidget::connect(&d, SIGNAL(compensationStateChanged(bool)), this,
+	QWidget::connect(m_dataAcquisition, SIGNAL(compensationStateChanged(bool)), this,
 		SLOT(updateCompensationState(bool)));
 	
 	// set up live view plots
@@ -149,17 +165,19 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->plotAxes->setRubberBand(QtCharts::QChartView::RectangleRubberBand);
 
 	// set default values of GUI elements
-	SCAN_PARAMETERS scanParameters = d.getScanParameters();
-	ui->scanStart->setValue(scanParameters.low);
-	ui->scanEnd->setValue(scanParameters.high);
-	ui->scanSteps->setValue(scanParameters.nrSteps);
+	SCAN_SETTINGS scanSettings = m_dataAcquisition->getScanSettings();
+	ui->scanStart->setValue(scanSettings.low);
+	ui->scanEnd->setValue(scanSettings.high);
+	ui->scanSteps->setValue(scanSettings.nrSteps);
 
 	// set default values of lockin parameters
-	LOCK_PARAMETERS lockParameters = d.getLockParameters();
-	ui->proportionalTerm->setValue(lockParameters.proportional);
-	ui->integralTerm->setValue(lockParameters.integral);
-	ui->derivativeTerm->setValue(lockParameters.derivative);
-	ui->temperatureOffset->setValue(lockParameters.frequency);
+	LOCK_SETTINGS lockSettings = m_dataAcquisition->getLockSettings();
+	ui->proportionalTerm->setValue(lockSettings.proportional);
+	ui->integralTerm->setValue(lockSettings.integral);
+	ui->derivativeTerm->setValue(lockSettings.derivative);
+
+
+	//ui->temperatureOffset->setValue(lockParameters.frequency);
 
 	// connect legend marker to toggle visibility of plots
 	MainWindow::connectMarkers();
@@ -187,9 +205,14 @@ MainWindow::MainWindow(QWidget *parent) :
 	// hide floating view elements by default
 	ui->floatingViewLabel->hide();
 	ui->floatingViewCheckBox->hide();
+
+	// start acquisition thread
+	m_acquisitionThread.startWorker(m_dataAcquisition);
 }
 
 MainWindow::~MainWindow() {
+	m_acquisitionThread.exit();
+	m_acquisitionThread.wait();
     delete ui;
 }
 
@@ -271,7 +294,7 @@ void MainWindow::handleMarkerClicked() {
 }
 
 void MainWindow::on_acquisitionButton_clicked() {
-	bool running = d.startStopAcquisition();
+	bool running = m_dataAcquisition->startStopAcquisition();
 	if (running) {
 		ui->acquisitionButton->setText(QString("Stop"));
 	} else {
@@ -280,7 +303,7 @@ void MainWindow::on_acquisitionButton_clicked() {
 }
 
 void MainWindow::on_acquireLockButton_clicked() {
-	bool running = d.startStopAcquireLocking();
+	bool running = m_dataAcquisition->startStopAcquireLocking();
 	if (running) {
 		ui->acquireLockButton->setText(QString("Stop"));
 	}
@@ -291,7 +314,7 @@ void MainWindow::on_acquireLockButton_clicked() {
 }
 
 void MainWindow::on_lockButton_clicked() {
-	d.startStopLocking();
+	m_dataAcquisition->startStopLocking();
 	//if (running) {
 	//	ui->lockButton->setText(QString("Unlock"));
 	//}
@@ -301,68 +324,55 @@ void MainWindow::on_lockButton_clicked() {
 }
 
 void MainWindow::on_sampleRate_activated(const int index) {
-	d.setSampleRate(index);
+	m_dataAcquisition->setSampleRate(index);
 }
 
 void MainWindow::on_chACoupling_activated(const int index) {
-	d.setCoupling(index, 0);
+	m_dataAcquisition->setCoupling(index, 0);
 }
 
 void MainWindow::on_chBCoupling_activated(const int index) {
-	d.setCoupling(index, 1);
+	m_dataAcquisition->setCoupling(index, 1);
 }
 
 void MainWindow::on_chARange_activated(const int index) {
-	d.setRange(index, 0);
+	m_dataAcquisition->setRange(index, 0);
 }
 
 void MainWindow::on_chBRange_activated(const int index) {
-	d.setRange(index, 1);
+	m_dataAcquisition->setRange(index, 1);
 }
 
 void MainWindow::on_sampleNumber_valueChanged(const int no_of_samples) {
-	d.setNumberSamples(no_of_samples);
+	m_dataAcquisition->setNumberSamples(no_of_samples);
 }
 
-void MainWindow::on_scanAmplitude_valueChanged(const double value) {
-	// value is in [V], has to me set in [mV]
-	d.setScanParameters(0, static_cast<int>(1e6*value));
+void MainWindow::on_scanStart_valueChanged(const double value) {
+	m_dataAcquisition->setScanParameters(SCANPARAMETERS::LOW, value);
 }
 
-void MainWindow::on_scanOffset_valueChanged(const double value) {
-	// value is in [V], has to me set in [mV]
-	d.setScanParameters(1, static_cast<int>(1e6*value));
-}
-
-void MainWindow::on_scanWaveform_activated(const int index) {
-	d.setScanParameters(2, index);
-}
-
-void MainWindow::on_scanFrequency_valueChanged(const double value) {
-	d.setScanParameters(3, value);
+void MainWindow::on_scanEnd_valueChanged(const double value) {
+	m_dataAcquisition->setScanParameters(SCANPARAMETERS::HIGH, value);
 }
 
 void MainWindow::on_scanSteps_valueChanged(const int value) {
-	d.setScanParameters(4, value);
+	m_dataAcquisition->setScanParameters(SCANPARAMETERS::STEPS, value);
 }
 
 /***********************************
  * Set parameters for cavity locking 
  ***********************************/
 void MainWindow::on_proportionalTerm_valueChanged(const double value) {
-	d.setLockParameters(0, value);
+	m_dataAcquisition->setLockParameters(LOCKPARAMETERS::P, value);
 }
 void MainWindow::on_integralTerm_valueChanged(const double value) {
-	d.setLockParameters(1, value);
+	m_dataAcquisition->setLockParameters(LOCKPARAMETERS::I, value);
 }
 void MainWindow::on_derivativeTerm_valueChanged(const double value) {
-	d.setLockParameters(2, value);
+	m_dataAcquisition->setLockParameters(LOCKPARAMETERS::D, value);
 }
-void MainWindow::on_frequency_valueChanged(const double value) {
-	d.setLockParameters(3, value);
-}
-void MainWindow::on_phase_valueChanged(const double value) {
-	d.setLockParameters(4, value);
+void MainWindow::on_transmission_valueChanged(const double value) {
+	m_dataAcquisition->setLockParameters(LOCKPARAMETERS::P, value);
 }
 
 void MainWindow::on_temperatureOffset_valueChanged(const double offset) {
@@ -370,7 +380,7 @@ void MainWindow::on_temperatureOffset_valueChanged(const double offset) {
 }
 
 void MainWindow::updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &data) {
-	if (view == 0) {
+	if (m_selectedView == VIEWS::LIVE) {
 		int channel = 0;
 		foreach(QtCharts::QLineSeries* series, liveViewPlots) {
 			if (series->isVisible()) {
@@ -383,7 +393,7 @@ void MainWindow::updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS
 }
 
 void MainWindow::updateLockView(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &data) {
-	if (view == 1) {
+	if (m_selectedView == VIEWS::LOCK) {
 		int channel = 0;
 		foreach(QtCharts::QLineSeries* series, lockViewPlots) {
 			if (series->isVisible()) {
@@ -404,8 +414,8 @@ void MainWindow::updateLockView(std::array<QVector<QPointF>, static_cast<int>(lo
 }
 
 void MainWindow::updateScanView() {
-	if (view == 2) {
-		SCAN_DATA scanData = d.getScanData();
+	if (m_selectedView == VIEWS::SCAN) {
+		SCAN_DATA scanData = m_dataAcquisition->getScanData();
 		QVector<QPointF> intensity;
 		intensity.reserve(scanData.nrSteps);
 		QVector<QPointF> error;
@@ -466,13 +476,13 @@ void MainWindow::updateCompensationState(bool compensating) {
 }
 
 void MainWindow::on_scanButtonManual_clicked() {
-	d.scanManual();
+	m_dataAcquisition->scanManual();
 }
 
-void MainWindow::on_selectDisplay_activated(const int index) {
-	view = index;
-	switch (index) {
-		case 0:
+void MainWindow::on_selectDisplay_activated(const VIEWS index) {
+	m_selectedView = index;
+	switch (m_selectedView) {
+		case VIEWS::LIVE:
 			// it is necessary to hide the series, because they do not get removed
 			// after setChart in case useOpenGL == true (bug in QT?)
 			foreach(QtCharts::QLineSeries* series, scanViewPlots) {
@@ -489,7 +499,7 @@ void MainWindow::on_selectDisplay_activated(const int index) {
 			ui->floatingViewCheckBox->hide();
 			//MainWindow::updateLiveView();
 			break;
-		case 1:
+		case VIEWS::LOCK:
 			// it is necessary to hide the series, because they do not get removed
 			// after setChart in case useOpenGL == true (bug in QT?)
 			foreach(QtCharts::QLineSeries* series, liveViewPlots) {
@@ -506,7 +516,7 @@ void MainWindow::on_selectDisplay_activated(const int index) {
 			ui->floatingViewCheckBox->show();
 			//MainWindow::updateScanView();
 			break;
-		case 2:
+		case VIEWS::SCAN:
 			// it is necessary to hide the series, because they do not get removed
 			// after setChart in case useOpenGL == true (bug in QT?)
 			foreach(QtCharts::QLineSeries* series, liveViewPlots) {
@@ -530,52 +540,42 @@ void MainWindow::on_floatingViewCheckBox_clicked(const bool checked) {
 	viewSettings.floatingView = checked;
 }
 
-void MainWindow::on_actionConnect_triggered() {
-	bool connected = d.connect();
-	if (connected) {
-		ui->actionConnect->setEnabled(false);
-		ui->actionDisconnect->setEnabled(true);
-		statusInfo->setText("Successfully connected");
-	} else {
-		ui->actionConnect->setEnabled(true);
-		ui->actionDisconnect->setEnabled(false);
-	}
+void MainWindow::on_actionConnect_DAQ_triggered() {
+	QMetaObject::invokeMethod(m_dataAcquisition, "connect", Qt::AutoConnection);
 }
 
-void MainWindow::on_actionDisconnect_triggered() {
-	bool connected = d.disconnect();
+void MainWindow::on_actionDisconnect_DAQ_triggered() {
+	QMetaObject::invokeMethod(m_dataAcquisition, "disconnect", Qt::AutoConnection);
+}
+
+void MainWindow::daqConnectionChanged(bool connected) {
 	if (connected) {
-		ui->actionConnect->setEnabled(false);
-		ui->actionDisconnect->setEnabled(true);
-	}  else {
-		ui->actionConnect->setEnabled(true);
-		ui->actionDisconnect->setEnabled(false);
+		ui->actionConnect_DAQ->setEnabled(false);
+		ui->actionDisconnect_DAQ->setEnabled(true);
+		statusInfo->setText("Successfully connected");
+	} else {
+		ui->actionConnect_DAQ->setEnabled(true);
+		ui->actionDisconnect_DAQ->setEnabled(false);
 		statusInfo->setText("Successfully disconnected");
 	}
 }
 
 void MainWindow::on_actionConnect_Laser_triggered() {
-	//bool connected = d.connectPiezo();
-	//if (connected) {
-	//	ui->actionConnect_Piezo->setEnabled(false);
-	//	ui->actionDisconnect_Piezo->setEnabled(true);
-	//}
-	//else {
-	//	ui->actionConnect_Piezo->setEnabled(true);
-	//	ui->actionDisconnect_Piezo->setEnabled(false);
-	//}
+	QMetaObject::invokeMethod(m_laserControl, "connect", Qt::AutoConnection);
 }
 
 void MainWindow::on_actionDisconnect_Laser_triggered() {
-	//bool connected = d.disconnectPiezo();
-	//if (connected) {
-	//	ui->actionConnect_Piezo->setEnabled(false);
-	//	ui->actionDisconnect_Piezo->setEnabled(true);
-	//}
-	//else {
-	//	ui->actionConnect_Piezo->setEnabled(true);
-	//	ui->actionDisconnect_Piezo->setEnabled(false);
-	//}
+	QMetaObject::invokeMethod(m_laserControl, "disconnect", Qt::AutoConnection);
+}
+
+void MainWindow::laserConnectionChanged(bool connected) {
+	if (connected) {
+		ui->actionConnect_Laser->setEnabled(false);
+		ui->actionDisconnect_Laser->setEnabled(true);
+	} else {
+		ui->actionConnect_Laser->setEnabled(true);
+		ui->actionDisconnect_Laser->setEnabled(false);
+	}
 }
 
 void MainWindow::on_enableTemperatureControlCheckbox_clicked(const bool checked) {

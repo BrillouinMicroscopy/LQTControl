@@ -1,7 +1,7 @@
 #include "LQT.h"
 #include <windows.h>
 
-LQT::LQT() noexcept {}
+LQT::LQT() {}
 
 LQT::~LQT() {
 	disconnect();
@@ -15,6 +15,7 @@ void LQT::connect() {
 		m_laserPort->setParity(QSerialPort::NoParity);
 		m_isConnected = m_laserPort->open(QIODevice::ReadWrite);
 	}
+	emit(connected(m_isConnected));
 }
 
 void LQT::disconnect() {
@@ -22,6 +23,7 @@ void LQT::disconnect() {
 		m_laserPort->close();
 	}
 	m_isConnected = false;
+	emit(connected(m_isConnected));
 }
 
 /*

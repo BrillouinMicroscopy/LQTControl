@@ -4,7 +4,8 @@
 #include <QSerialPort>
 #include "fmt/format.h"
 
-class LQT {
+class LQT : public QObject {
+	Q_OBJECT
 
 private:
 	QSerialPort *m_laserPort;
@@ -18,10 +19,8 @@ private:
 	bool m_lock = false;
 
 public:
-	explicit LQT() noexcept;
+	LQT();
 	~LQT();
-	void connect();
-	void disconnect();
 
 	/*
 	* Functions regarding the serial communication
@@ -68,6 +67,13 @@ public:
 	// lock enabled status
 	void setLe(bool le);
 	bool getLe();
+
+public slots:
+	void connect();
+	void disconnect();
+
+signals:
+	void connected(bool);
 };
 
 #endif // LQT_H

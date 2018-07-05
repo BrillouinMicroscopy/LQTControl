@@ -850,10 +850,10 @@
           <number>3</number>
          </property>
          <property name="minimum">
-          <double>0.000000000000000</double>
+          <double>-5.000000000000000</double>
          </property>
          <property name="maximum">
-          <double>1.000000000000000</double>
+          <double>5.000000000000000</double>
          </property>
          <property name="singleStep">
           <double>0.010000000000000</double>
@@ -1009,8 +1009,8 @@
     <property name="title">
      <string>Device</string>
     </property>
-    <addaction name="actionConnect"/>
-    <addaction name="actionDisconnect"/>
+    <addaction name="actionConnect_DAQ"/>
+    <addaction name="actionDisconnect_DAQ"/>
     <addaction name="actionSettings"/>
     <addaction name="separator"/>
     <addaction name="actionConnect_Laser"/>
@@ -1042,17 +1042,17 @@
     <string>Quit</string>
    </property>
   </action>
-  <action name="actionConnect">
+  <action name="actionConnect_DAQ">
    <property name="text">
-    <string>Connect</string>
+    <string>Connect DAQ</string>
    </property>
   </action>
-  <action name="actionDisconnect">
+  <action name="actionDisconnect_DAQ">
    <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Disconnect</string>
+    <string>Disconnect DAQ</string>
    </property>
   </action>
   <action name="actionSettings">

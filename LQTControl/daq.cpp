@@ -1,5 +1,4 @@
 #include "daq.h"
-#include "LQT.h"
 #include <QtWidgets>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMainWindow>
@@ -117,10 +116,8 @@ BUFFER_INFO bufferInfo;
 
 int32_t input_ranges[PS2000_MAX_RANGES] = { 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000 };
 
-LQT laser;
-
-daq::daq(QObject *parent) :
-	QObject(parent) {
+daq::daq(QObject *parent, LQT *laserControl) :
+	QObject(parent), m_laserControl(laserControl) {
 
 	QWidget::connect(&timer, &QTimer::timeout,
 		this, &daq::getBlockData);
@@ -153,9 +150,9 @@ bool daq::startStopAcquireLocking() {
 }
 
 bool daq::startStopLocking() {
-	lockParameters.active = !lockParameters.active;
+	lockSettings.active = !lockSettings.active;
 	// set voltage source to potentiometer when locking is not active
-	if (lockParameters.active) {
+	if (lockSettings.active) {
 		// set integral error to zero before starting to lock
 		lockData.iError = 0;
 		//// store and immediately restore output voltage
@@ -169,7 +166,7 @@ bool daq::startStopLocking() {
 	} else {
 		daq::disableLocking();
 	}
-	return lockParameters.active;
+	return lockSettings.active;
 }
 
 void daq::disableLocking(LOCKSTATE lockstate) {
@@ -188,14 +185,13 @@ void daq::disableLocking(LOCKSTATE lockstate) {
 		PS2000_UPDOWN,					// sweepType
 		0								// sweeps, number of times to sweep the frequency
 	);
-	lockParameters.active = FALSE;
-	lockParameters.compensating = FALSE;
+	lockSettings.active = false;
 	emit(compensationStateChanged(false));
 	emit(lockStateChanged(lockstate));
 }
 
-SCAN_PARAMETERS daq::getScanParameters() {
-	return scanParameters;
+SCAN_SETTINGS daq::getScanSettings() {
+	return scanSettings;
 }
 
 void daq::setSampleRate(int index) {
@@ -232,39 +228,32 @@ void daq::setRange(int index, int ch) {
 void daq::setScanParameters(int type, int value) {
 	switch (type) {
 		case 0:
-			scanParameters.low = value;
+			scanSettings.low = value;
 			break;
 		case 1:
-			scanParameters.high = value;
+			scanSettings.high = value;
 			break;
 		case 2:
-			scanParameters.nrSteps = value;
+			scanSettings.nrSteps = value;
 			break;
 	}
 }
 
-void daq::setLockParameters(int type, double value) {
+void daq::setLockParameters(LOCKPARAMETERS type, double value) {
 	switch (type) {
-		case 0:
-			lockParameters.proportional = value;
+		case LOCKPARAMETERS::P:
+			lockSettings.proportional = value;
 			break;
-		case 1:
-			lockParameters.integral = value;
+		case LOCKPARAMETERS::I:
+			lockSettings.integral = value;
 			break;
-		case 2:
-			lockParameters.derivative = value;
+		case LOCKPARAMETERS::D:
+			lockSettings.derivative = value;
 			break;
-		case 3:
-			lockParameters.frequency = value;
-			break;
-		case 4:
-			lockParameters.phase = value;
+		case LOCKPARAMETERS::SETPOINT:
+			lockSettings.transmissionSetpoint = value;
 			break;
 	}
-}
-
-void daq::toggleOffsetCompensation(bool compensate) {
-	lockParameters.compensate = compensate;
 }
 
 void daq::setAcquisitionParameters() {
@@ -351,10 +340,10 @@ std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq::collectBlockData() {
 }
 
 void daq::scanManual() {
-	scanData.nrSteps = scanParameters.nrSteps;
-	scanData.temperatures = generalmath::linspace<double>(scanParameters.low, scanParameters.high, scanParameters.nrSteps);
-	scanData.intensity.resize(scanParameters.nrSteps);
-	scanData.error.resize(scanParameters.nrSteps);
+	scanData.nrSteps = scanSettings.nrSteps;
+	scanData.temperatures = generalmath::linspace<double>(scanSettings.low, scanSettings.high, scanSettings.nrSteps);
+	scanData.intensity.resize(scanSettings.nrSteps);
+	scanData.error.resize(scanSettings.nrSteps);
 
 	daq::setAcquisitionParameters();
 
@@ -364,7 +353,7 @@ void daq::scanManual() {
 			Sleep(5000);
 		}
 
-		laser.setTemperature(scanData.temperatures[j]);
+		m_laserControl->setTemperatureForce(scanData.temperatures[j]);
 
 		// acquire detector and reference signal, store and process it
 		std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectBlockData();
@@ -397,8 +386,8 @@ SCAN_DATA daq::getScanData() {
 	return scanData;
 }
 
-LOCK_PARAMETERS daq::getLockParameters() {
-	return lockParameters;
+LOCK_SETTINGS daq::getLockSettings() {
+	return lockSettings;
 }
 
 void daq::getBlockData() {
@@ -433,30 +422,19 @@ void daq::lock() {
 		}
 	}
 
-	// adjust for requested phase
-	double samplingRate = 200e6 / pow(2, acquisitionParameters.timebase);
-	int phaseStep = (int)lockParameters.phase * samplingRate / (360 * lockParameters.frequency);
-	if (phaseStep > 0) {
-		// simple rotation to the left
-		std::rotate(reference.begin(), reference.begin() + phaseStep, reference.end());
-	} else if (phaseStep < 0) {
-		// simple rotation to the right
-		std::rotate(reference.rbegin(), reference.rbegin() + phaseStep, reference.rend());
-	}
-
 	double error = 0;
 
 	// write data to struct for storage
 	lockData.amplitude.push_back(amplitude);
 
-	if (lockParameters.active) {
+	if (lockSettings.active) {
 		double dError = 0;
 		if (lockData.error.size() > 0) {
 			double dt = std::chrono::duration_cast<std::chrono::milliseconds>(now - lockData.time.back()).count() / 1e3;
-			lockData.iError += lockParameters.integral * ( lockData.error.back() + error ) * (dt) / 2;
+			lockData.iError += lockSettings.integral * ( lockData.error.back() + error ) * (dt) / 2;
 			dError = (error - lockData.error.back()) / dt;
 		}
-		currentVoltage = currentVoltage + (lockParameters.proportional * error + lockData.iError + lockParameters.derivative * dError) / 100;
+		currentVoltage = currentVoltage + (lockSettings.proportional * error + lockData.iError + lockSettings.derivative * dError) / 100;
 
 		// abort locking if
 		// - output voltage is over 2 V
@@ -466,13 +444,13 @@ void daq::lock() {
 		}
 
 		// set laser temperature
-		laser.setTemperature(currentVoltage);
+		m_laserControl->setTemperatureForce(currentVoltage);
 	}
 
 	// write data to struct for storage
 	lockData.time.push_back(now);
 	lockData.error.push_back(error);
-	lockData.voltage.push_back(currentVoltage);
+	lockData.tempOffset.push_back(currentVoltage);
 
 	double passed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lockData.time[0]).count() / 1e3;	// store passed time in seconds
 
@@ -726,39 +704,28 @@ void  __stdcall daq::ps2000FastStreamingReady2(
 	}
 }
 
-bool daq::connect() {
-	if (!unitOpened.handle) {
+void daq::connect() {
+	if (!m_isConnected) {
 		unitOpened.handle = ps2000_open_unit();
-		
 		get_info();
 
 		if (!unitOpened.handle) {
-			return false;
+			m_isConnected = false;
 		} else {
 			daq::setAcquisitionParameters();
-			return true;
+			m_isConnected = true;
 		}
-	} else {
-		return true;
 	}
+	emit(connected(m_isConnected));
 }
 
-bool daq::disconnect() {
-	if (unitOpened.handle) {
+void daq::disconnect() {
+	if (m_isConnected) {
 		ps2000_close_unit(unitOpened.handle);
 		unitOpened.handle = NULL;
+		m_isConnected = false;
 	}
-	return false;
-}
-
-bool daq::connectLaser() {
-	laser.connect();
-	return TRUE;
-}
-
-bool daq::disconnectLaser() {
-	laser.disconnect();
-	return FALSE;
+	emit(connected(m_isConnected));
 }
 
 void daq::get_info(void) {

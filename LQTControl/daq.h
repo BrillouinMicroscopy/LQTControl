@@ -10,7 +10,7 @@
 #include <ctime>
 
 #include "ps2000.h"
-#include "PDH.h"
+#include "LQT.h"
 #include "generalmath.h"
 
 #define DAQ_BUFFER_SIZE 	8000
@@ -45,7 +45,7 @@ typedef struct {
 	double low = -5;		// [K] offset start
 	double high = 5;		// [K] offset end
 	int32_t	nrSteps = 100;	// number of steps
-} SCAN_PARAMETERS;
+} SCAN_SETTINGS;
 
 typedef struct {
 	int32_t nrSteps = 0;
@@ -55,24 +55,20 @@ typedef struct {
 } SCAN_DATA;
 
 typedef struct {
-	double proportional = 0.01;		//		control parameter of the proportional part
-	double integral = 0.005;			//		control parameter of the integral part
-	double derivative = 0.0;		//		control parameter of the derivative part
-	double frequency = 5000;		// [Hz] approx. frequency of the reference signal
-	double phase = 0;				// [°]	phase shift between reference and detector signal
-	bool active = FALSE;			//		locking enabled?
-	bool compensate = FALSE;		//		compensate the offset?
-	bool compensating = FALSE;		//		is it currently compensating?
-	double maxOffset = 0.4;			// [V]	maximum voltage of the external input before the offset compensation kicks in
-	double targetOffset = 0.1;		// [V]	target voltage of the offset compensation
-} LOCK_PARAMETERS;
+	double proportional = 0.01;				//		control parameter of the proportional part
+	double integral = 0.005;				//		control parameter of the integral part
+	double derivative = 0.0;				//		control parameter of the derivative part
+	bool active = false;					//		locking enabled?
+	double transmissionSetpoint = 0.5;		// [V]	target voltage of the offset compensation
+} LOCK_SETTINGS;
 
 typedef struct {
 	std::vector<std::chrono::time_point<std::chrono::system_clock>> time;		// [s]	time vector
-	std::vector<int32_t> voltage;	// [µV]	output voltage (<int32_t> is sufficient for this)
-	std::vector<int32_t> amplitude;	// [µV]	measured intensity (<int32_t> is fine)
-	std::vector<double> error;		// [1]	PDH error signal
-	double iError = 0;				// [1]	integral value of the error signal
+	std::vector<double> tempOffset;		// [K]	timeline of the temperature offset
+	std::vector<int32_t> amplitude;		// [µV]	measured intensity (<int32_t> is fine)
+	std::vector<double> error;			// [1]	PDH error signal
+	double iError = 0;					// [1]	integral value of the error signal
+	double currentTempOffset = 0;		// [K] current temperature offset
 } LOCK_DATA;
 
 typedef enum enLockState {
@@ -101,11 +97,24 @@ enum class lockViewPlotTypes {
 	COUNT
 };
 
+typedef enum enScanParameters {
+	LOW,
+	HIGH,
+	STEPS
+} SCANPARAMETERS;
+
+typedef enum enLockParameters {
+	P,
+	I,
+	D,
+	SETPOINT
+} LOCKPARAMETERS;
+
 class daq : public QObject {
 	Q_OBJECT
 
 	public:
-		explicit daq(QObject *parent = 0);
+		explicit daq(QObject *parent, LQT *laserControl);
 		bool startStopAcquisition();
 		bool startStopAcquireLocking();
 		bool startStopLocking();
@@ -113,10 +122,6 @@ class daq : public QObject {
 		void getBlockData();
 		void lock();
 		QVector<QPointF> getStreamingBuffer(int ch);
-		bool connect();
-		bool disconnect();
-		bool connectLaser();
-		bool disconnectLaser();
 		void startStreaming();
 		void collectStreamingData();
 		void stopStreaming();
@@ -126,12 +131,11 @@ class daq : public QObject {
 		void setRange(int index, int ch);
 		void setNumberSamples(int32_t no_of_samples);
 		void setScanParameters(int type, int value);
-		void setLockParameters(int type, double value);
-		void toggleOffsetCompensation(bool compensate);
+		void setLockParameters(LOCKPARAMETERS type, double value);
 		void scanManual();
-		SCAN_PARAMETERS getScanParameters();
+		SCAN_SETTINGS getScanSettings();
 		SCAN_DATA getScanData();
-		LOCK_PARAMETERS getLockParameters();
+		LOCK_SETTINGS getLockSettings();
 
 		std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> data;
 		std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> lockDataPlot;
@@ -140,9 +144,12 @@ class daq : public QObject {
 		double piezoVoltage = 0;
 		int compensationTimer = 0;
 
-	private slots:
+	public slots:
+		void connect();
+		void disconnect();
 
 	signals:
+		void connected(bool);
 		void scanDone();
 		void collectedData();
 		void locked(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &);
@@ -152,6 +159,7 @@ class daq : public QObject {
 		void compensationStateChanged(bool);
 
 	private:
+		bool m_isConnected = false;
 		static void __stdcall ps2000FastStreamingReady2(
 			int16_t **overviewBuffers,
 			int16_t   overflow,
@@ -174,11 +182,12 @@ class daq : public QObject {
 		void get_info(void);
 		QTimer timer;
 		QTimer lockingTimer;
+		LQT *m_laserControl;
 		QVector<QPointF> points;
 		ACQUISITION_PARAMETERS acquisitionParameters;
-		SCAN_PARAMETERS scanParameters;
+		SCAN_SETTINGS scanSettings;
 		SCAN_DATA scanData;
-		LOCK_PARAMETERS lockParameters;
+		LOCK_SETTINGS lockSettings;
 		LOCK_DATA lockData;
 };
 
