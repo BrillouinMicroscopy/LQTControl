@@ -43,6 +43,10 @@ public:
 	void setMaxTemperature(double temperature);
 	double getMaxTemperature();
 
+	// force setting the temperature
+	void setTemperatureForce(double temperature);
+	void setMaxTemperatureForce(double temperature);
+
 	/*
 	* Functions for setting and getting the lock states
 	*/

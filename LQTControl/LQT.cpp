@@ -1,4 +1,5 @@
 #include "LQT.h"
+#include <windows.h>
 
 LQT::LQT() noexcept {}
 
@@ -76,6 +77,26 @@ void LQT::setMaxTemperature(double temperature) {
 double LQT::getMaxTemperature() {
 	std::string temp = receive("maxutempoffset?");
 	return stod(temp);
+}
+
+// The laser sometimes does not accept the temperature setting on the first try.
+// These functions set the temperature until it has the correct value or it fails for the 10th time.
+void LQT::setTemperatureForce(double temperature) {
+	int i{ 0 };
+	setTemperature(temperature);
+	while (getTemperature() != temperature && i++ < 10) {
+		Sleep(100);
+		setTemperature(temperature);
+	}
+}
+
+void LQT::setMaxTemperatureForce(double temperature) {
+	int i{ 0 };
+	setMaxTemperature(temperature);
+	while (getMaxTemperature() != temperature && i++ < 10) {
+		Sleep(100);
+		setMaxTemperature(temperature);
+	}
 }
 
 /*
