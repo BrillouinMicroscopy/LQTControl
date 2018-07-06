@@ -449,7 +449,7 @@ void MainWindow::on_transmission_valueChanged(const double value) {
 }
 
 void MainWindow::on_temperatureOffset_valueChanged(const double offset) {
-	
+	m_laserControl->setTemperatureForce(offset);
 }
 
 void MainWindow::updateLiveView() {
@@ -683,9 +683,5 @@ void MainWindow::laserConnectionChanged(bool connected) {
 }
 
 void MainWindow::on_enableTemperatureControlCheckbox_clicked(const bool checked) {
-	if (checked) {
-		
-	} else {
-		
-	}
+	m_laserControl->enableTemperatureControl(checked);
 }
