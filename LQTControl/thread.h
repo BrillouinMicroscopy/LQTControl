@@ -8,8 +8,8 @@ class Thread :public QThread {
 
 public:
 	void startWorker(QObject *worker) {
-		start();
 		worker->moveToThread(this);
+		start();
 	}
 };
 

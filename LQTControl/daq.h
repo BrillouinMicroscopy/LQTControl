@@ -46,13 +46,19 @@ typedef struct {
 	double low = -5;		// [K] offset start
 	double high = 5;		// [K] offset end
 	int32_t	nrSteps = 100;	// number of steps
+	int interval = 10;		// [s] interval between steps
 } SCAN_SETTINGS;
 
 typedef struct {
+	bool m_running = false;				// is the scan currently running
+	bool m_abort = false;				// should the scan be aborted
+	int pass = 0;
 	int32_t nrSteps = 0;
 	std::vector<double> temperatures;	// [K] temperature offset
-	std::vector<int32_t> intensity;		// [µV] measured intensity (<int32_t> is fine)
-	std::vector<double> error;			// PDH error signal
+	std::vector<double> reference;		// [µV] measured voltage of reference detector
+	std::vector<double> absorption;	// [µV] measured voltage behind absorption cell
+	std::vector<double> quotient;		// [1]	quotient of absorption and reference
+	std::vector<double> transmission;	// [1]	measured transmission, e.g. quotient normalized to maximum quotient measured
 } SCAN_DATA;
 
 typedef struct {
@@ -84,8 +90,10 @@ enum class liveViewPlotTypes {
 	COUNT
 };
 enum class scanViewPlotTypes {
-	INTENSITY,
-	ERRORSIGNAL,
+	ABSORPTION,
+	REFERENCE,
+	QUOTIENT,
+	TRANSMISSION,
 	COUNT
 };
 enum class lockViewPlotTypes {
@@ -101,7 +109,8 @@ enum class lockViewPlotTypes {
 typedef enum enScanParameters {
 	LOW,
 	HIGH,
-	STEPS
+	STEPS,
+	INTERVAL
 } SCANPARAMETERS;
 
 typedef enum enLockParameters {
@@ -116,12 +125,9 @@ class daq : public QObject {
 
 	public:
 		explicit daq(QObject *parent, LQT *laserControl);
-		bool startStopAcquisition();
 		bool startStopAcquireLocking();
 		bool startStopLocking();
 		void disableLocking(LOCKSTATE lockstate = LOCKSTATE::INACTIVE);
-		void getBlockData();
-		void lock();
 		QVector<QPointF> getStreamingBuffer(int ch);
 		void startStreaming();
 		void collectStreamingData();
@@ -131,11 +137,10 @@ class daq : public QObject {
 		void setCoupling(int index, int ch);
 		void setRange(int index, int ch);
 		void setNumberSamples(int32_t no_of_samples);
-		void setScanParameters(int type, int value);
+		void setScanParameters(SCANPARAMETERS type, double value);
 		void setLockParameters(LOCKPARAMETERS type, double value);
-		void scanManual();
 		SCAN_SETTINGS getScanSettings();
-		SCAN_DATA getScanData();
+		SCAN_DATA scanData;
 		LOCK_SETTINGS getLockSettings();
 
 		std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> data;
@@ -144,17 +149,23 @@ class daq : public QObject {
 
 		std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> lockDataPlot;
 
-		double currentVoltage = 0;
-		double piezoVoltage = 0;
-		int compensationTimer = 0;
-
 	public slots:
 		void connect();
 		void disconnect();
+		void init();
+		void startScan();
+		void startStopAcquisition();
+
+	private slots:
+		void getBlockData();
+		void lock();
+		void scan();
 
 	signals:
 		void connected(bool);
-		void scanDone();
+		void s_acquisitionRunning(bool);
+		void s_scanRunning(bool);
+		void s_scanPassAcquired();
 		void collectedData();
 		void locked(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &);
 		void collectedBlockData();
@@ -164,6 +175,7 @@ class daq : public QObject {
 
 	private:
 		bool m_isConnected = false;
+		bool m_acquisitionRunning = false;
 		static void __stdcall ps2000FastStreamingReady2(
 			int16_t **overviewBuffers,
 			int16_t   overflow,
@@ -184,13 +196,14 @@ class daq : public QObject {
 		);
 		void set_defaults(void);
 		void get_info(void);
-		QTimer timer;
-		QTimer lockingTimer;
+		QTimer *timer = nullptr;
+		QTimer *lockingTimer = nullptr;
+		QTimer *scanTimer = nullptr;
+		QElapsedTimer passTimer;
 		LQT *m_laserControl;
 		QVector<QPointF> points;
 		ACQUISITION_PARAMETERS acquisitionParameters;
 		SCAN_SETTINGS scanSettings;
-		SCAN_DATA scanData;
 		LOCK_SETTINGS lockSettings;
 		LOCK_DATA lockData;
 };

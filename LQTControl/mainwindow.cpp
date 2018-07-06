@@ -41,12 +41,29 @@ MainWindow::MainWindow(QWidget *parent) :
 		SLOT(daqConnectionChanged(bool))
 	);
 
+	// slot daq acquisition running
+	connection = QWidget::connect(
+		m_dataAcquisition,
+		SIGNAL(s_acquisitionRunning(bool)),
+		this,
+		SLOT(showAcqRunning(bool))
+	);
+
+	// slot daq acquisition running
+	connection = QWidget::connect(
+		m_dataAcquisition,
+		SIGNAL(s_scanRunning(bool)),
+		this,
+		SLOT(showScanRunning(bool))
+	);
+
 	QWidget::connect(
 		m_dataAcquisition,
-		SIGNAL(scanDone()),
+		SIGNAL(s_scanPassAcquired()),
 		this, 
 		SLOT(updateScanView())
 	);
+
 	QWidget::connect(
 		m_dataAcquisition,
 		SIGNAL(locked(std::array<QVector<QPointF>,static_cast<int>(lockViewPlotTypes::COUNT)> &)),
@@ -163,17 +180,29 @@ MainWindow::MainWindow(QWidget *parent) :
 	// set up scan view plots
 	scanViewPlots.resize(static_cast<int>(scanViewPlotTypes::COUNT));
 
-	QtCharts::QLineSeries *intensity = new QtCharts::QLineSeries();
-	intensity->setUseOpenGL(true);
-	intensity->setColor(colors.orange);
-	intensity->setName(QString("Intensity"));
-	scanViewPlots[static_cast<int>(scanViewPlotTypes::INTENSITY)] = intensity;
+	QtCharts::QLineSeries *absorption = new QtCharts::QLineSeries();
+	absorption->setUseOpenGL(true);
+	absorption->setColor(colors.orange);
+	absorption->setName(QString("Absorption"));
+	scanViewPlots[static_cast<int>(scanViewPlotTypes::ABSORPTION)] = absorption;
 
-	QtCharts::QLineSeries *error = new QtCharts::QLineSeries();
-	error->setUseOpenGL(true);
-	error->setColor(colors.yellow);
-	error->setName(QString("Error signal"));
-	scanViewPlots[static_cast<int>(scanViewPlotTypes::ERRORSIGNAL)] = error;
+	QtCharts::QLineSeries *reference = new QtCharts::QLineSeries();
+	reference->setUseOpenGL(true);
+	reference->setColor(colors.yellow);
+	reference->setName(QString("Reference"));
+	scanViewPlots[static_cast<int>(scanViewPlotTypes::REFERENCE)] = reference;
+
+	QtCharts::QLineSeries *quotient = new QtCharts::QLineSeries();
+	quotient->setUseOpenGL(true);
+	quotient->setColor(colors.blue);
+	quotient->setName(QString("Quotient"));
+	scanViewPlots[static_cast<int>(scanViewPlotTypes::QUOTIENT)] = quotient;
+
+	QtCharts::QLineSeries *transmission = new QtCharts::QLineSeries();
+	transmission->setUseOpenGL(true);
+	transmission->setColor(colors.purple);
+	transmission->setName(QString("Transmission"));
+	scanViewPlots[static_cast<int>(scanViewPlotTypes::TRANSMISSION)] = transmission;
 
 	// set up live view chart
 	scanViewChart = new QtCharts::QChart();
@@ -235,6 +264,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->floatingViewCheckBox->hide();
 
 	// start acquisition thread
+	QWidget::connect(&m_acquisitionThread, SIGNAL(started()), m_dataAcquisition, SLOT(init()));
 	m_acquisitionThread.startWorker(m_dataAcquisition);
 }
 
@@ -322,11 +352,22 @@ void MainWindow::handleMarkerClicked() {
 }
 
 void MainWindow::on_acquisitionButton_clicked() {
-	bool running = m_dataAcquisition->startStopAcquisition();
+	QMetaObject::invokeMethod(m_dataAcquisition, "startStopAcquisition", Qt::QueuedConnection);
+}
+
+void MainWindow::showAcqRunning(bool running) {
 	if (running) {
 		ui->acquisitionButton->setText(QString("Stop"));
 	} else {
 		ui->acquisitionButton->setText(QString("Acquire"));
+	}
+}
+
+void MainWindow::showScanRunning(bool running) {
+	if (running) {
+		ui->scanButton->setText(QString("Stop"));
+	} else {
+		ui->scanButton->setText(QString("Scan"));
 	}
 }
 
@@ -385,6 +426,10 @@ void MainWindow::on_scanEnd_valueChanged(const double value) {
 
 void MainWindow::on_scanSteps_valueChanged(const int value) {
 	m_dataAcquisition->setScanParameters(SCANPARAMETERS::STEPS, value);
+}
+
+void MainWindow::on_scanInterval_valueChanged(const int value) {
+	m_dataAcquisition->setScanParameters(SCANPARAMETERS::INTERVAL, value);
 }
 
 /***********************************
@@ -457,20 +502,32 @@ void MainWindow::updateLockView(std::array<QVector<QPointF>, static_cast<int>(lo
 
 void MainWindow::updateScanView() {
 	if (m_selectedView == VIEWS::SCAN) {
-		SCAN_DATA scanData = m_dataAcquisition->getScanData();
-		QVector<QPointF> intensity;
-		intensity.reserve(scanData.nrSteps);
-		QVector<QPointF> error;
-		error.reserve(scanData.nrSteps);
-		for (int j(0); j < scanData.nrSteps; j++) {
-			intensity.append(QPointF(scanData.temperatures[j] / static_cast<double>(1e6), scanData.intensity[j] / static_cast<double>(1000)));
-			error.append(QPointF(scanData.temperatures[j] / static_cast<double>(1e6), std::real(scanData.error[j])));
-		}
-		scanViewPlots[static_cast<int>(scanViewPlotTypes::INTENSITY)]->replace(intensity);
-		scanViewPlots[static_cast<int>(scanViewPlotTypes::ERRORSIGNAL)]->replace(error);
+		SCAN_DATA scanData = m_dataAcquisition->scanData;
+		SCAN_SETTINGS scanSettings = m_dataAcquisition->getScanSettings();
+		
+		QVector<QPointF> absorption;
+		QVector<QPointF> reference;
+		QVector<QPointF> quotient;
+		QVector<QPointF> transmission;
 
-		scanViewChart->axisX()->setRange(0, 2);
-		scanViewChart->axisY()->setRange(-0.4, 1.2);
+		absorption.reserve(scanData.nrSteps);
+		reference.reserve(scanData.nrSteps);
+		quotient.reserve(scanData.nrSteps);
+		transmission.reserve(scanData.nrSteps);
+
+		for (gsl::index j{ 0 }; j < scanData.nrSteps; j++) {
+			absorption.append(QPointF(scanData.temperatures[j], scanData.absorption[j]));
+			reference.append(QPointF(scanData.temperatures[j], scanData.reference[j]));
+			quotient.append(QPointF(scanData.temperatures[j], scanData.quotient[j]));
+			transmission.append(QPointF(scanData.temperatures[j], scanData.transmission[j]));
+		}
+		scanViewPlots[static_cast<int>(scanViewPlotTypes::ABSORPTION)]->replace(absorption);
+		scanViewPlots[static_cast<int>(scanViewPlotTypes::REFERENCE)]->replace(reference);
+		scanViewPlots[static_cast<int>(scanViewPlotTypes::QUOTIENT)]->replace(quotient);
+		scanViewPlots[static_cast<int>(scanViewPlotTypes::TRANSMISSION)]->replace(transmission);
+
+		scanViewChart->axisX()->setRange(scanSettings.low, scanSettings.high);
+		scanViewChart->axisY()->setRange(-0.2, 2);
 	}
 }
 
@@ -517,12 +574,17 @@ void MainWindow::updateCompensationState(bool compensating) {
 	}
 }
 
-void MainWindow::on_scanButtonManual_clicked() {
-	m_dataAcquisition->scanManual();
+void MainWindow::on_scanButton_clicked() {
+	std::thread::id id = std::this_thread::get_id();
+	if (!m_dataAcquisition->scanData.m_running) {
+		QMetaObject::invokeMethod(m_dataAcquisition, "startScan", Qt::QueuedConnection);
+	} else {
+		m_dataAcquisition->scanData.m_abort = true;
+	}
 }
 
-void MainWindow::on_selectDisplay_activated(const VIEWS index) {
-	m_selectedView = index;
+void MainWindow::on_selectDisplay_activated(const int index) {
+	m_selectedView = static_cast<VIEWS>(index);
 	switch (m_selectedView) {
 		case VIEWS::LIVE:
 			// it is necessary to hide the series, because they do not get removed
@@ -623,12 +685,7 @@ void MainWindow::laserConnectionChanged(bool connected) {
 void MainWindow::on_enableTemperatureControlCheckbox_clicked(const bool checked) {
 	if (checked) {
 		
-	}
-	else {
+	} else {
 		
 	}
-}
-
-void MainWindow::on_scanButton_clicked() {
-	
 }

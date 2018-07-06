@@ -90,8 +90,11 @@ public:
     ~MainWindow();
 
 private slots:
-	void on_selectDisplay_activated(const VIEWS index);
+	void on_selectDisplay_activated(const int index);
 	void on_floatingViewCheckBox_clicked(const bool checked);
+
+	void showAcqRunning(bool);
+	void showScanRunning(bool);
 
 	// handle laser connection
 	void on_actionConnect_Laser_triggered();
@@ -105,7 +108,7 @@ private slots:
 	void on_lockButton_clicked();
 	void on_acquireLockButton_clicked();
 	void on_scanButton_clicked();
-	void on_scanButtonManual_clicked();
+
 	// SLOTS for setting the acquisitionParameters
 	void on_sampleRate_activated(const int index);
 	void on_chACoupling_activated(const int index);
@@ -118,6 +121,7 @@ private slots:
 	void on_scanStart_valueChanged(const double value);
 	void on_scanEnd_valueChanged(const double value);
 	void on_scanSteps_valueChanged(const int value);
+	void on_scanInterval_valueChanged(const int value);
 
 	// SLOTS for setting the lockSettings
 	void on_proportionalTerm_valueChanged(const double value);

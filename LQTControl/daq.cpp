@@ -118,33 +118,27 @@ int32_t input_ranges[PS2000_MAX_RANGES] = { 10, 20, 50, 100, 200, 500, 1000, 200
 
 daq::daq(QObject *parent, LQT *laserControl) :
 	QObject(parent), m_laserControl(laserControl) {
-
-	QWidget::connect(&timer, &QTimer::timeout,
-		this, &daq::getBlockData);
-
-	QWidget::connect(&lockingTimer, &QTimer::timeout,
-		this, &daq::lock);
 }
 
-bool daq::startStopAcquisition() {
-	if (timer.isActive()) {
-		timer.stop();
-		return false;
+void daq::startStopAcquisition() {
+	if (timer->isActive()) {
+		timer->stop();
+		m_acquisitionRunning = false;
 	} else {
 		daq::setAcquisitionParameters();
-		timer.start(20);
-		return true;
+		timer->start(20);
+		m_acquisitionRunning = true;
 	}
-	return true;
+	emit(s_acquisitionRunning(m_acquisitionRunning));
 }
 
 bool daq::startStopAcquireLocking() {
-	if (lockingTimer.isActive()) {
+	if (lockingTimer->isActive()) {
 		daq::disableLocking();
-		lockingTimer.stop();
+		lockingTimer->stop();
 		return false;
 	} else {
-		lockingTimer.start(100);
+		lockingTimer->start(100);
 		return true;
 	}
 }
@@ -170,21 +164,6 @@ bool daq::startStopLocking() {
 }
 
 void daq::disableLocking(LOCKSTATE lockstate) {
-	/*piezo.setVoltageSource(PZ_InputSourceFlags::PZ_Potentiometer);*/
-	currentVoltage = 0;
-	// set output voltage of the DAQ
-	ps2000_set_sig_gen_built_in(
-		unitOpened.handle,				// handle of the oscilloscope
-		currentVoltage * 1e6,			// offsetVoltage in microvolt
-		0,								// peak to peak voltage in microvolt
-		(PS2000_WAVE_TYPE)5,			// type of waveform
-		(float)0,						// startFrequency in Hertz
-		(float)0,						// stopFrequency in Hertz
-		0,								// increment
-		0,								// dwellTime, time in seconds between frequency changes in sweep mode
-		PS2000_UPDOWN,					// sweepType
-		0								// sweeps, number of times to sweep the frequency
-	);
 	lockSettings.active = false;
 	emit(compensationStateChanged(false));
 	emit(lockStateChanged(lockstate));
@@ -225,16 +204,19 @@ void daq::setRange(int index, int ch) {
 	daq::set_defaults();
 }
 
-void daq::setScanParameters(int type, int value) {
+void daq::setScanParameters(SCANPARAMETERS type, double value) {
 	switch (type) {
-		case 0:
+		case SCANPARAMETERS::LOW:
 			scanSettings.low = value;
 			break;
-		case 1:
+		case SCANPARAMETERS::HIGH:
 			scanSettings.high = value;
 			break;
-		case 2:
+		case SCANPARAMETERS::STEPS:
 			scanSettings.nrSteps = value;
+			break;
+		case SCANPARAMETERS::INTERVAL:
+			scanSettings.interval = value;
 			break;
 	}
 }
@@ -343,51 +325,83 @@ std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq::collectBlockData() {
 	return values;
 }
 
-void daq::scanManual() {
-	scanData.nrSteps = scanSettings.nrSteps;
-	scanData.temperatures = generalmath::linspace<double>(scanSettings.low, scanSettings.high, scanSettings.nrSteps);
-	scanData.intensity.resize(scanSettings.nrSteps);
-	scanData.error.resize(scanSettings.nrSteps);
+void daq::startScan() {
+	if (scanTimer->isActive()) {
+		scanData.m_running = false;
+		scanTimer->stop();
+		emit s_scanRunning(scanData.m_running);
+	} else {
+		// prepare data arrays
+		scanData.nrSteps = scanSettings.nrSteps;
+		scanData.temperatures = generalmath::linspace<double>(scanSettings.low, scanSettings.high, scanSettings.nrSteps);
+		scanData.reference.resize(scanSettings.nrSteps);
+		scanData.absorption.resize(scanSettings.nrSteps);
+		scanData.quotient.resize(scanSettings.nrSteps);
+		scanData.transmission.resize(scanSettings.nrSteps);
 
-	daq::setAcquisitionParameters();
+		daq::setAcquisitionParameters();
 
-	// generate voltage values
-	for (int j(0); j < scanData.nrSteps; j++) {
-		if (j == 0) {
-			Sleep(5000);
-		}
-
-		m_laserControl->setTemperatureForce(scanData.temperatures[j]);
-
-		// acquire detector and reference signal, store and process it
-		std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectBlockData();
-
-		std::vector<double> tau(values[0].begin(), values[0].end());
-		std::vector<double> reference(values[1].begin(), values[1].end());
-
-		//double tau_mean = generalmath::mean(tau);
-		double tau_max = generalmath::max(tau);
-		double tau_min = generalmath::min(tau);
-
-		for (int kk(0); kk < tau.size(); kk++) {
-			tau[kk] = (tau[kk] - tau_min) / (tau_max - tau_min);
-		}
-
-		scanData.intensity[j] = generalmath::absSum(tau);
+		scanData.pass = 0;
+		scanData.m_running = true;
+		scanData.m_abort = false;
+		// set laser temperature to start value
+		m_laserControl->setTemperatureForce(scanData.temperatures[scanData.pass]);
+		passTimer.start();
+		scanTimer->start(1000);
+		emit s_scanRunning(scanData.m_running);
 	}
-
-	// normalize error
-	double error_max = generalmath::max(scanData.error);
-	for (int kk(0); kk < scanData.error.size(); kk++) {
-		scanData.error[kk] /= error_max;
-	}
-
-	// reset signal generator to start values
-	emit scanDone();
 }
 
-SCAN_DATA daq::getScanData() {
-	return scanData;
+void daq::scan() {
+	// abort scan if wanted
+	if (scanData.m_abort) {
+		scanData.m_running = false;
+		scanTimer->stop();
+		emit s_scanRunning(scanData.m_running);
+	}
+
+	// wait for one minute for first value to let temperature settle
+	if (scanData.pass == 0 && passTimer.elapsed() < 6e1) {
+		return;
+	}
+
+	// acquire new datapoint when interval has passed
+	if (passTimer.elapsed() < (scanSettings.interval*1e3)) {
+		return;
+	}
+
+	// reset timer when enough time has passed
+	passTimer.start();
+
+	// acquire detector and reference signal, store and process it
+	std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectBlockData();
+
+	std::vector<double> absorption(values[0].begin(), values[0].end());
+	std::vector<double> reference(values[1].begin(), values[1].end());
+
+	double absorption_mean = generalmath::mean(absorption) / 1e3;
+	double reference_mean = generalmath::mean(reference) / 1e3;
+	double quotient = abs(absorption_mean / reference_mean);
+
+	scanData.absorption[scanData.pass] = absorption_mean;
+	scanData.reference[scanData.pass] = reference_mean;
+	scanData.quotient[scanData.pass] = quotient;
+
+	double quotient_max = generalmath::max(scanData.quotient);
+
+	double transmission = quotient / quotient_max;
+	scanData.transmission[scanData.pass] = transmission;
+
+	++scanData.pass;
+	emit s_scanPassAcquired();
+	// if scan is not done, set temperature to new value, else annouce finished scan
+	if (scanData.pass < scanData.nrSteps) {
+		m_laserControl->setTemperatureForce(scanData.temperatures[scanData.pass]);
+	} else {
+		scanData.m_running = false;
+		scanTimer->stop();
+		emit s_scanRunning(scanData.m_running);
+	}
 }
 
 LOCK_SETTINGS daq::getLockSettings() {
@@ -441,31 +455,30 @@ void daq::lock() {
 			lockData.iError += lockSettings.integral * ( lockData.error.back() + error ) * (dt) / 2;
 			dError = (error - lockData.error.back()) / dt;
 		}
-		currentVoltage = currentVoltage + (lockSettings.proportional * error + lockData.iError + lockSettings.derivative * dError) / 100;
+		lockData.currentTempOffset = lockData.currentTempOffset + (lockSettings.proportional * error + lockData.iError + lockSettings.derivative * dError) / 100;
 
 		// abort locking if
 		// - output voltage is over 2 V
 		// - maximum of the signal amplitude in the last 50 measurements is below 0.05 V
-		if ((abs(currentVoltage) > 2) || (generalmath::floatingMax(lockData.amplitude, 50) / static_cast<double>(1000) < 0.05)) {
+		if ((abs(lockData.currentTempOffset) > 5.0) || (generalmath::floatingMax(lockData.amplitude, 50) / static_cast<double>(1000) < 0.05)) {
 			daq::disableLocking(LOCKSTATE::FAILURE);
 		}
 
 		// set laser temperature
-		m_laserControl->setTemperatureForce(currentVoltage);
+		m_laserControl->setTemperatureForce(lockData.currentTempOffset);
 	}
 
 	// write data to struct for storage
 	lockData.time.push_back(now);
 	lockData.error.push_back(error);
-	lockData.tempOffset.push_back(currentVoltage);
+	lockData.tempOffset.push_back(lockData.currentTempOffset);
 
 	double passed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lockData.time[0]).count() / 1e3;	// store passed time in seconds
 
 	// write data to array for plotting
-	lockDataPlot[static_cast<int>(lockViewPlotTypes::VOLTAGE)].append(QPointF(passed, currentVoltage));
+	lockDataPlot[static_cast<int>(lockViewPlotTypes::VOLTAGE)].append(QPointF(passed, lockData.currentTempOffset));
 	lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNAL)].append(QPointF(passed, error / 100));
 	lockDataPlot[static_cast<int>(lockViewPlotTypes::AMPLITUDE)].append(QPointF(passed, amplitude / static_cast<double>(1000)));
-	lockDataPlot[static_cast<int>(lockViewPlotTypes::PIEZOVOLTAGE)].append(QPointF(passed, piezoVoltage));
 	lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNALMEAN)].append(QPointF(passed, generalmath::floatingMean(lockData.error, 50) / 100));
 	lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNALSTD)].append(QPointF(passed, generalmath::floatingStandardDeviation(lockData.error, 50) / 100));
 
@@ -733,6 +746,17 @@ void daq::disconnect() {
 		m_isConnected = false;
 	}
 	emit(connected(m_isConnected));
+}
+
+void daq::init() {
+	// create timers and connect their signals
+	// after moving daq to another thread
+	timer = new QTimer();
+	lockingTimer = new QTimer();
+	scanTimer = new QTimer();
+	QWidget::connect(timer, SIGNAL(timeout()), this, SLOT(getBlockData()));
+	QWidget::connect(lockingTimer, SIGNAL(timeout()), this, SLOT(lock()));
+	QWidget::connect(scanTimer, SIGNAL(timeout()), this, SLOT(scan()));
 }
 
 void daq::get_info(void) {

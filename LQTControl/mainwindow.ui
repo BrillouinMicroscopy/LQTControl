@@ -74,7 +74,7 @@
           <x>10</x>
           <y>310</y>
           <width>250</width>
-          <height>151</height>
+          <height>181</height>
          </rect>
         </property>
         <property name="title">
@@ -160,7 +160,7 @@
          <property name="geometry">
           <rect>
            <x>130</x>
-           <y>110</y>
+           <y>140</y>
            <width>110</width>
            <height>34</height>
           </rect>
@@ -201,12 +201,47 @@
           <number>100</number>
          </property>
         </widget>
+        <widget class="QSpinBox" name="scanInterval">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>110</y>
+           <width>90</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>300</number>
+         </property>
+         <property name="singleStep">
+          <number>10</number>
+         </property>
+         <property name="value">
+          <number>10</number>
+         </property>
+        </widget>
+        <widget class="QLabel" name="scanIntervalLabel">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>110</y>
+           <width>131</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Time between steps [s]</string>
+         </property>
+        </widget>
        </widget>
        <widget class="QGroupBox" name="LockingBox">
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>470</y>
+          <y>500</y>
           <width>250</width>
           <height>181</height>
          </rect>
@@ -784,7 +819,7 @@
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>660</y>
+          <y>690</y>
           <width>250</width>
           <height>91</height>
          </rect>
