@@ -315,6 +315,9 @@ std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq::collectBlockData() {
 	*  get the times (in nanoseconds)
 	*  and the values (in ADC counts)
 	*/
+
+
+
 	ps2000_get_times_and_values(
 		unitOpened.handle,
 		times,
@@ -326,6 +329,7 @@ std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq::collectBlockData() {
 		acquisitionParameters.time_units,
 		acquisitionParameters.no_of_samples
 	);
+
 
 	// create vector of voltage values
 	std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values;
@@ -393,18 +397,21 @@ LOCK_SETTINGS daq::getLockSettings() {
 void daq::getBlockData() {
 	std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectBlockData();
 
+	m_liveBuffer->m_freeBuffers->acquire();
+	int16_t **buffer = m_liveBuffer->getWriteBuffer();
 	for (int channel(0); channel < values.size(); channel++) {
 		data[channel].resize(values[channel].size());
 		for (int jj(0); jj < values[channel].size(); jj++) {
-			data[channel][jj] = QPointF(jj, values[channel][jj] / static_cast<double>(1000));
+			buffer[channel][jj] = values[channel][jj];
 		}
 	}
+	m_liveBuffer->m_usedBuffers->release();
 
-	emit collectedBlockData(data);
+	emit collectedBlockData();
 }
 
 void daq::lock() {
-	std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectBlockData();			// [mV]
+	std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values = daq::collectBlockData();
 
 	std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
 

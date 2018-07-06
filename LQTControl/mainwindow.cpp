@@ -55,9 +55,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	);
 	QWidget::connect(
 		m_dataAcquisition,
-		SIGNAL(collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &)),
+		SIGNAL(collectedBlockData()),
 		this,
-		SLOT(updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &))
+		SLOT(updateLiveView())
 	);
 
 	QWidget::connect(
@@ -407,8 +407,20 @@ void MainWindow::on_temperatureOffset_valueChanged(const double offset) {
 	
 }
 
-void MainWindow::updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &data) {
+void MainWindow::updateLiveView() {
 	if (m_selectedView == VIEWS::LIVE) {
+		
+		m_dataAcquisition->m_liveBuffer->m_usedBuffers->acquire();
+		int16_t **buffer = m_dataAcquisition->m_liveBuffer->getReadBuffer();
+
+		std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> data;
+		for (int channel(0); channel < 4; channel++) {
+			data[channel].resize(1000);
+			for (int jj(0); jj < 1000; jj++) {
+				data[channel][jj] = QPointF(jj, buffer[channel][jj] / static_cast<double>(1e3));
+			}
+		}
+
 		int channel = 0;
 		foreach(QtCharts::QLineSeries* series, liveViewPlots) {
 			if (series->isVisible()) {
@@ -417,6 +429,8 @@ void MainWindow::updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS
 			++channel;
 		}
 		liveViewChart->axisX()->setRange(0, data[0].length());
+
+		m_dataAcquisition->m_liveBuffer->m_freeBuffers->release();
 	}
 }
 

@@ -129,7 +129,7 @@ private slots:
 	void on_temperatureOffset_valueChanged(const double offset);
 
 	// SLOTS for updating the plots
-	void updateLiveView(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &data);
+	void updateLiveView();
 	void updateScanView();
 	void updateLockView(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &data);
 

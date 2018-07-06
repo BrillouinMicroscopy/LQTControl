@@ -11,6 +11,7 @@
 
 #include "ps2000.h"
 #include "LQT.h"
+#include "circularBuffer.h"
 #include "generalmath.h"
 
 #define DAQ_BUFFER_SIZE 	8000
@@ -31,7 +32,7 @@ typedef struct {
 	int32_t 	time_interval;
 	int16_t 	time_units;
 	int16_t 	oversample;
-	int32_t 	no_of_samples = 1000;	// set to a value which allows a clean frequency analysis for 5000 Hz modulation frequency at timebase 10
+	int32_t 	no_of_samples = 1000;
 	int32_t 	max_samples;
 	int32_t 	time_indisposed_ms;
 	int16_t		timebase = 10;
@@ -138,6 +139,9 @@ class daq : public QObject {
 		LOCK_SETTINGS getLockSettings();
 
 		std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> data;
+
+		CircularBuffer<int16_t> *m_liveBuffer = new CircularBuffer<int16_t>(4, PS2000_MAX_CHANNELS, 8000);
+
 		std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> lockDataPlot;
 
 		double currentVoltage = 0;
@@ -153,7 +157,7 @@ class daq : public QObject {
 		void scanDone();
 		void collectedData();
 		void locked(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &);
-		void collectedBlockData(std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> &);
+		void collectedBlockData();
 		void acquisitionParametersChanged(ACQUISITION_PARAMETERS);
 		void lockStateChanged(LOCKSTATE);
 		void compensationStateChanged(bool);
