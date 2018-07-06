@@ -8,7 +8,7 @@ class LQT : public QObject {
 	Q_OBJECT
 
 private:
-	QSerialPort *m_laserPort;
+	QSerialPort *m_laserPort = new QSerialPort();
 	bool m_isConnected = false;
 	std::string m_terminator = "\r";
 
