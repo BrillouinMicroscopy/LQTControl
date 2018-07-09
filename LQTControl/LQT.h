@@ -29,6 +29,7 @@ public:
 	std::string receive(std::string request);
 	void send(std::string message);
 	qint64 writeToDevice(const char * data);
+	std::string stripCRLF(std::string msg);
 
 	/*
 	* Functions for setting and getting the temperature
@@ -51,7 +52,6 @@ public:
 	*/
 
 	void setFeature(std::string feature, bool value);
-	bool getFeature(std::string feature);
 
 	// control temperature feature
 	void enableTemperatureControl(bool enable);

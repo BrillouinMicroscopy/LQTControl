@@ -31,6 +31,9 @@ void LQT::disconnect() {
  */
 
 std::string LQT::receive(std::string request) {
+
+	m_laserPort->clear();
+
 	request = request + m_terminator;
 	writeToDevice(request.c_str());
 
@@ -46,7 +49,7 @@ std::string LQT::receive(std::string request) {
 		}
 	}
 
-	return response;
+	return stripCRLF(response);
 }
 
 void LQT::send(std::string message) {
@@ -60,6 +63,20 @@ qint64 LQT::writeToDevice(const char *data) {
 	return m_laserPort->write(data);
 }
 
+std::string LQT::stripCRLF(std::string msg) {
+	if (msg.size() > 0) {
+		if (msg.back() == '\n') {
+			msg.pop_back();
+		}
+	}
+	if (msg.size() > 0) {
+		if (msg.back() == '\r') {
+			msg.pop_back();
+		}
+	}
+	return msg;
+}
+
 /*
 * Functions for setting and getting the temperature
 */
@@ -70,7 +87,11 @@ void LQT::setTemperature(double temperature) {
 
 double LQT::getTemperature() {
 	std::string temp = receive("utempoffset?");
-	return stod(temp);
+	if (temp.size() == 0) {
+		return NAN;
+	} else {
+		return stod(temp);
+	}
 }
 
 void LQT::setMaxTemperature(double temperature) {
@@ -79,14 +100,19 @@ void LQT::setMaxTemperature(double temperature) {
 
 double LQT::getMaxTemperature() {
 	std::string temp = receive("maxutempoffset?");
-	return stod(temp);
+	if (temp.size() == 0) {
+		return NAN;
+	} else {
+		return stod(temp);
+	}
 }
 
 // The laser sometimes does not accept the temperature setting on the first try.
 // These functions set the temperature until it has the correct value or it fails for the 10th time.
 void LQT::setTemperatureForce(double temperature) {
-	int i{ 0 };
 	setTemperature(temperature);
+	Sleep(50);
+	int i{ 0 };
 	while (getTemperature() != temperature && i++ < 10) {
 		Sleep(100);
 		setTemperature(temperature);
@@ -94,8 +120,9 @@ void LQT::setTemperatureForce(double temperature) {
 }
 
 void LQT::setMaxTemperatureForce(double temperature) {
-	int i{ 0 };
 	setMaxTemperature(temperature);
+	Sleep(50);
+	int i{ 0 };
 	while (getMaxTemperature() != temperature && i++ < 10) {
 		Sleep(100);
 		setMaxTemperature(temperature);
@@ -109,19 +136,8 @@ void LQT::setMaxTemperatureForce(double temperature) {
 void LQT::setFeature(std::string feature, bool value) {
 	if (value) {
 		send(feature + "=on");
-	}
-	else {
+	} else {
 		send(feature + "=off");
-	}
-}
-
-bool LQT::getFeature(std::string feature) {
-	std::string lock = receive(feature + "?");
-	if (lock == "off") {
-		return false;
-	}
-	else {
-		return true;
 	}
 }
 
@@ -132,11 +148,16 @@ void LQT::enableTemperatureControl(bool enable) {
 }
 
 void LQT::setMod(bool mod) {
-	setFeature("Mod", mod);
+	setFeature("mod", mod);
 }
 
 bool LQT::getMod() {
-	return getFeature("Mod");
+	std::string msg = receive("Mod?");
+	if (msg == "Laser Modulation OFF") {
+		return false;
+	} else {
+		return true;
+	}
 }
 
 void LQT::setLock(bool lock) {
@@ -144,7 +165,12 @@ void LQT::setLock(bool lock) {
 }
 
 bool LQT::getLock() {
-	return getFeature("Lock");
+	std::string msg = receive("Lock?");
+	if (msg == "LOCK=OFF") {
+		return false;
+	} else {
+		return true;
+	}
 }
 
 void LQT::setLe(bool le) {
@@ -152,5 +178,10 @@ void LQT::setLe(bool le) {
 }
 
 bool LQT::getLe() {
-	return getFeature("Le");
+	std::string msg = receive("Le?");
+	if (msg == "LOCK ENABLE=OFF") {
+		return false;
+	} else {
+		return true;
+	}
 }
