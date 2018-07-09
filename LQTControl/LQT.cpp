@@ -113,7 +113,7 @@ void LQT::setTemperatureForce(double temperature) {
 	setTemperature(temperature);
 	Sleep(50);
 	int i{ 0 };
-	while (getTemperature() != temperature && i++ < 10) {
+	while (abs(getTemperature() - temperature) > 0.001 && i++ < 10) {
 		Sleep(100);
 		setTemperature(temperature);
 	}
@@ -123,7 +123,7 @@ void LQT::setMaxTemperatureForce(double temperature) {
 	setMaxTemperature(temperature);
 	Sleep(50);
 	int i{ 0 };
-	while (getMaxTemperature() != temperature && i++ < 10) {
+	while (abs(getMaxTemperature() - temperature) > 0.001  && i++ < 10) {
 		Sleep(100);
 		setMaxTemperature(temperature);
 	}
