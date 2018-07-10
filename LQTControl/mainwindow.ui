@@ -53,7 +53,7 @@
          <x>0</x>
          <y>0</y>
          <width>288</width>
-         <height>909</height>
+         <height>898</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -1028,7 +1028,7 @@
      <x>0</x>
      <y>0</y>
      <width>1335</width>
-     <height>18</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">
@@ -1136,6 +1136,31 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>settingsArea</tabstop>
+  <tabstop>sampleRate</tabstop>
+  <tabstop>sampleNumber</tabstop>
+  <tabstop>chARange</tabstop>
+  <tabstop>chACoupling</tabstop>
+  <tabstop>chBRange</tabstop>
+  <tabstop>chBCoupling</tabstop>
+  <tabstop>acquisitionButton</tabstop>
+  <tabstop>scanStart</tabstop>
+  <tabstop>scanEnd</tabstop>
+  <tabstop>scanSteps</tabstop>
+  <tabstop>scanInterval</tabstop>
+  <tabstop>scanButton</tabstop>
+  <tabstop>proportionalTerm</tabstop>
+  <tabstop>integralTerm</tabstop>
+  <tabstop>derivativeTerm</tabstop>
+  <tabstop>transmission</tabstop>
+  <tabstop>acquireLockButton</tabstop>
+  <tabstop>lockButton</tabstop>
+  <tabstop>enableTemperatureControlCheckbox</tabstop>
+  <tabstop>temperatureOffset</tabstop>
+  <tabstop>selectDisplay</tabstop>
+  <tabstop>floatingViewCheckBox</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
