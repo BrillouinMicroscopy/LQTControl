@@ -334,10 +334,15 @@ void daq::startScan() {
 		// prepare data arrays
 		scanData.nrSteps = scanSettings.nrSteps;
 		scanData.temperatures = generalmath::linspace<double>(scanSettings.low, scanSettings.high, scanSettings.nrSteps);
+
 		scanData.reference.resize(scanSettings.nrSteps);
 		scanData.absorption.resize(scanSettings.nrSteps);
 		scanData.quotient.resize(scanSettings.nrSteps);
 		scanData.transmission.resize(scanSettings.nrSteps);
+		std::fill(scanData.reference.begin(), scanData.reference.end(), NAN);
+		std::fill(scanData.absorption.begin(), scanData.absorption.end(), NAN);
+		std::fill(scanData.quotient.begin(), scanData.quotient.end(), NAN);
+		std::fill(scanData.transmission.begin(), scanData.transmission.end(), NAN);
 
 		daq::setAcquisitionParameters();
 
