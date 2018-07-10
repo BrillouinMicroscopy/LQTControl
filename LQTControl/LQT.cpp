@@ -82,7 +82,7 @@ std::string LQT::stripCRLF(std::string msg) {
 */
 
 void LQT::setTemperature(double temperature) {
-	send(fmt::format("utempoffset={:06.3f}", temperature));
+	receive(fmt::format("utempoffset={:06.3f}", temperature));
 }
 
 double LQT::getTemperature() {
@@ -95,7 +95,7 @@ double LQT::getTemperature() {
 }
 
 void LQT::setMaxTemperature(double temperature) {
-	send(fmt::format("maxutempoffset={:06.3f}", temperature));
+	receive(fmt::format("maxutempoffset={:06.3f}", temperature));
 }
 
 double LQT::getMaxTemperature() {
@@ -111,7 +111,7 @@ double LQT::getMaxTemperature() {
 // These functions set the temperature until it has the correct value or it fails for the 10th time.
 void LQT::setTemperatureForce(double temperature) {
 	setTemperature(temperature);
-	Sleep(50);
+	Sleep(100);
 	int i{ 0 };
 	while (abs(getTemperature() - temperature) > 0.001 && i++ < 10) {
 		Sleep(100);
@@ -121,7 +121,7 @@ void LQT::setTemperatureForce(double temperature) {
 
 void LQT::setMaxTemperatureForce(double temperature) {
 	setMaxTemperature(temperature);
-	Sleep(50);
+	Sleep(100);
 	int i{ 0 };
 	while (abs(getMaxTemperature() - temperature) > 0.001  && i++ < 10) {
 		Sleep(100);
@@ -135,9 +135,9 @@ void LQT::setMaxTemperatureForce(double temperature) {
 
 void LQT::setFeature(std::string feature, bool value) {
 	if (value) {
-		send(feature + "=on");
+		receive(feature + "=on");
 	} else {
-		send(feature + "=off");
+		receive(feature + "=off");
 	}
 }
 
