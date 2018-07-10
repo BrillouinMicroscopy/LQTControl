@@ -387,10 +387,10 @@ void daq::scan() {
 	scanData.reference[scanData.pass] = reference_mean;
 	scanData.quotient[scanData.pass] = quotient;
 
-	double quotient_max = generalmath::max(scanData.quotient);
+	double absorption_max = generalmath::max(scanData.absorption);
 
-	double transmission = quotient / quotient_max;
-	scanData.transmission[scanData.pass] = transmission;
+	scanData.transmission = scanData.absorption;
+	std::for_each(scanData.transmission.begin(), scanData.transmission.end(), [absorption_max](double &el) {el /= absorption_max; });	
 
 	++scanData.pass;
 	emit s_scanPassAcquired();
