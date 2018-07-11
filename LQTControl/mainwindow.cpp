@@ -375,8 +375,7 @@ void MainWindow::on_acquireLockButton_clicked() {
 	bool running = m_dataAcquisition->startStopAcquireLocking();
 	if (running) {
 		ui->acquireLockButton->setText(QString("Stop"));
-	}
-	else {
+	} else {
 		ui->lockButton->setText(QString("Lock"));
 		ui->acquireLockButton->setText(QString("Acquire"));
 	}
@@ -384,12 +383,26 @@ void MainWindow::on_acquireLockButton_clicked() {
 
 void MainWindow::on_lockButton_clicked() {
 	m_dataAcquisition->startStopLocking();
-	//if (running) {
-	//	ui->lockButton->setText(QString("Unlock"));
-	//}
-	//else {
-	//	ui->lockButton->setText(QString("Lock"));
-	//}
+}
+
+void MainWindow::updateLockState(LOCKSTATE lockState) {
+	switch (lockState) {
+		case LOCKSTATE::ACTIVE:
+			lockInfo->setText("Locking active");
+			ui->lockButton->setText(QString("Unlock"));
+			lockIndicator->active();
+			break;
+		case LOCKSTATE::INACTIVE:
+			lockInfo->setText("Locking inactive");
+			ui->lockButton->setText(QString("Lock"));
+			lockIndicator->inactive();
+			break;
+		case LOCKSTATE::FAILURE:
+			lockInfo->setText("Locking failure");
+			ui->lockButton->setText(QString("Lock"));
+			lockIndicator->failure();
+			break;
+	}
 }
 
 void MainWindow::on_sampleRate_activated(const int index) {
@@ -544,26 +557,6 @@ void MainWindow::updateAcquisitionParameters(ACQUISITION_PARAMETERS acquisitionP
 	ui->chBCoupling->setCurrentIndex(acquisitionParameters.channelSettings[1].DCcoupled);
 }
 
-void MainWindow::updateLockState(LOCKSTATE lockState) {
-	switch (lockState) {
-		case LOCKSTATE::ACTIVE:
-			lockInfo->setText("Locking active");
-			ui->lockButton->setText(QString("Unlock"));
-			lockIndicator->active();
-			break;
-		case LOCKSTATE::INACTIVE:
-			lockInfo->setText("Locking inactive");
-			ui->lockButton->setText(QString("Lock"));
-			lockIndicator->inactive();
-			break;
-		case LOCKSTATE::FAILURE:
-			lockInfo->setText("Locking failure");
-			ui->lockButton->setText(QString("Lock"));
-			lockIndicator->failure();
-			break;
-	}
-}
-
 void MainWindow::updateCompensationState(bool compensating) {
 	if (compensating) {
 		compensationIndicator->show();
@@ -575,7 +568,6 @@ void MainWindow::updateCompensationState(bool compensating) {
 }
 
 void MainWindow::on_scanButton_clicked() {
-	std::thread::id id = std::this_thread::get_id();
 	if (!m_dataAcquisition->scanData.m_running) {
 		QMetaObject::invokeMethod(m_dataAcquisition, "startScan", Qt::QueuedConnection);
 	} else {

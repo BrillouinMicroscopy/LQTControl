@@ -105,8 +105,11 @@ private slots:
 	void on_actionDisconnect_DAQ_triggered();
 
 	void on_acquisitionButton_clicked();
+	// SLOTS for locking
 	void on_lockButton_clicked();
+	void updateLockState(LOCKSTATE lockState);
 	void on_acquireLockButton_clicked();
+	// SLOTS for scanning
 	void on_scanButton_clicked();
 
 	// SLOTS for setting the acquisitionParameters
@@ -139,9 +142,6 @@ private slots:
 
 	// SLOTS for updating the acquisition parameters
 	void updateAcquisitionParameters(ACQUISITION_PARAMETERS acquisitionParameters);
-
-	// SLOTS for updating the locking state
-	void updateLockState(LOCKSTATE lockState);
 
 	// SLOT for updating the compensation state
 	void updateCompensationState(bool compensating);

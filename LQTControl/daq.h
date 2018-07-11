@@ -61,11 +61,17 @@ typedef struct {
 	std::vector<double> transmission;	// [1]	measured transmission, e.g. quotient normalized to maximum quotient measured
 } SCAN_DATA;
 
+typedef enum enLockState {
+	INACTIVE,
+	ACTIVE,
+	FAILURE
+} LOCKSTATE;
+
 typedef struct {
 	double proportional = 0.01;				//		control parameter of the proportional part
 	double integral = 0.005;				//		control parameter of the integral part
 	double derivative = 0.0;				//		control parameter of the derivative part
-	bool active = false;					//		locking enabled?
+	LOCKSTATE state = LOCKSTATE::INACTIVE;	//		locking enabled?
 	double transmissionSetpoint = 0.5;		// [V]	target voltage of the offset compensation
 } LOCK_SETTINGS;
 
@@ -77,12 +83,6 @@ typedef struct {
 	double iError = 0;					// [1]	integral value of the error signal
 	double currentTempOffset = 0;		// [K] current temperature offset
 } LOCK_DATA;
-
-typedef enum enLockState {
-	INACTIVE,
-	ACTIVE,
-	FAILURE
-} LOCKSTATE;
 
 enum class liveViewPlotTypes {
 	CHANNEL_A,
@@ -126,8 +126,8 @@ class daq : public QObject {
 	public:
 		explicit daq(QObject *parent, LQT *laserControl);
 		bool startStopAcquireLocking();
-		bool startStopLocking();
-		void disableLocking(LOCKSTATE lockstate = LOCKSTATE::INACTIVE);
+		void startStopLocking();
+		void setLockState(LOCKSTATE lockstate = LOCKSTATE::INACTIVE);
 		QVector<QPointF> getStreamingBuffer(int ch);
 		void startStreaming();
 		void collectStreamingData();
@@ -171,7 +171,6 @@ class daq : public QObject {
 		void collectedBlockData();
 		void acquisitionParametersChanged(ACQUISITION_PARAMETERS);
 		void lockStateChanged(LOCKSTATE);
-		void compensationStateChanged(bool);
 
 	private:
 		bool m_isConnected = false;

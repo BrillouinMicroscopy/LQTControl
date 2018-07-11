@@ -134,7 +134,7 @@ void daq::startStopAcquisition() {
 
 bool daq::startStopAcquireLocking() {
 	if (lockingTimer->isActive()) {
-		daq::disableLocking();
+		setLockState(LOCKSTATE::INACTIVE);
 		lockingTimer->stop();
 		return false;
 	} else {
@@ -143,30 +143,19 @@ bool daq::startStopAcquireLocking() {
 	}
 }
 
-bool daq::startStopLocking() {
-	lockSettings.active = !lockSettings.active;
-	// set voltage source to potentiometer when locking is not active
-	if (lockSettings.active) {
+void daq::startStopLocking() {
+	if (lockSettings.state != LOCKSTATE::ACTIVE) {
 		// set integral error to zero before starting to lock
 		lockData.iError = 0;
-		//// store and immediately restore output voltage
-		//piezo.storeOutputVoltageIncrement();
-		//// this is necessary, because it seems, that getting the output voltage takes the external signal into account
-		//// whereas setting it does not
-		//piezo.restoreOutputVoltageIncrement();
-		//piezo.setVoltageSource(PZ_InputSourceFlags::PZ_ExternalSignal);
-		//piezoVoltage = piezo.getVoltage();
-		emit(lockStateChanged(LOCKSTATE::ACTIVE));
+		setLockState(LOCKSTATE::ACTIVE);
 	} else {
-		daq::disableLocking();
+		setLockState(LOCKSTATE::INACTIVE);
 	}
-	return lockSettings.active;
 }
 
-void daq::disableLocking(LOCKSTATE lockstate) {
-	lockSettings.active = false;
-	emit(compensationStateChanged(false));
-	emit(lockStateChanged(lockstate));
+void daq::setLockState(LOCKSTATE lockstate) {
+	lockSettings.state = lockstate;
+	emit(lockStateChanged(lockSettings.state));
 }
 
 SCAN_SETTINGS daq::getScanSettings() {
@@ -453,7 +442,7 @@ void daq::lock() {
 	// write data to struct for storage
 	lockData.amplitude.push_back(amplitude);
 
-	if (lockSettings.active) {
+	if (lockSettings.state == LOCKSTATE::ACTIVE) {
 		double dError = 0;
 		if (lockData.error.size() > 0) {
 			double dt = std::chrono::duration_cast<std::chrono::milliseconds>(now - lockData.time.back()).count() / 1e3;
@@ -466,7 +455,7 @@ void daq::lock() {
 		// - output voltage is over 2 V
 		// - maximum of the signal amplitude in the last 50 measurements is below 0.05 V
 		if ((abs(lockData.currentTempOffset) > 5.0) || (generalmath::floatingMax(lockData.amplitude, 50) / static_cast<double>(1000) < 0.05)) {
-			daq::disableLocking(LOCKSTATE::FAILURE);
+			setLockState(LOCKSTATE::FAILURE);
 		}
 
 		// set laser temperature
