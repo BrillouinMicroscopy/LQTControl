@@ -68,7 +68,7 @@ typedef enum enLockState {
 } LOCKSTATE;
 
 typedef struct {
-	double proportional = 0.01;				//		control parameter of the proportional part
+	double proportional = 0.1;				//		control parameter of the proportional part
 	double integral = 0.005;				//		control parameter of the integral part
 	double derivative = 0.0;				//		control parameter of the derivative part
 	LOCKSTATE state = LOCKSTATE::INACTIVE;	//		locking enabled?
@@ -77,8 +77,12 @@ typedef struct {
 
 typedef struct {
 	std::vector<std::chrono::time_point<std::chrono::system_clock>> time;		// [s]	time vector
+	std::vector<double> relTime;		// [s]	time passed since beginning of measurement
 	std::vector<double> tempOffset;		// [K]	timeline of the temperature offset
-	std::vector<int32_t> amplitude;		// [µV]	measured intensity (<int32_t> is fine)
+	std::vector<int32_t> absorption;	// [µV]	measured absorption signal (<int32_t> is fine)
+	std::vector<int32_t> reference;		// [µV]	measured reference signal (<int32_t> is fine)
+	std::vector<double> quotient;		// [1]	quotient of absorption and reference
+	std::vector<double> transmission;	// [1]	transmission behind cell, i.e. the quotient normalized to maximum quotient
 	std::vector<double> error;			// [1]	PDH error signal
 	double iError = 0;					// [1]	integral value of the error signal
 	double currentTempOffset = 0;		// [K] current temperature offset
@@ -97,12 +101,13 @@ enum class scanViewPlotTypes {
 	COUNT
 };
 enum class lockViewPlotTypes {
-	VOLTAGE,
+	ABSORPTION,
+	REFERENCE,
+	TRANSMISSION,
 	ERRORSIGNAL,
-	AMPLITUDE,
-	PIEZOVOLTAGE,
 	ERRORSIGNALMEAN,
 	ERRORSIGNALSTD,
+	TEMPERATUREOFFSET,
 	COUNT
 };
 

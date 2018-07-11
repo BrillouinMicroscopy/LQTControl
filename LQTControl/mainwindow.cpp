@@ -122,11 +122,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	// set up lock view plots
 	lockViewPlots.resize(static_cast<int>(lockViewPlotTypes::COUNT));
 
-	QtCharts::QLineSeries *voltage = new QtCharts::QLineSeries();
-	voltage->setUseOpenGL(true);
-	voltage->setColor(colors.orange);
-	voltage->setName(QString("Voltage"));
-	lockViewPlots[static_cast<int>(lockViewPlotTypes::VOLTAGE)] = voltage;
+	QtCharts::QLineSeries *absorption = new QtCharts::QLineSeries();
+	absorption->setUseOpenGL(true);
+	absorption->setColor(colors.orange);
+	absorption->setName(QString("Absorption signal"));
+	lockViewPlots[static_cast<int>(lockViewPlotTypes::ABSORPTION)] = absorption;
 
 	QtCharts::QLineSeries *errorLock = new QtCharts::QLineSeries();
 	errorLock->setUseOpenGL(true);
@@ -134,17 +134,23 @@ MainWindow::MainWindow(QWidget *parent) :
 	errorLock->setName(QString("Error signal"));
 	lockViewPlots[static_cast<int>(lockViewPlotTypes::ERRORSIGNAL)] = errorLock;
 
-	QtCharts::QLineSeries *intensityLock = new QtCharts::QLineSeries();
-	intensityLock->setUseOpenGL(true);
-	intensityLock->setColor(colors.blue);
-	intensityLock->setName(QString("Signal amplitude"));
-	lockViewPlots[static_cast<int>(lockViewPlotTypes::AMPLITUDE)] = intensityLock;
+	QtCharts::QLineSeries *reference = new QtCharts::QLineSeries();
+	reference->setUseOpenGL(true);
+	reference->setColor(colors.blue);
+	reference->setName(QString("Reference signal"));
+	lockViewPlots[static_cast<int>(lockViewPlotTypes::REFERENCE)] = reference;
 
-	QtCharts::QLineSeries *piezoVoltage = new QtCharts::QLineSeries();
-	piezoVoltage->setUseOpenGL(true);
-	piezoVoltage->setColor(colors.purple);
-	piezoVoltage->setName(QString("Piezo Voltage"));
-	lockViewPlots[static_cast<int>(lockViewPlotTypes::PIEZOVOLTAGE)] = piezoVoltage;
+	QtCharts::QLineSeries *lockTemperature = new QtCharts::QLineSeries();
+	lockTemperature->setUseOpenGL(true);
+	lockTemperature->setColor(colors.orange);
+	lockTemperature->setName(QString("Offset temperature"));
+	lockViewPlots[static_cast<int>(lockViewPlotTypes::TEMPERATUREOFFSET)] = lockTemperature;
+
+	QtCharts::QLineSeries *transmission = new QtCharts::QLineSeries();
+	transmission->setUseOpenGL(true);
+	transmission->setColor(colors.purple);
+	transmission->setName(QString("Transmission"));
+	lockViewPlots[static_cast<int>(lockViewPlotTypes::TRANSMISSION)] = transmission;
 
 	QtCharts::QLineSeries *errorMean = new QtCharts::QLineSeries();
 	errorMean->setUseOpenGL(true);
@@ -173,17 +179,17 @@ MainWindow::MainWindow(QWidget *parent) :
 	// set up scan view plots
 	scanViewPlots.resize(static_cast<int>(scanViewPlotTypes::COUNT));
 
-	QtCharts::QLineSeries *absorption = new QtCharts::QLineSeries();
-	absorption->setUseOpenGL(true);
-	absorption->setColor(colors.orange);
-	absorption->setName(QString("Absorption"));
-	scanViewPlots[static_cast<int>(scanViewPlotTypes::ABSORPTION)] = absorption;
+	QtCharts::QLineSeries *scanAbsorption = new QtCharts::QLineSeries();
+	scanAbsorption->setUseOpenGL(true);
+	scanAbsorption->setColor(colors.orange);
+	scanAbsorption->setName(QString("Absorption"));
+	scanViewPlots[static_cast<int>(scanViewPlotTypes::ABSORPTION)] = scanAbsorption;
 
-	QtCharts::QLineSeries *reference = new QtCharts::QLineSeries();
-	reference->setUseOpenGL(true);
-	reference->setColor(colors.yellow);
-	reference->setName(QString("Reference"));
-	scanViewPlots[static_cast<int>(scanViewPlotTypes::REFERENCE)] = reference;
+	QtCharts::QLineSeries *scanReference = new QtCharts::QLineSeries();
+	scanReference->setUseOpenGL(true);
+	scanReference->setColor(colors.yellow);
+	scanReference->setName(QString("Reference"));
+	scanViewPlots[static_cast<int>(scanViewPlotTypes::REFERENCE)] = scanReference;
 
 	QtCharts::QLineSeries *quotient = new QtCharts::QLineSeries();
 	quotient->setUseOpenGL(true);
@@ -191,11 +197,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	quotient->setName(QString("Quotient"));
 	scanViewPlots[static_cast<int>(scanViewPlotTypes::QUOTIENT)] = quotient;
 
-	QtCharts::QLineSeries *transmission = new QtCharts::QLineSeries();
-	transmission->setUseOpenGL(true);
-	transmission->setColor(colors.purple);
-	transmission->setName(QString("Transmission"));
-	scanViewPlots[static_cast<int>(scanViewPlotTypes::TRANSMISSION)] = transmission;
+	QtCharts::QLineSeries *scanTransmission = new QtCharts::QLineSeries();
+	scanTransmission->setUseOpenGL(true);
+	scanTransmission->setColor(colors.purple);
+	scanTransmission->setName(QString("Transmission"));
+	scanViewPlots[static_cast<int>(scanViewPlotTypes::TRANSMISSION)] = scanTransmission;
 
 	// set up live view chart
 	scanViewChart = new QtCharts::QChart();

@@ -147,6 +147,8 @@ void daq::startStopLocking() {
 	if (lockSettings.state != LOCKSTATE::ACTIVE) {
 		// set integral error to zero before starting to lock
 		lockData.iError = 0;
+		// set current temperature offset to actual offset
+		lockData.currentTempOffset = m_laserControl->getTemperature();
 		setLockState(LOCKSTATE::ACTIVE);
 	} else {
 		setLockState(LOCKSTATE::INACTIVE);
@@ -423,24 +425,24 @@ void daq::lock() {
 
 	std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
 
-	std::vector<double> tau(values[0].begin(), values[0].end());
+	std::vector<double> absorption(values[0].begin(), values[0].end());
 	std::vector<double> reference(values[1].begin(), values[1].end());
 
-	//double tau_mean = generalmath::mean(tau);
-	double tau_max = generalmath::max(tau);
-	double tau_min = generalmath::min(tau);
-	double amplitude = tau_max - tau_min;
 
-	if (amplitude != 0) {
-		for (int kk(0); kk < tau.size(); kk++) {
-			tau[kk] = (tau[kk] - tau_min) / amplitude;
-		}
-	}
+	double absorption_mean = generalmath::mean(absorption);
+	double reference_mean = generalmath::mean(reference);
+	double quotient_mean = abs(absorption_mean / reference_mean);
 
-	double error = 0;
+	lockData.quotient.push_back(quotient_mean);
+
+	double quotient_max = generalmath::max(lockData.quotient);
+
+	lockData.transmission = lockData.quotient;
+	std::for_each(lockData.transmission.begin(), lockData.transmission.end(), [quotient_max](double &el) {el /= quotient_max; });
+
+	double error = lockSettings.transmissionSetpoint - lockData.transmission.back();
 
 	// write data to struct for storage
-	lockData.amplitude.push_back(amplitude);
 
 	if (lockSettings.state == LOCKSTATE::ACTIVE) {
 		double dError = 0;
@@ -449,12 +451,10 @@ void daq::lock() {
 			lockData.iError += lockSettings.integral * ( lockData.error.back() + error ) * (dt) / 2;
 			dError = (error - lockData.error.back()) / dt;
 		}
-		lockData.currentTempOffset = lockData.currentTempOffset + (lockSettings.proportional * error + lockData.iError + lockSettings.derivative * dError) / 100;
+		lockData.currentTempOffset = lockData.currentTempOffset + (lockSettings.proportional * error + lockData.iError + lockSettings.derivative * dError);
 
-		// abort locking if
-		// - output voltage is over 2 V
-		// - maximum of the signal amplitude in the last 50 measurements is below 0.05 V
-		if ((abs(lockData.currentTempOffset) > 5.0) || (generalmath::floatingMax(lockData.amplitude, 50) / static_cast<double>(1000) < 0.05)) {
+		// abort locking if current absolute value of the temperature offset is above 5.0
+		if (abs(lockData.currentTempOffset) > 5.0) {
 			setLockState(LOCKSTATE::FAILURE);
 		}
 
@@ -465,16 +465,26 @@ void daq::lock() {
 	// write data to struct for storage
 	lockData.time.push_back(now);
 	lockData.error.push_back(error);
+	lockData.absorption.push_back(absorption_mean);
+	lockData.reference.push_back(reference_mean);
+	lockData.quotient.push_back(quotient_mean);
 	lockData.tempOffset.push_back(lockData.currentTempOffset);
-
+	
 	double passed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lockData.time[0]).count() / 1e3;	// store passed time in seconds
+	lockData.relTime.push_back(passed);
 
 	// write data to array for plotting
-	lockDataPlot[static_cast<int>(lockViewPlotTypes::VOLTAGE)].append(QPointF(passed, lockData.currentTempOffset));
+	lockDataPlot[static_cast<int>(lockViewPlotTypes::TRANSMISSION)].clear();
+	for (int j{ 0 }; j < lockData.transmission.size(); j++) {
+		lockDataPlot[static_cast<int>(lockViewPlotTypes::TRANSMISSION)].append(QPointF(lockData.relTime[j], lockData.transmission[j]));
+	}
+
+	lockDataPlot[static_cast<int>(lockViewPlotTypes::ABSORPTION)].append(QPointF(passed, absorption_mean));
+	lockDataPlot[static_cast<int>(lockViewPlotTypes::REFERENCE)].append(QPointF(passed, reference_mean));
 	lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNAL)].append(QPointF(passed, error / 100));
-	lockDataPlot[static_cast<int>(lockViewPlotTypes::AMPLITUDE)].append(QPointF(passed, amplitude / static_cast<double>(1000)));
 	lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNALMEAN)].append(QPointF(passed, generalmath::floatingMean(lockData.error, 50) / 100));
 	lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNALSTD)].append(QPointF(passed, generalmath::floatingStandardDeviation(lockData.error, 50) / 100));
+	lockDataPlot[static_cast<int>(lockViewPlotTypes::TEMPERATUREOFFSET)].append(QPointF(passed, lockData.currentTempOffset));
 
 	emit locked(lockDataPlot);
 }
