@@ -72,7 +72,7 @@ typedef struct {
 	double integral = 0.005;				//		control parameter of the integral part
 	double derivative = 0.0;				//		control parameter of the derivative part
 	LOCKSTATE state = LOCKSTATE::INACTIVE;	//		locking enabled?
-	double transmissionSetpoint = 0.5;		// [V]	target voltage of the offset compensation
+	double transmissionSetpoint = 0.5;		//	[1]	target transmission setpoint
 } LOCK_SETTINGS;
 
 typedef struct {

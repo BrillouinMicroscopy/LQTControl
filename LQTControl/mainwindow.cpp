@@ -90,13 +90,6 @@ MainWindow::MainWindow(QWidget *parent) :
 		this,
 		SLOT(updateLockState(LOCKSTATE))
 	);
-
-	QWidget::connect(
-		m_dataAcquisition,
-		SIGNAL(compensationStateChanged(bool)),
-		this,
-		SLOT(updateCompensationState(bool))
-	);
 	
 	// set up live view plots
 	liveViewPlots.resize(static_cast<int>(liveViewPlotTypes::COUNT));
@@ -555,16 +548,6 @@ void MainWindow::updateAcquisitionParameters(ACQUISITION_PARAMETERS acquisitionP
 	// set coupling
 	ui->chACoupling->setCurrentIndex(acquisitionParameters.channelSettings[0].DCcoupled);
 	ui->chBCoupling->setCurrentIndex(acquisitionParameters.channelSettings[1].DCcoupled);
-}
-
-void MainWindow::updateCompensationState(bool compensating) {
-	if (compensating) {
-		compensationIndicator->show();
-		compensationInfo->show();
-	} else {
-		compensationIndicator->hide();
-		compensationInfo->hide();
-	}
 }
 
 void MainWindow::on_scanButton_clicked() {

@@ -143,9 +143,6 @@ private slots:
 	// SLOTS for updating the acquisition parameters
 	void updateAcquisitionParameters(ACQUISITION_PARAMETERS acquisitionParameters);
 
-	// SLOT for updating the compensation state
-	void updateCompensationState(bool compensating);
-
 	void on_actionAbout_triggered();
 
 	void laserConnectionChanged(bool connected);
@@ -168,9 +165,7 @@ private:
 	daq *m_dataAcquisition = new daq(nullptr, m_laserControl);
 	VIEWS m_selectedView = VIEWS::LIVE;	// selection of the view
 	IndicatorWidget *lockIndicator;
-	QLabel *compensationIndicator;
 	QLabel *lockInfo;
-	QLabel *compensationInfo;
 	QLabel *statusInfo;
 	VIEW_SETTINGS viewSettings;
 };
