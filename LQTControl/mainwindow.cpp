@@ -49,35 +49,6 @@ MainWindow::MainWindow(QWidget *parent) :
 		SLOT(showAcqRunning(bool))
 	);
 
-	// slot daq acquisition running
-	connection = QWidget::connect(
-		m_dataAcquisition,
-		SIGNAL(s_acquireLockingRunning(bool)),
-		this,
-		SLOT(showAcquireLockingRunning(bool))
-	);
-
-	// slot daq acquisition running
-	connection = QWidget::connect(
-		m_dataAcquisition,
-		SIGNAL(s_scanRunning(bool)),
-		this,
-		SLOT(showScanRunning(bool))
-	);
-
-	QWidget::connect(
-		m_dataAcquisition,
-		SIGNAL(s_scanPassAcquired()),
-		this, 
-		SLOT(updateScanView())
-	);
-
-	QWidget::connect(
-		m_dataAcquisition,
-		SIGNAL(locked()),
-		this,
-		SLOT(updateLockView())
-	);
 	QWidget::connect(
 		m_dataAcquisition,
 		SIGNAL(collectedBlockData()),
@@ -92,8 +63,38 @@ MainWindow::MainWindow(QWidget *parent) :
 		SLOT(updateAcquisitionParameters(ACQUISITION_PARAMETERS))
 	);
 
+	// slot daq acquisition running
+	connection = QWidget::connect(
+		m_lockingControl,
+		SIGNAL(s_acquireLockingRunning(bool)),
+		this,
+		SLOT(showAcquireLockingRunning(bool))
+	);
+
+	// slot daq acquisition running
+	connection = QWidget::connect(
+		m_lockingControl,
+		SIGNAL(s_scanRunning(bool)),
+		this,
+		SLOT(showScanRunning(bool))
+	);
+
 	QWidget::connect(
-		m_dataAcquisition,
+		m_lockingControl,
+		SIGNAL(s_scanPassAcquired()),
+		this, 
+		SLOT(updateScanView())
+	);
+
+	QWidget::connect(
+		m_lockingControl,
+		SIGNAL(locked()),
+		this,
+		SLOT(updateLockView())
+	);
+
+	QWidget::connect(
+		m_lockingControl,
 		SIGNAL(lockStateChanged(LOCKSTATE)),
 		this,
 		SLOT(updateLockState(LOCKSTATE))
@@ -229,13 +230,13 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->plotAxes->setRubberBand(QtCharts::QChartView::RectangleRubberBand);
 
 	// set default values of GUI elements
-	SCAN_SETTINGS scanSettings = m_dataAcquisition->getScanSettings();
+	SCAN_SETTINGS scanSettings = m_lockingControl->getScanSettings();
 	ui->scanStart->setValue(scanSettings.low);
 	ui->scanEnd->setValue(scanSettings.high);
 	ui->scanSteps->setValue(scanSettings.nrSteps);
 
 	// set default values of lockin parameters
-	LOCK_SETTINGS lockSettings = m_dataAcquisition->getLockSettings();
+	LOCK_SETTINGS lockSettings = m_lockingControl->getLockSettings();
 	ui->proportionalTerm->setValue(lockSettings.proportional);
 	ui->integralTerm->setValue(lockSettings.integral);
 	ui->derivativeTerm->setValue(lockSettings.derivative);
@@ -273,6 +274,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	// start acquisition thread
 	QWidget::connect(&m_acquisitionThread, SIGNAL(started()), m_dataAcquisition, SLOT(init()));
 	m_acquisitionThread.startWorker(m_dataAcquisition);
+	QWidget::connect(&m_acquisitionThread, SIGNAL(started()), m_lockingControl, SLOT(init()));
+	m_acquisitionThread.startWorker(m_lockingControl);
 }
 
 MainWindow::~MainWindow() {
@@ -379,7 +382,7 @@ void MainWindow::showScanRunning(bool running) {
 }
 
 void MainWindow::on_acquireLockButton_clicked() {
-	QMetaObject::invokeMethod(m_dataAcquisition, "startStopAcquireLocking", Qt::AutoConnection);
+	QMetaObject::invokeMethod(m_lockingControl, "startStopAcquireLocking", Qt::AutoConnection);
 }
 
 void MainWindow::showAcquireLockingRunning(bool running) {
@@ -392,7 +395,7 @@ void MainWindow::showAcquireLockingRunning(bool running) {
 }
 
 void MainWindow::on_lockButton_clicked() {
-	QMetaObject::invokeMethod(m_dataAcquisition, "startStopLocking", Qt::AutoConnection);
+	QMetaObject::invokeMethod(m_lockingControl, "startStopLocking", Qt::AutoConnection);
 }
 
 void MainWindow::updateLockState(LOCKSTATE lockState) {
@@ -440,35 +443,35 @@ void MainWindow::on_sampleNumber_valueChanged(const int no_of_samples) {
 }
 
 void MainWindow::on_scanStart_valueChanged(const double value) {
-	m_dataAcquisition->setScanParameters(SCANPARAMETERS::LOW, value);
+	m_lockingControl->setScanParameters(SCANPARAMETERS::LOW, value);
 }
 
 void MainWindow::on_scanEnd_valueChanged(const double value) {
-	m_dataAcquisition->setScanParameters(SCANPARAMETERS::HIGH, value);
+	m_lockingControl->setScanParameters(SCANPARAMETERS::HIGH, value);
 }
 
 void MainWindow::on_scanSteps_valueChanged(const int value) {
-	m_dataAcquisition->setScanParameters(SCANPARAMETERS::STEPS, value);
+	m_lockingControl->setScanParameters(SCANPARAMETERS::STEPS, value);
 }
 
 void MainWindow::on_scanInterval_valueChanged(const int value) {
-	m_dataAcquisition->setScanParameters(SCANPARAMETERS::INTERVAL, value);
+	m_lockingControl->setScanParameters(SCANPARAMETERS::INTERVAL, value);
 }
 
 /***********************************
  * Set parameters for cavity locking 
  ***********************************/
 void MainWindow::on_proportionalTerm_valueChanged(const double value) {
-	m_dataAcquisition->setLockParameters(LOCKPARAMETERS::P, value);
+	m_lockingControl->setLockParameters(LOCKPARAMETERS::P, value);
 }
 void MainWindow::on_integralTerm_valueChanged(const double value) {
-	m_dataAcquisition->setLockParameters(LOCKPARAMETERS::I, value);
+	m_lockingControl->setLockParameters(LOCKPARAMETERS::I, value);
 }
 void MainWindow::on_derivativeTerm_valueChanged(const double value) {
-	m_dataAcquisition->setLockParameters(LOCKPARAMETERS::D, value);
+	m_lockingControl->setLockParameters(LOCKPARAMETERS::D, value);
 }
 void MainWindow::on_transmission_valueChanged(const double value) {
-	m_dataAcquisition->setLockParameters(LOCKPARAMETERS::SETPOINT, value);
+	m_lockingControl->setLockParameters(LOCKPARAMETERS::SETPOINT, value);
 }
 
 void MainWindow::on_temperatureOffset_valueChanged(const double offset) {
@@ -504,8 +507,8 @@ void MainWindow::updateLiveView() {
 
 void MainWindow::updateScanView() {
 	if (m_selectedView == VIEWS::SCAN) {
-		SCAN_DATA scanData = m_dataAcquisition->scanData;
-		SCAN_SETTINGS scanSettings = m_dataAcquisition->getScanSettings();
+		SCAN_DATA scanData = m_lockingControl->scanData;
+		SCAN_SETTINGS scanSettings = m_lockingControl->getScanSettings();
 		
 		QVector<QPointF> absorption;
 		QVector<QPointF> reference;
@@ -535,7 +538,7 @@ void MainWindow::updateScanView() {
 
 void MainWindow::updateLockView() {
 	if (m_selectedView == VIEWS::LOCK) {
-		std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> data = m_dataAcquisition->m_lockDataPlot;
+		std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> data = m_lockingControl->m_lockDataPlot;
 		int channel = 0;
 		foreach(QtCharts::QLineSeries* series, lockViewPlots) {
 			if (series->isVisible()) {
@@ -568,10 +571,10 @@ void MainWindow::updateAcquisitionParameters(ACQUISITION_PARAMETERS acquisitionP
 }
 
 void MainWindow::on_scanButton_clicked() {
-	if (!m_dataAcquisition->scanData.m_running) {
-		QMetaObject::invokeMethod(m_dataAcquisition, "startScan", Qt::QueuedConnection);
+	if (!m_lockingControl->scanData.m_running) {
+		QMetaObject::invokeMethod(m_lockingControl, "startScan", Qt::AutoConnection);
 	} else {
-		m_dataAcquisition->scanData.m_abort = true;
+		m_lockingControl->scanData.m_abort = true;
 	}
 }
 

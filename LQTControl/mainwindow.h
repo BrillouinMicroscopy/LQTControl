@@ -7,6 +7,7 @@
 #include <QtCharts/QChart>
 
 #include "daq.h"
+#include "locking.h"
 #include "LQT.h"
 #include "thread.h"
 
@@ -163,7 +164,8 @@ private:
 	QVector<QtCharts::QLineSeries *> lockViewPlots;
 	QVector<QtCharts::QLineSeries *> scanViewPlots;
 	LQT *m_laserControl = new LQT();
-	daq *m_dataAcquisition = new daq(nullptr, m_laserControl);
+	daq *m_dataAcquisition = new daq(nullptr);
+	Locking *m_lockingControl = new Locking(nullptr, m_dataAcquisition, m_laserControl);
 	VIEWS m_selectedView = VIEWS::LIVE;	// selection of the view
 	IndicatorWidget *lockIndicator;
 	QLabel *lockInfo;
