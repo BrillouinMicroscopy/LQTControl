@@ -130,8 +130,6 @@ class daq : public QObject {
 
 	public:
 		explicit daq(QObject *parent, LQT *laserControl);
-		bool startStopAcquireLocking();
-		void startStopLocking();
 		void setLockState(LOCKSTATE lockstate = LOCKSTATE::INACTIVE);
 		QVector<QPointF> getStreamingBuffer(int ch);
 		void startStreaming();
@@ -152,7 +150,7 @@ class daq : public QObject {
 
 		CircularBuffer<int16_t> *m_liveBuffer = new CircularBuffer<int16_t>(4, PS2000_MAX_CHANNELS, 8000);
 
-		std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> lockDataPlot;
+		std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> m_lockDataPlot;
 
 	public slots:
 		void connect();
@@ -160,6 +158,8 @@ class daq : public QObject {
 		void init();
 		void startScan();
 		void startStopAcquisition();
+		void startStopAcquireLocking();
+		void startStopLocking();
 
 	private slots:
 		void getBlockData();
@@ -171,8 +171,9 @@ class daq : public QObject {
 		void s_acquisitionRunning(bool);
 		void s_scanRunning(bool);
 		void s_scanPassAcquired();
+		void s_acquireLockingRunning(bool);
 		void collectedData();
-		void locked(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &);
+		void locked();
 		void collectedBlockData();
 		void acquisitionParametersChanged(ACQUISITION_PARAMETERS);
 		void lockStateChanged(LOCKSTATE);
@@ -180,6 +181,7 @@ class daq : public QObject {
 	private:
 		bool m_isConnected = false;
 		bool m_acquisitionRunning = false;
+		bool m_isAcquireLockingRunning = false;
 		static void __stdcall ps2000FastStreamingReady2(
 			int16_t **overviewBuffers,
 			int16_t   overflow,

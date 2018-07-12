@@ -109,6 +109,7 @@ private slots:
 	void on_lockButton_clicked();
 	void updateLockState(LOCKSTATE lockState);
 	void on_acquireLockButton_clicked();
+	void showAcquireLockingRunning(bool running);
 	// SLOTS for scanning
 	void on_scanButton_clicked();
 
@@ -138,7 +139,7 @@ private slots:
 	// SLOTS for updating the plots
 	void updateLiveView();
 	void updateScanView();
-	void updateLockView(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &data);
+	void updateLockView();
 
 	// SLOTS for updating the acquisition parameters
 	void updateAcquisitionParameters(ACQUISITION_PARAMETERS acquisitionParameters);

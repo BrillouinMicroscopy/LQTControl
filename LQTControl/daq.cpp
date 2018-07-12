@@ -132,15 +132,16 @@ void daq::startStopAcquisition() {
 	emit(s_acquisitionRunning(m_acquisitionRunning));
 }
 
-bool daq::startStopAcquireLocking() {
+void daq::startStopAcquireLocking() {
 	if (lockingTimer->isActive()) {
 		setLockState(LOCKSTATE::INACTIVE);
+		m_isAcquireLockingRunning = false;
 		lockingTimer->stop();
-		return false;
 	} else {
+		m_isAcquireLockingRunning = true;
 		lockingTimer->start(100);
-		return true;
 	}
+	emit(s_acquireLockingRunning(m_isAcquireLockingRunning));
 }
 
 void daq::startStopLocking() {
@@ -473,19 +474,19 @@ void daq::lock() {
 	lockData.relTime.push_back(passed);
 
 	// write data to array for plotting
-	lockDataPlot[static_cast<int>(lockViewPlotTypes::TRANSMISSION)].clear();
+	m_lockDataPlot[static_cast<int>(lockViewPlotTypes::TRANSMISSION)].clear();
 	for (int j{ 0 }; j < lockData.transmission.size(); j++) {
-		lockDataPlot[static_cast<int>(lockViewPlotTypes::TRANSMISSION)].append(QPointF(lockData.relTime[j], lockData.transmission[j]));
+		m_lockDataPlot[static_cast<int>(lockViewPlotTypes::TRANSMISSION)].append(QPointF(lockData.relTime[j], lockData.transmission[j]));
 	}
 
-	lockDataPlot[static_cast<int>(lockViewPlotTypes::ABSORPTION)].append(QPointF(passed, absorption_mean));
-	lockDataPlot[static_cast<int>(lockViewPlotTypes::REFERENCE)].append(QPointF(passed, reference_mean));
-	lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNAL)].append(QPointF(passed, error / 100));
-	lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNALMEAN)].append(QPointF(passed, generalmath::floatingMean(lockData.error, 50) / 100));
-	lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNALSTD)].append(QPointF(passed, generalmath::floatingStandardDeviation(lockData.error, 50) / 100));
-	lockDataPlot[static_cast<int>(lockViewPlotTypes::TEMPERATUREOFFSET)].append(QPointF(passed, lockData.currentTempOffset));
+	m_lockDataPlot[static_cast<int>(lockViewPlotTypes::ABSORPTION)].append(QPointF(passed, absorption_mean));
+	m_lockDataPlot[static_cast<int>(lockViewPlotTypes::REFERENCE)].append(QPointF(passed, reference_mean));
+	m_lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNAL)].append(QPointF(passed, error / 100));
+	m_lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNALMEAN)].append(QPointF(passed, generalmath::floatingMean(lockData.error, 50) / 100));
+	m_lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNALSTD)].append(QPointF(passed, generalmath::floatingStandardDeviation(lockData.error, 50) / 100));
+	m_lockDataPlot[static_cast<int>(lockViewPlotTypes::TEMPERATUREOFFSET)].append(QPointF(passed, lockData.currentTempOffset));
 
-	emit locked(lockDataPlot);
+	emit locked();
 }
 
 QVector<QPointF> daq::getStreamingBuffer(int ch) {

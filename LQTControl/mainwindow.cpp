@@ -52,6 +52,14 @@ MainWindow::MainWindow(QWidget *parent) :
 	// slot daq acquisition running
 	connection = QWidget::connect(
 		m_dataAcquisition,
+		SIGNAL(s_acquireLockingRunning(bool)),
+		this,
+		SLOT(showAcquireLockingRunning(bool))
+	);
+
+	// slot daq acquisition running
+	connection = QWidget::connect(
+		m_dataAcquisition,
 		SIGNAL(s_scanRunning(bool)),
 		this,
 		SLOT(showScanRunning(bool))
@@ -66,9 +74,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	QWidget::connect(
 		m_dataAcquisition,
-		SIGNAL(locked(std::array<QVector<QPointF>,static_cast<int>(lockViewPlotTypes::COUNT)> &)),
+		SIGNAL(locked()),
 		this,
-		SLOT(updateLockView(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &))
+		SLOT(updateLockView())
 	);
 	QWidget::connect(
 		m_dataAcquisition,
@@ -371,7 +379,10 @@ void MainWindow::showScanRunning(bool running) {
 }
 
 void MainWindow::on_acquireLockButton_clicked() {
-	bool running = m_dataAcquisition->startStopAcquireLocking();
+	QMetaObject::invokeMethod(m_dataAcquisition, "startStopAcquireLocking", Qt::AutoConnection);
+}
+
+void MainWindow::showAcquireLockingRunning(bool running) {
 	if (running) {
 		ui->acquireLockButton->setText(QString("Stop"));
 	} else {
@@ -381,7 +392,7 @@ void MainWindow::on_acquireLockButton_clicked() {
 }
 
 void MainWindow::on_lockButton_clicked() {
-	m_dataAcquisition->startStopLocking();
+	QMetaObject::invokeMethod(m_dataAcquisition, "startStopLocking", Qt::AutoConnection);
 }
 
 void MainWindow::updateLockState(LOCKSTATE lockState) {
@@ -457,7 +468,7 @@ void MainWindow::on_derivativeTerm_valueChanged(const double value) {
 	m_dataAcquisition->setLockParameters(LOCKPARAMETERS::D, value);
 }
 void MainWindow::on_transmission_valueChanged(const double value) {
-	m_dataAcquisition->setLockParameters(LOCKPARAMETERS::P, value);
+	m_dataAcquisition->setLockParameters(LOCKPARAMETERS::SETPOINT, value);
 }
 
 void MainWindow::on_temperatureOffset_valueChanged(const double offset) {
@@ -491,27 +502,6 @@ void MainWindow::updateLiveView() {
 	}
 }
 
-void MainWindow::updateLockView(std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> &data) {
-	if (m_selectedView == VIEWS::LOCK) {
-		int channel = 0;
-		foreach(QtCharts::QLineSeries* series, lockViewPlots) {
-			if (series->isVisible()) {
-				series->replace(data[channel]);
-			}
-			++channel;
-		}
-		if (viewSettings.floatingView) {
-			// show last 60 seconds
-			double minX = data[0].back().x() - 60;
-			minX = (minX < 0) ? 0 : minX;
-			lockViewChart->axisX()->setRange(minX, data[0].back().x());
-		} else {
-			lockViewChart->axisX()->setRange(data[0][0].x(), data[0].back().x());
-		}
-		
-	}
-}
-
 void MainWindow::updateScanView() {
 	if (m_selectedView == VIEWS::SCAN) {
 		SCAN_DATA scanData = m_dataAcquisition->scanData;
@@ -540,6 +530,27 @@ void MainWindow::updateScanView() {
 
 		scanViewChart->axisX()->setRange(scanSettings.low, scanSettings.high);
 		scanViewChart->axisY()->setRange(-0.2, 2);
+	}
+}
+
+void MainWindow::updateLockView() {
+	if (m_selectedView == VIEWS::LOCK) {
+		std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> data = m_dataAcquisition->m_lockDataPlot;
+		int channel = 0;
+		foreach(QtCharts::QLineSeries* series, lockViewPlots) {
+			if (series->isVisible()) {
+				series->replace(data[channel]);
+			}
+			++channel;
+		}
+		if (viewSettings.floatingView) {
+			// show last 60 seconds
+			double minX = data[0].back().x() - 60;
+			minX = (minX < 0) ? 0 : minX;
+			lockViewChart->axisX()->setRange(minX, data[0].back().x());
+		} else {
+			lockViewChart->axisX()->setRange(data[0][0].x(), data[0].back().x());
+		}
 	}
 }
 
