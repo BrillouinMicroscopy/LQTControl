@@ -467,7 +467,6 @@ void daq::lock() {
 	lockData.error.push_back(error);
 	lockData.absorption.push_back(absorption_mean);
 	lockData.reference.push_back(reference_mean);
-	lockData.quotient.push_back(quotient_mean);
 	lockData.tempOffset.push_back(lockData.currentTempOffset);
 	
 	double passed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lockData.time[0]).count() / 1e3;	// store passed time in seconds
