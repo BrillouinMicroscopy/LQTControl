@@ -15,9 +15,6 @@
 #include "generalmath.h"
 
 #define DAQ_BUFFER_SIZE 	8000
-#define BUFFER_SIZE_STREAMING 50000		// Overview buffer size
-#define NUM_STREAMING_SAMPLES 100000	// Number of streaming samples to collect
-#define MAX_CHANNELS 4
 #define SINGLE_CH_SCOPE 1				// Single channel scope
 #define DUAL_SCOPE 2					// Dual channel scope
 
