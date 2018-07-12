@@ -51,17 +51,10 @@ class daq : public QObject {
 		explicit daq(QObject *parent);
 		void setAcquisitionParameters();
 		std::array<std::vector<int32_t>, DAQ_MAX_CHANNELS> collectBlockData();
-		QVector<QPointF> getStreamingBuffer(int ch);
-		void startStreaming();
-		void collectStreamingData();
-		void stopStreaming();
-		void set_trigger_advanced();
 		void setSampleRate(int index);
 		void setCoupling(int index, int ch);
 		void setRange(int index, int ch);
 		void setNumberSamples(int32_t no_of_samples);
-
-		std::array<QVector<QPointF>, DAQ_MAX_CHANNELS> data;
 
 		CircularBuffer<int16_t> *m_liveBuffer = new CircularBuffer<int16_t>(4, DAQ_MAX_CHANNELS, 8000);
 
@@ -84,14 +77,6 @@ class daq : public QObject {
 	private:
 		bool m_isConnected = false;
 		bool m_acquisitionRunning = false;
-		static void __stdcall ps2000FastStreamingReady2(
-			int16_t **overviewBuffers,
-			int16_t   overflow,
-			uint32_t  triggeredAt,
-			int16_t   triggered,
-			int16_t   auto_stop,
-			uint32_t  nValues
-		);
 		int32_t adc_to_mv(
 			int32_t raw,
 			int32_t ch
