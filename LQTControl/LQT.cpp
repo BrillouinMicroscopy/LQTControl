@@ -7,6 +7,10 @@ LQT::~LQT() {
 	disconnect();
 }
 
+void LQT::init() {
+	m_laserPort = new QSerialPort();
+}
+
 void LQT::connect() {
 	if (!m_isConnected) {
 		m_laserPort->setPortName("COM1");

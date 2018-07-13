@@ -272,12 +272,12 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->floatingViewCheckBox->hide();
 
 	// start acquisition thread
-	m_dataAcquisition->init();
-	//QWidget::connect(&m_acquisitionThread, SIGNAL(started()), m_dataAcquisition, SLOT(init()));
-	//m_acquisitionThread.startWorker(m_dataAcquisition);
-	m_lockingControl->init();
-	//QWidget::connect(&m_acquisitionThread, SIGNAL(started()), m_lockingControl, SLOT(init()));
-	//m_acquisitionThread.startWorker(m_lockingControl);
+	QWidget::connect(&m_acquisitionThread, SIGNAL(started()), m_dataAcquisition, SLOT(init()));
+	m_acquisitionThread.startWorker(m_dataAcquisition);
+	QWidget::connect(&m_acquisitionThread, SIGNAL(started()), m_lockingControl, SLOT(init()));
+	m_acquisitionThread.startWorker(m_lockingControl);
+	QWidget::connect(&m_acquisitionThread, SIGNAL(started()), m_laserControl, SLOT(init()));
+	m_acquisitionThread.startWorker(m_laserControl);
 }
 
 MainWindow::~MainWindow() {
@@ -477,7 +477,7 @@ void MainWindow::on_transmission_valueChanged(const double value) {
 }
 
 void MainWindow::on_temperatureOffset_valueChanged(const double offset) {
-	m_laserControl->setTemperatureForce(offset);
+	QMetaObject::invokeMethod(m_laserControl, "setTemperatureForce", Qt::AutoConnection, Q_ARG(double, offset));
 }
 
 void MainWindow::updateLiveView() {
@@ -680,5 +680,5 @@ void MainWindow::laserConnectionChanged(bool connected) {
 }
 
 void MainWindow::on_enableTemperatureControlCheckbox_clicked(const bool checked) {
-	m_laserControl->enableTemperatureControl(checked);
+	QMetaObject::invokeMethod(m_laserControl, "enableTemperatureControl", Qt::AutoConnection, Q_ARG(bool, checked));
 }

@@ -8,7 +8,7 @@ class LQT : public QObject {
 	Q_OBJECT
 
 private:
-	QSerialPort *m_laserPort = new QSerialPort();
+	QSerialPort *m_laserPort = nullptr;
 	bool m_isConnected = false;
 	std::string m_terminator = "\r";
 
@@ -43,18 +43,11 @@ public:
 	double setMaxTemperature(double temperature);
 	double getMaxTemperature();
 
-	// force setting the temperature
-	void setTemperatureForce(double temperature);
-	void setMaxTemperatureForce(double temperature);
-
 	/*
 	* Functions for setting and getting the lock states
 	*/
 
 	void setFeature(std::string feature, bool value);
-
-	// control temperature feature
-	void enableTemperatureControl(bool enable);
 
 	// mod status
 	void setMod(bool mod);
@@ -69,8 +62,16 @@ public:
 	bool getLe();
 
 public slots:
+	void init();
 	void connect();
 	void disconnect();
+
+	// control temperature feature
+	void enableTemperatureControl(bool enable);
+
+	// force setting the temperature
+	void setTemperatureForce(double temperature);
+	void setMaxTemperatureForce(double temperature);
 
 signals:
 	void connected(bool);
