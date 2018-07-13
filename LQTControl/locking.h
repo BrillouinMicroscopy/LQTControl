@@ -39,8 +39,8 @@ typedef enum enLockState {
 } LOCKSTATE;
 
 typedef struct {
-	double proportional = 0.1;				//		control parameter of the proportional part
-	double integral = 0.005;				//		control parameter of the integral part
+	double proportional = 0.010;			//		control parameter of the proportional part
+	double integral = 0.010;				//		control parameter of the integral part
 	double derivative = 0.0;				//		control parameter of the derivative part
 	LOCKSTATE state = LOCKSTATE::INACTIVE;	//		locking enabled?
 	double transmissionSetpoint = 0.5;		//	[1]	target transmission setpoint
