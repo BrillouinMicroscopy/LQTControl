@@ -186,25 +186,25 @@ void Locking::lock() {
 			lockData.iError += lockSettings.integral / 10 * ( lockData.error.back() + error ) * (dt) / 2;
 			dError = (error - lockData.error.back()) / dt;
 		}
-		double currentTempOffset = lockData.currentTempOffset + (lockSettings.proportional / 10 * error + lockData.iError + lockSettings.derivative * dError);
+		lockData.currentTempOffset = lockData.currentTempOffset + (lockSettings.proportional / 10 * error + lockData.iError + lockSettings.derivative * dError);
 
 		// abort locking if current absolute value of the temperature offset is above 5.0
-		if (abs(currentTempOffset) > 5.0) {
+		if (abs(lockData.currentTempOffset) > 5.0) {
 			setLockState(LOCKSTATE::FAILURE);
 		}
 
 		// set laser temperature
-		m_laserControl->setTemperatureForce(currentTempOffset);
+		m_laserControl->setTemperatureForce(lockData.currentTempOffset);
 	}
 
-	lockData.currentTempOffset = m_laserControl->getTemperature();
+	double actualTempOffset = m_laserControl->getTemperature();
 
 	// write data to struct for storage
 	lockData.time.push_back(now);
 	lockData.error.push_back(error);
 	lockData.absorption.push_back(absorption_mean);
 	lockData.reference.push_back(reference_mean);
-	lockData.tempOffset.push_back(lockData.currentTempOffset);
+	lockData.tempOffset.push_back(actualTempOffset);
 	
 	double passed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lockData.time[0]).count() / 1e3;	// store passed time in seconds
 	lockData.relTime.push_back(passed);
@@ -220,7 +220,7 @@ void Locking::lock() {
 	m_lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNAL)].append(QPointF(passed, error));
 	m_lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNALMEAN)].append(QPointF(passed, generalmath::floatingMean(lockData.error, 50)));
 	m_lockDataPlot[static_cast<int>(lockViewPlotTypes::ERRORSIGNALSTD)].append(QPointF(passed, generalmath::floatingStandardDeviation(lockData.error, 50)));
-	m_lockDataPlot[static_cast<int>(lockViewPlotTypes::TEMPERATUREOFFSET)].append(QPointF(passed, lockData.currentTempOffset));
+	m_lockDataPlot[static_cast<int>(lockViewPlotTypes::TEMPERATUREOFFSET)].append(QPointF(passed, actualTempOffset));
 
 	emit locked();
 }
