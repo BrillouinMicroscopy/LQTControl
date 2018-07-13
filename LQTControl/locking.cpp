@@ -186,16 +186,18 @@ void Locking::lock() {
 			lockData.iError += lockSettings.integral / 10 * ( lockData.error.back() + error ) * (dt) / 2;
 			dError = (error - lockData.error.back()) / dt;
 		}
-		lockData.currentTempOffset = lockData.currentTempOffset + (lockSettings.proportional / 10 * error + lockData.iError + lockSettings.derivative * dError);
+		double currentTempOffset = lockData.currentTempOffset + (lockSettings.proportional / 10 * error + lockData.iError + lockSettings.derivative * dError);
 
 		// abort locking if current absolute value of the temperature offset is above 5.0
-		if (abs(lockData.currentTempOffset) > 5.0) {
+		if (abs(currentTempOffset) > 5.0) {
 			setLockState(LOCKSTATE::FAILURE);
 		}
 
 		// set laser temperature
-		m_laserControl->setTemperatureForce(lockData.currentTempOffset);
+		m_laserControl->setTemperatureForce(currentTempOffset);
 	}
+
+	lockData.currentTempOffset = m_laserControl->getTemperature();
 
 	// write data to struct for storage
 	lockData.time.push_back(now);
