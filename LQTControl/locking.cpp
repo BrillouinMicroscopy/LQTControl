@@ -130,21 +130,18 @@ void Locking::scan() {
 	// acquire detector and reference signal, store and process it
 	std::array<std::vector<int32_t>, DAQ_MAX_CHANNELS> values = m_dataAcquisition->collectBlockData();
 
-	std::vector<double> absorption(values[0].begin(), values[0].end());
-	std::vector<double> reference(values[1].begin(), values[1].end());
-
-	double absorption_mean = generalmath::mean(absorption) / 1e3;
-	double reference_mean = generalmath::mean(reference) / 1e3;
-	double quotient = abs(absorption_mean / reference_mean);
+	double absorption_mean = generalmath::mean(values[0]) / 1e3;
+	double reference_mean = generalmath::mean(values[1]) / 1e3;
+	double quotient_mean = abs(absorption_mean / reference_mean);
 
 	scanData.absorption[scanData.pass] = absorption_mean;
 	scanData.reference[scanData.pass] = reference_mean;
-	scanData.quotient[scanData.pass] = quotient;
+	scanData.quotient[scanData.pass] = quotient_mean;
 
-	double absorption_max = generalmath::max(scanData.absorption);
+	double quotient_max = generalmath::max(scanData.quotient);
 
-	scanData.transmission = scanData.absorption;
-	std::for_each(scanData.transmission.begin(), scanData.transmission.end(), [absorption_max](double &el) {el /= absorption_max; });	
+	scanData.transmission = scanData.quotient;
+	std::for_each(scanData.transmission.begin(), scanData.transmission.end(), [quotient_max](double &el) {el /= quotient_max; });
 
 	++scanData.pass;
 	emit s_scanPassAcquired();
@@ -167,12 +164,8 @@ void Locking::lock() {
 
 	std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
 
-	std::vector<double> absorption(values[0].begin(), values[0].end());
-	std::vector<double> reference(values[1].begin(), values[1].end());
-
-
-	double absorption_mean = generalmath::mean(absorption);
-	double reference_mean = generalmath::mean(reference);
+	double absorption_mean = generalmath::mean(values[0]) / 1e3;
+	double reference_mean = generalmath::mean(values[1]) / 1e3;
 	double quotient_mean = abs(absorption_mean / reference_mean);
 
 	lockData.quotient.push_back(quotient_mean);
