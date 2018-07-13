@@ -272,10 +272,12 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->floatingViewCheckBox->hide();
 
 	// start acquisition thread
-	QWidget::connect(&m_acquisitionThread, SIGNAL(started()), m_dataAcquisition, SLOT(init()));
-	m_acquisitionThread.startWorker(m_dataAcquisition);
-	QWidget::connect(&m_acquisitionThread, SIGNAL(started()), m_lockingControl, SLOT(init()));
-	m_acquisitionThread.startWorker(m_lockingControl);
+	m_dataAcquisition->init();
+	//QWidget::connect(&m_acquisitionThread, SIGNAL(started()), m_dataAcquisition, SLOT(init()));
+	//m_acquisitionThread.startWorker(m_dataAcquisition);
+	m_lockingControl->init();
+	//QWidget::connect(&m_acquisitionThread, SIGNAL(started()), m_lockingControl, SLOT(init()));
+	//m_acquisitionThread.startWorker(m_lockingControl);
 }
 
 MainWindow::~MainWindow() {
