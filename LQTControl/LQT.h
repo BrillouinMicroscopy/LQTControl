@@ -36,11 +36,11 @@ public:
 	*/
 
 	// temperature
-	void setTemperature(double temperature);
+	double setTemperature(double temperature);
 	double getTemperature();
 
 	// maximum temperature
-	void setMaxTemperature(double temperature);
+	double setMaxTemperature(double temperature);
 	double getMaxTemperature();
 
 	// force setting the temperature

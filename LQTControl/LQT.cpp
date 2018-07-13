@@ -81,8 +81,13 @@ std::string LQT::stripCRLF(std::string msg) {
 * Functions for setting and getting the temperature
 */
 
-void LQT::setTemperature(double temperature) {
-	receive(fmt::format("utempoffset={:06.3f}", temperature));
+double LQT::setTemperature(double temperature) {
+	std::string temp = receive(fmt::format("utempoffset={:06.3f}", temperature));
+	if (temp.size() == 0) {
+		return NAN;
+	} else {
+		return stod(temp);
+	}
 }
 
 double LQT::getTemperature() {
@@ -94,8 +99,13 @@ double LQT::getTemperature() {
 	}
 }
 
-void LQT::setMaxTemperature(double temperature) {
-	receive(fmt::format("maxutempoffset={:06.3f}", temperature));
+double LQT::setMaxTemperature(double temperature) {
+	std::string temp =  receive(fmt::format("maxutempoffset={:06.3f}", temperature));
+	if (temp.size() == 0) {
+		return NAN;
+	} else {
+		return stod(temp);
+	}
 }
 
 double LQT::getMaxTemperature() {
@@ -110,18 +120,18 @@ double LQT::getMaxTemperature() {
 // The laser sometimes does not accept the temperature setting on the first try.
 // These functions set the temperature until it has the correct value or it fails for the 10th time.
 void LQT::setTemperatureForce(double temperature) {
-	setTemperature(temperature);
+	double setTemp = setTemperature(temperature);
 	int i{ 0 };
-	while (abs(getTemperature() - temperature) > 0.001 && i++ < 10) {
-		setTemperature(temperature);
+	while (abs(setTemp - temperature) > 0.001 && i++ < 10) {
+		setTemp = setTemperature(temperature);
 	}
 }
 
 void LQT::setMaxTemperatureForce(double temperature) {
-	setMaxTemperature(temperature);
+	double setTemp = setMaxTemperature(temperature);
 	int i{ 0 };
-	while (abs(getMaxTemperature() - temperature) > 0.001  && i++ < 10) {
-		setMaxTemperature(temperature);
+	while (abs(setTemp - temperature) > 0.001  && i++ < 10) {
+		setTemp = setMaxTemperature(temperature);
 	}
 }
 
