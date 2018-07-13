@@ -36,8 +36,8 @@ typedef struct {
 	int32_t 	time_indisposed_ms;
 	int16_t		timebase = 10;
 	DEFAULT_CHANNEL_SETTINGS channelSettings[2] = {
-		{0, PS2000_RANGE::PS2000_200MV, TRUE},
-		{0, PS2000_RANGE::PS2000_500MV, TRUE}
+		{0, PS2000_RANGE::PS2000_200MV, true},
+		{0, PS2000_RANGE::PS2000_500MV, true}
 	};
 } ACQUISITION_PARAMETERS;
 

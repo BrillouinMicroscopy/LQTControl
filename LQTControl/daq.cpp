@@ -135,15 +135,15 @@ void daq::setCoupling(int index, int ch) {
 
 void daq::setRange(int index, int ch) {
 	if (index < 9) {
-		acquisitionParameters.channelSettings[ch].enabled = TRUE;
-		unitOpened.channelSettings[ch].enabled = TRUE;
+		acquisitionParameters.channelSettings[ch].enabled = true;
+		unitOpened.channelSettings[ch].enabled = true;
 		acquisitionParameters.channelSettings[ch].range = index + 2;
 		unitOpened.channelSettings[ch].range = index + 2;
 	} else if (index == 9) {
 		// set auto range
 	} else {
-		acquisitionParameters.channelSettings[ch].enabled = FALSE;
-		unitOpened.channelSettings[ch].enabled = FALSE;
+		acquisitionParameters.channelSettings[ch].enabled = false;
+		unitOpened.channelSettings[ch].enabled = false;
 	}
 	daq::set_defaults();
 }
@@ -362,10 +362,10 @@ void daq::get_info(void) {
 				unitOpened.maxTimebase = PS2104_MAX_TIMEBASE;
 				unitOpened.timebases = unitOpened.maxTimebase;
 				unitOpened.noOfChannels = 1;
-				unitOpened.hasAdvancedTriggering = FALSE;
-				unitOpened.hasSignalGenerator = FALSE;
-				unitOpened.hasEts = TRUE;
-				unitOpened.hasFastStreaming = FALSE;
+				unitOpened.hasAdvancedTriggering = false;
+				unitOpened.hasSignalGenerator = false;
+				unitOpened.hasEts = true;
+				unitOpened.hasFastStreaming = false;
 				break;
 
 			case MODEL_PS2105:
@@ -375,10 +375,10 @@ void daq::get_info(void) {
 				unitOpened.maxTimebase = PS2105_MAX_TIMEBASE;
 				unitOpened.timebases = unitOpened.maxTimebase;
 				unitOpened.noOfChannels = 1;
-				unitOpened.hasAdvancedTriggering = FALSE;
-				unitOpened.hasSignalGenerator = FALSE;
-				unitOpened.hasEts = TRUE;
-				unitOpened.hasFastStreaming = FALSE;
+				unitOpened.hasAdvancedTriggering = false;
+				unitOpened.hasSignalGenerator = false;
+				unitOpened.hasEts = true;
+				unitOpened.hasFastStreaming = false;
 				break;
 
 			case MODEL_PS2202:
@@ -388,10 +388,10 @@ void daq::get_info(void) {
 				unitOpened.maxTimebase = PS2200_MAX_TIMEBASE;
 				unitOpened.timebases = unitOpened.maxTimebase;
 				unitOpened.noOfChannels = 2;
-				unitOpened.hasAdvancedTriggering = FALSE;
-				unitOpened.hasSignalGenerator = FALSE;
-				unitOpened.hasEts = FALSE;
-				unitOpened.hasFastStreaming = FALSE;
+				unitOpened.hasAdvancedTriggering = false;
+				unitOpened.hasSignalGenerator = false;
+				unitOpened.hasEts = false;
+				unitOpened.hasFastStreaming = false;
 				break;
 
 			case MODEL_PS2203:
@@ -401,10 +401,10 @@ void daq::get_info(void) {
 				unitOpened.maxTimebase = PS2000_MAX_TIMEBASE;
 				unitOpened.timebases = unitOpened.maxTimebase;
 				unitOpened.noOfChannels = 2;
-				unitOpened.hasAdvancedTriggering = TRUE;
-				unitOpened.hasSignalGenerator = TRUE;
-				unitOpened.hasEts = TRUE;
-				unitOpened.hasFastStreaming = TRUE;
+				unitOpened.hasAdvancedTriggering = true;
+				unitOpened.hasSignalGenerator = true;
+				unitOpened.hasEts = true;
+				unitOpened.hasFastStreaming = true;
 				break;
 
 			case MODEL_PS2204:
@@ -414,10 +414,10 @@ void daq::get_info(void) {
 				unitOpened.maxTimebase = PS2000_MAX_TIMEBASE;
 				unitOpened.timebases = unitOpened.maxTimebase;
 				unitOpened.noOfChannels = 2;
-				unitOpened.hasAdvancedTriggering = TRUE;
-				unitOpened.hasSignalGenerator = TRUE;
-				unitOpened.hasEts = TRUE;
-				unitOpened.hasFastStreaming = TRUE;
+				unitOpened.hasAdvancedTriggering = true;
+				unitOpened.hasSignalGenerator = true;
+				unitOpened.hasEts = true;
+				unitOpened.hasFastStreaming = true;
 				unitOpened.bufferSize = 8000;
 				break;
 
@@ -428,10 +428,10 @@ void daq::get_info(void) {
 				unitOpened.maxTimebase = PS2000_MAX_TIMEBASE;
 				unitOpened.timebases = unitOpened.maxTimebase;
 				unitOpened.noOfChannels = DUAL_SCOPE;
-				unitOpened.hasAdvancedTriggering = TRUE;
-				unitOpened.hasSignalGenerator = TRUE;
-				unitOpened.hasEts = TRUE;
-				unitOpened.hasFastStreaming = TRUE;
+				unitOpened.hasAdvancedTriggering = true;
+				unitOpened.hasSignalGenerator = true;
+				unitOpened.hasEts = true;
+				unitOpened.hasFastStreaming = true;
 				unitOpened.awgBufferSize = 4096;
 				unitOpened.bufferSize = 8000;
 				break;
@@ -443,10 +443,10 @@ void daq::get_info(void) {
 				unitOpened.maxTimebase = PS2000_MAX_TIMEBASE;
 				unitOpened.timebases = unitOpened.maxTimebase;
 				unitOpened.noOfChannels = 2;
-				unitOpened.hasAdvancedTriggering = TRUE;
-				unitOpened.hasSignalGenerator = TRUE;
-				unitOpened.hasEts = TRUE;
-				unitOpened.hasFastStreaming = TRUE;
+				unitOpened.hasAdvancedTriggering = true;
+				unitOpened.hasSignalGenerator = true;
+				unitOpened.hasEts = true;
+				unitOpened.hasFastStreaming = true;
 				unitOpened.bufferSize = 16000;
 				break;
 
@@ -457,10 +457,10 @@ void daq::get_info(void) {
 				unitOpened.maxTimebase = PS2000_MAX_TIMEBASE;
 				unitOpened.timebases = unitOpened.maxTimebase;
 				unitOpened.noOfChannels = DUAL_SCOPE;
-				unitOpened.hasAdvancedTriggering = TRUE;
-				unitOpened.hasSignalGenerator = TRUE;
-				unitOpened.hasEts = TRUE;
-				unitOpened.hasFastStreaming = TRUE;
+				unitOpened.hasAdvancedTriggering = true;
+				unitOpened.hasSignalGenerator = true;
+				unitOpened.hasEts = true;
+				unitOpened.hasFastStreaming = true;
 				unitOpened.awgBufferSize = 4096;
 				unitOpened.bufferSize = 16000;
 				break;
