@@ -4,6 +4,14 @@
 #include <QSerialPort>
 #include "fmt/format.h"
 
+typedef struct {
+	double temperature = 0;
+	double maxTemperature = 5;
+	bool modEnabled = false;
+	bool lockEnabled = false;
+	bool lock = false;
+} LQT_SETTINGS;
+
 class LQT : public QObject {
 	Q_OBJECT
 
@@ -12,11 +20,8 @@ private:
 	bool m_isConnected = false;
 	std::string m_terminator = "\r";
 
-	double m_temperature = 0;
-	double m_maxTemperature = 5;
-	bool m_modEnabled = false;
-	bool m_lockEnabled = false;
-	bool m_lock = false;
+	LQT_SETTINGS m_settings;
+	void readSettings();
 
 public:
 	LQT();
@@ -75,6 +80,7 @@ public slots:
 
 signals:
 	void connected(bool);
+	void settingsChanged(LQT_SETTINGS);
 };
 
 #endif // LQT_H

@@ -18,6 +18,7 @@ void LQT::connect() {
 		m_laserPort->setStopBits(QSerialPort::OneStop);
 		m_laserPort->setParity(QSerialPort::NoParity);
 		m_isConnected = m_laserPort->open(QIODevice::ReadWrite);
+		readSettings();
 	}
 	emit(connected(m_isConnected));
 }
@@ -28,6 +29,16 @@ void LQT::disconnect() {
 	}
 	m_isConnected = false;
 	emit(connected(m_isConnected));
+}
+
+void LQT::readSettings() {
+	m_settings.temperature = getTemperature();
+	m_settings.maxTemperature = getMaxTemperature();
+	m_settings.modEnabled = getMod();
+	m_settings.lockEnabled = getLe();
+	m_settings.lock = getLock();
+
+	emit(settingsChanged(m_settings));
 }
 
 /*

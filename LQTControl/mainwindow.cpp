@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	qRegisterMetaType<ACQUISITION_PARAMETERS>("ACQUISITION_PARAMETERS");
 	qRegisterMetaType<LOCKSTATE>("LOCKSTATE");
+	qRegisterMetaType<LQT_SETTINGS>("LQT_SETTINGS");
 
 	// slot laser connection
 	static QMetaObject::Connection connection = QWidget::connect(
@@ -31,6 +32,13 @@ MainWindow::MainWindow(QWidget *parent) :
 		SIGNAL(connected(bool)),
 		this,
 		SLOT(laserConnectionChanged(bool))
+	);
+
+	connection = QWidget::connect(
+		m_laserControl,
+		SIGNAL(settingsChanged(LQT_SETTINGS)),
+		this,
+		SLOT(updateLaserSettings(LQT_SETTINGS))
 	);
 
 	// slot daq connection
@@ -570,6 +578,13 @@ void MainWindow::updateAcquisitionParameters(ACQUISITION_PARAMETERS acquisitionP
 	// set coupling
 	ui->chACoupling->setCurrentIndex(acquisitionParameters.channelSettings[0].DCcoupled);
 	ui->chBCoupling->setCurrentIndex(acquisitionParameters.channelSettings[1].DCcoupled);
+}
+
+void MainWindow::updateLaserSettings(LQT_SETTINGS settings) {
+	ui->temperatureOffset->setValue(settings.temperature);
+	if (!settings.lock && !settings.lockEnabled && !settings.modEnabled) {
+		ui->enableTemperatureControlCheckbox->setChecked(true);
+	}
 }
 
 void MainWindow::on_scanButton_clicked() {

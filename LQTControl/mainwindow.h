@@ -82,6 +82,7 @@ typedef enum enViews {
 
 Q_DECLARE_METATYPE(ACQUISITION_PARAMETERS);
 Q_DECLARE_METATYPE(LOCKSTATE);
+Q_DECLARE_METATYPE(LQT_SETTINGS);
 
 class MainWindow : public QMainWindow {
 	Q_OBJECT
@@ -144,6 +145,8 @@ private slots:
 
 	// SLOTS for updating the acquisition parameters
 	void updateAcquisitionParameters(ACQUISITION_PARAMETERS acquisitionParameters);
+
+	void updateLaserSettings(LQT_SETTINGS);
 
 	void on_actionAbout_triggered();
 
