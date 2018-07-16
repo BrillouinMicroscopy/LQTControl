@@ -6,7 +6,8 @@
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QChart>
 
-#include "daq.h"
+#include "DAQ_PS2000.h"
+#include "DAQ_PS2000A.h"
 #include "locking.h"
 #include "LQT.h"
 #include "thread.h"
@@ -150,6 +151,12 @@ private slots:
 
 	void on_actionAbout_triggered();
 
+	void on_actionSettings_triggered();
+	void closeSettings();
+	void initSettingsDialog();
+
+	void selectDAQ(int index);
+
 	void laserConnectionChanged(bool connected);
 	void daqConnectionChanged(bool connected);
 
@@ -158,6 +165,11 @@ public slots:
 	void handleMarkerClicked();
 
 private:
+	PS_TYPES m_daqType = PS_TYPES::MODEL_PS2000;
+	void initDAQ();
+	std::vector<QMetaObject::Connection> m_daqConnections;
+	QDialog *settingsDialog;
+
     Ui::MainWindow *ui;
 	Thread m_acquisitionThread;
 	QtCharts::QChart *liveViewChart;
@@ -167,8 +179,8 @@ private:
 	QVector<QtCharts::QLineSeries *> lockViewPlots;
 	QVector<QtCharts::QLineSeries *> scanViewPlots;
 	LQT *m_laserControl = new LQT();
-	daq *m_dataAcquisition = new daq(nullptr);
-	Locking *m_lockingControl = new Locking(nullptr, m_dataAcquisition, m_laserControl);
+	daq *m_dataAcquisition = nullptr;
+	Locking *m_lockingControl = new Locking(nullptr, &m_dataAcquisition, m_laserControl);;
 	VIEWS m_selectedView = VIEWS::LIVE;	// selection of the view
 	IndicatorWidget *lockIndicator;
 	QLabel *lockInfo;
