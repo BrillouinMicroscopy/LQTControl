@@ -6,101 +6,6 @@
 /* Definitions of PS2000 driver routines */
 #include "ps2000.h"
 
-int16_t		overflow;
-int32_t		scale_to_mv = 1;
-
-typedef enum {
-	MODEL_NONE = 0,
-	MODEL_PS2104 = 2104,
-	MODEL_PS2105 = 2105,
-	MODEL_PS2202 = 2202,
-	MODEL_PS2203 = 2203,
-	MODEL_PS2204 = 2204,
-	MODEL_PS2205 = 2205,
-	MODEL_PS2204A = 0xA204,
-	MODEL_PS2205A = 0xA205
-} MODEL_TYPE;
-
-typedef struct {
-	PS2000_THRESHOLD_DIRECTION	channelA;
-	PS2000_THRESHOLD_DIRECTION	channelB;
-	PS2000_THRESHOLD_DIRECTION	channelC;
-	PS2000_THRESHOLD_DIRECTION	channelD;
-	PS2000_THRESHOLD_DIRECTION	ext;
-} DIRECTIONS;
-
-typedef struct {
-	PS2000_PWQ_CONDITIONS			*conditions;
-	int16_t							nConditions;
-	PS2000_THRESHOLD_DIRECTION		direction;
-	uint32_t						lower;
-	uint32_t						upper;
-	PS2000_PULSE_WIDTH_TYPE			type;
-} PULSE_WIDTH_QUALIFIER;
-
-typedef struct {
-	PS2000_CHANNEL channel;
-	float threshold;
-	int16_t direction;
-	float delay;
-} SIMPLE;
-
-typedef struct {
-	int16_t hysteresis;
-	DIRECTIONS directions;
-	int16_t nProperties;
-	PS2000_TRIGGER_CONDITIONS * conditions;
-	PS2000_TRIGGER_CHANNEL_PROPERTIES * channelProperties;
-	PULSE_WIDTH_QUALIFIER pwq;
-	uint32_t totalSamples;
-	int16_t autoStop;
-	int16_t triggered;
-} ADVANCED;
-
-typedef struct {
-	SIMPLE simple;
-	ADVANCED advanced;
-} TRIGGER_CHANNEL;
-
-typedef struct {
-	int16_t DCcoupled;
-	int16_t range;
-	int16_t enabled;
-	int16_t values[DAQ_BUFFER_SIZE];
-} CHANNEL_SETTINGS;
-
-typedef struct {
-	int16_t			handle;
-	MODEL_TYPE		model;
-	PS2000_RANGE	firstRange;
-	PS2000_RANGE	lastRange;
-	TRIGGER_CHANNEL trigger;
-	int16_t			maxTimebase;
-	int16_t			timebases;
-	int16_t			noOfChannels;
-	CHANNEL_SETTINGS channelSettings[PS2000_MAX_CHANNELS];
-	int16_t			hasAdvancedTriggering;
-	int16_t			hasFastStreaming;
-	int16_t			hasEts;
-	int16_t			hasSignalGenerator;
-	int16_t			awgBufferSize;
-	int16_t			bufferSize;
-} UNIT_MODEL;
-
-// Struct to help with retrieving data into 
-// application buffers in streaming data capture
-typedef struct {
-	UNIT_MODEL unit;
-	int16_t *appBuffers[DUAL_SCOPE * 2];
-	uint32_t bufferSizes[PS2000_MAX_CHANNELS];
-} BUFFER_INFO;
-
-UNIT_MODEL unitOpened;
-
-BUFFER_INFO bufferInfo;
-
-int32_t input_ranges[PS2000_MAX_RANGES] = { 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000 };
-
 daq::daq(QObject *parent) :
 	QObject(parent) {
 }
@@ -129,47 +34,47 @@ void daq::setNumberSamples(int32_t no_of_samples) {
 
 void daq::setCoupling(int index, int ch) {
 	acquisitionParameters.channelSettings[ch].DCcoupled = index;
-	unitOpened.channelSettings[ch].DCcoupled = (bool)index;
+	m_unitOpened.channelSettings[ch].DCcoupled = (bool)index;
 	daq::set_defaults();
 }
 
 void daq::setRange(int index, int ch) {
 	if (index < 9) {
 		acquisitionParameters.channelSettings[ch].enabled = true;
-		unitOpened.channelSettings[ch].enabled = true;
+		m_unitOpened.channelSettings[ch].enabled = true;
 		acquisitionParameters.channelSettings[ch].range = index + 2;
-		unitOpened.channelSettings[ch].range = index + 2;
+		m_unitOpened.channelSettings[ch].range = index + 2;
 	} else if (index == 9) {
 		// set auto range
 	} else {
 		acquisitionParameters.channelSettings[ch].enabled = false;
-		unitOpened.channelSettings[ch].enabled = false;
+		m_unitOpened.channelSettings[ch].enabled = false;
 	}
 	daq::set_defaults();
 }
 
 void daq::setAcquisitionParameters() {
 
-	int16_t maxChannels = (2 < unitOpened.noOfChannels) ? 2 : unitOpened.noOfChannels;
+	int16_t maxChannels = (2 < m_unitOpened.noOfChannels) ? 2 : m_unitOpened.noOfChannels;
 
 	for (int16_t ch(0); ch < maxChannels; ch++) {
-		unitOpened.channelSettings[ch].enabled = acquisitionParameters.channelSettings[ch].enabled;
-		unitOpened.channelSettings[ch].DCcoupled = acquisitionParameters.channelSettings[ch].DCcoupled;
-		unitOpened.channelSettings[ch].range = acquisitionParameters.channelSettings[ch].range;
+		m_unitOpened.channelSettings[ch].enabled = acquisitionParameters.channelSettings[ch].enabled;
+		m_unitOpened.channelSettings[ch].DCcoupled = acquisitionParameters.channelSettings[ch].DCcoupled;
+		m_unitOpened.channelSettings[ch].range = acquisitionParameters.channelSettings[ch].range;
 	}
 	
 	// initialize the ADC
 	set_defaults();
 
 	/* Trigger disabled */
-	ps2000_set_trigger(unitOpened.handle, PS2000_NONE, 0, PS2000_RISING, 0, acquisitionParameters.auto_trigger_ms);
+	ps2000_set_trigger(m_unitOpened.handle, PS2000_NONE, 0, PS2000_RISING, 0, acquisitionParameters.auto_trigger_ms);
 
 	/*  find the maximum number of samples, the time interval (in time_units),
 	*		 the most suitable time units, and the maximum oversample at the current timebase
 	*/
 	acquisitionParameters.oversample = 1;
 	while (!ps2000_get_timebase(
-		unitOpened.handle,
+		m_unitOpened.handle,
 		acquisitionParameters.timebase,
 		acquisitionParameters.no_of_samples,
 		&acquisitionParameters.time_interval,
@@ -190,18 +95,18 @@ std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq::collectBlockData() {
 	/* Start collecting data,
 	*  wait for completion */
 	ps2000_run_block(
-		unitOpened.handle,
+		m_unitOpened.handle,
 		acquisitionParameters.no_of_samples,
 		acquisitionParameters.timebase,
 		acquisitionParameters.oversample,
 		&acquisitionParameters.time_indisposed_ms
 	);
 
-	while (!ps2000_ready(unitOpened.handle)) {
+	while (!ps2000_ready(m_unitOpened.handle)) {
 		Sleep(10);
 	}
 
-	ps2000_stop(unitOpened.handle);
+	ps2000_stop(m_unitOpened.handle);
 
 	/* Should be done now...
 	*  get the times (in nanoseconds)
@@ -211,13 +116,13 @@ std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq::collectBlockData() {
 
 
 	ps2000_get_times_and_values(
-		unitOpened.handle,
+		m_unitOpened.handle,
 		times,
-		unitOpened.channelSettings[PS2000_CHANNEL_A].values,
-		unitOpened.channelSettings[PS2000_CHANNEL_B].values,
+		m_unitOpened.channelSettings[PS2000_CHANNEL_A].values,
+		m_unitOpened.channelSettings[PS2000_CHANNEL_B].values,
 		NULL,
 		NULL,
-		&overflow,
+		&m_overflow,
 		acquisitionParameters.time_units,
 		acquisitionParameters.no_of_samples
 	);
@@ -226,9 +131,9 @@ std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq::collectBlockData() {
 	// create vector of voltage values
 	std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values;
 	for (int i(0); i < acquisitionParameters.no_of_samples; i++) {
-		for (int ch(0); ch < unitOpened.noOfChannels; ch++) {
-			if (unitOpened.channelSettings[ch].enabled) {
-				values[ch].push_back(adc_to_mv(unitOpened.channelSettings[ch].values[i], unitOpened.channelSettings[ch].range));
+		for (int ch(0); ch < m_unitOpened.noOfChannels; ch++) {
+			if (m_unitOpened.channelSettings[ch].enabled) {
+				values[ch].push_back(adc_to_mv(m_unitOpened.channelSettings[ch].values[i], m_unitOpened.channelSettings[ch].range));
 			}
 		}
 	}
@@ -257,7 +162,7 @@ void daq::getBlockData() {
 * Convert an 12-bit ADC count into millivolts
 ****************************************************************************/
 int32_t daq::adc_to_mv(int32_t raw, int32_t ch) {
-	return (scale_to_mv) ? (raw * input_ranges[ch]) / 32767 : raw;
+	return (m_scale_to_mv) ? (raw * m_input_ranges[ch]) / 32767 : raw;
 }
 
 /****************************************************************************
@@ -268,7 +173,7 @@ int32_t daq::adc_to_mv(int32_t raw, int32_t ch) {
 *  (useful for setting trigger thresholds)
 ****************************************************************************/
 int16_t daq::mv_to_adc(int16_t mv, int16_t ch) {
-	return ((mv * 32767) / input_ranges[ch]);
+	return ((mv * 32767) / m_input_ranges[ch]);
 }
 
 /****************************************************************************
@@ -276,24 +181,24 @@ int16_t daq::mv_to_adc(int16_t mv, int16_t ch) {
 ****************************************************************************/
 void daq::set_defaults(void) {
 	int16_t ch = 0;
-	ps2000_set_ets(unitOpened.handle, PS2000_ETS_OFF, 0, 0);
+	ps2000_set_ets(m_unitOpened.handle, PS2000_ETS_OFF, 0, 0);
 
-	for (ch = 0; ch < unitOpened.noOfChannels; ch++) {
-		ps2000_set_channel(unitOpened.handle,
+	for (ch = 0; ch < m_unitOpened.noOfChannels; ch++) {
+		ps2000_set_channel(m_unitOpened.handle,
 			ch,
-			unitOpened.channelSettings[ch].enabled,
-			unitOpened.channelSettings[ch].DCcoupled,
-			unitOpened.channelSettings[ch].range
+			m_unitOpened.channelSettings[ch].enabled,
+			m_unitOpened.channelSettings[ch].DCcoupled,
+			m_unitOpened.channelSettings[ch].range
 		);
 	}
 }
 
 void daq::connect() {
 	if (!m_isConnected) {
-		unitOpened.handle = ps2000_open_unit();
+		m_unitOpened.handle = ps2000_open_unit();
 		get_info();
 
-		if (!unitOpened.handle) {
+		if (!m_unitOpened.handle) {
 			m_isConnected = false;
 		} else {
 			daq::setAcquisitionParameters();
@@ -305,8 +210,8 @@ void daq::connect() {
 
 void daq::disconnect() {
 	if (m_isConnected) {
-		ps2000_close_unit(unitOpened.handle);
-		unitOpened.handle = NULL;
+		ps2000_close_unit(m_unitOpened.handle);
+		m_unitOpened.handle = NULL;
 		m_isConnected = false;
 	}
 	emit(connected(m_isConnected));
@@ -334,9 +239,9 @@ void daq::get_info(void) {
 	int8_t	line[80];
 	int32_t	variant;
 
-	if (unitOpened.handle) {
+	if (m_unitOpened.handle) {
 		for (i = 0; i < 6; i++) {
-			ps2000_get_unit_info(unitOpened.handle, line, sizeof(line), i);
+			ps2000_get_unit_info(m_unitOpened.handle, line, sizeof(line), i);
 
 			if (i == 3) {
 				variant = atoi((const char*)line);
@@ -356,144 +261,144 @@ void daq::get_info(void) {
 
 		switch (variant) {
 			case MODEL_PS2104:
-				unitOpened.model = MODEL_PS2104;
-				unitOpened.firstRange = PS2000_100MV;
-				unitOpened.lastRange = PS2000_20V;
-				unitOpened.maxTimebase = PS2104_MAX_TIMEBASE;
-				unitOpened.timebases = unitOpened.maxTimebase;
-				unitOpened.noOfChannels = 1;
-				unitOpened.hasAdvancedTriggering = false;
-				unitOpened.hasSignalGenerator = false;
-				unitOpened.hasEts = true;
-				unitOpened.hasFastStreaming = false;
+				m_unitOpened.model = MODEL_PS2104;
+				m_unitOpened.firstRange = PS2000_100MV;
+				m_unitOpened.lastRange = PS2000_20V;
+				m_unitOpened.maxTimebase = PS2104_MAX_TIMEBASE;
+				m_unitOpened.timebases = m_unitOpened.maxTimebase;
+				m_unitOpened.noOfChannels = 1;
+				m_unitOpened.hasAdvancedTriggering = false;
+				m_unitOpened.hasSignalGenerator = false;
+				m_unitOpened.hasEts = true;
+				m_unitOpened.hasFastStreaming = false;
 				break;
 
 			case MODEL_PS2105:
-				unitOpened.model = MODEL_PS2105;
-				unitOpened.firstRange = PS2000_100MV;
-				unitOpened.lastRange = PS2000_20V;
-				unitOpened.maxTimebase = PS2105_MAX_TIMEBASE;
-				unitOpened.timebases = unitOpened.maxTimebase;
-				unitOpened.noOfChannels = 1;
-				unitOpened.hasAdvancedTriggering = false;
-				unitOpened.hasSignalGenerator = false;
-				unitOpened.hasEts = true;
-				unitOpened.hasFastStreaming = false;
+				m_unitOpened.model = MODEL_PS2105;
+				m_unitOpened.firstRange = PS2000_100MV;
+				m_unitOpened.lastRange = PS2000_20V;
+				m_unitOpened.maxTimebase = PS2105_MAX_TIMEBASE;
+				m_unitOpened.timebases = m_unitOpened.maxTimebase;
+				m_unitOpened.noOfChannels = 1;
+				m_unitOpened.hasAdvancedTriggering = false;
+				m_unitOpened.hasSignalGenerator = false;
+				m_unitOpened.hasEts = true;
+				m_unitOpened.hasFastStreaming = false;
 				break;
 
 			case MODEL_PS2202:
-				unitOpened.model = MODEL_PS2202;
-				unitOpened.firstRange = PS2000_100MV;
-				unitOpened.lastRange = PS2000_20V;
-				unitOpened.maxTimebase = PS2200_MAX_TIMEBASE;
-				unitOpened.timebases = unitOpened.maxTimebase;
-				unitOpened.noOfChannels = 2;
-				unitOpened.hasAdvancedTriggering = false;
-				unitOpened.hasSignalGenerator = false;
-				unitOpened.hasEts = false;
-				unitOpened.hasFastStreaming = false;
+				m_unitOpened.model = MODEL_PS2202;
+				m_unitOpened.firstRange = PS2000_100MV;
+				m_unitOpened.lastRange = PS2000_20V;
+				m_unitOpened.maxTimebase = PS2200_MAX_TIMEBASE;
+				m_unitOpened.timebases = m_unitOpened.maxTimebase;
+				m_unitOpened.noOfChannels = 2;
+				m_unitOpened.hasAdvancedTriggering = false;
+				m_unitOpened.hasSignalGenerator = false;
+				m_unitOpened.hasEts = false;
+				m_unitOpened.hasFastStreaming = false;
 				break;
 
 			case MODEL_PS2203:
-				unitOpened.model = MODEL_PS2203;
-				unitOpened.firstRange = PS2000_50MV;
-				unitOpened.lastRange = PS2000_20V;
-				unitOpened.maxTimebase = PS2000_MAX_TIMEBASE;
-				unitOpened.timebases = unitOpened.maxTimebase;
-				unitOpened.noOfChannels = 2;
-				unitOpened.hasAdvancedTriggering = true;
-				unitOpened.hasSignalGenerator = true;
-				unitOpened.hasEts = true;
-				unitOpened.hasFastStreaming = true;
+				m_unitOpened.model = MODEL_PS2203;
+				m_unitOpened.firstRange = PS2000_50MV;
+				m_unitOpened.lastRange = PS2000_20V;
+				m_unitOpened.maxTimebase = PS2000_MAX_TIMEBASE;
+				m_unitOpened.timebases = m_unitOpened.maxTimebase;
+				m_unitOpened.noOfChannels = 2;
+				m_unitOpened.hasAdvancedTriggering = true;
+				m_unitOpened.hasSignalGenerator = true;
+				m_unitOpened.hasEts = true;
+				m_unitOpened.hasFastStreaming = true;
 				break;
 
 			case MODEL_PS2204:
-				unitOpened.model = MODEL_PS2204;
-				unitOpened.firstRange = PS2000_50MV;
-				unitOpened.lastRange = PS2000_20V;
-				unitOpened.maxTimebase = PS2000_MAX_TIMEBASE;
-				unitOpened.timebases = unitOpened.maxTimebase;
-				unitOpened.noOfChannels = 2;
-				unitOpened.hasAdvancedTriggering = true;
-				unitOpened.hasSignalGenerator = true;
-				unitOpened.hasEts = true;
-				unitOpened.hasFastStreaming = true;
-				unitOpened.bufferSize = 8000;
+				m_unitOpened.model = MODEL_PS2204;
+				m_unitOpened.firstRange = PS2000_50MV;
+				m_unitOpened.lastRange = PS2000_20V;
+				m_unitOpened.maxTimebase = PS2000_MAX_TIMEBASE;
+				m_unitOpened.timebases = m_unitOpened.maxTimebase;
+				m_unitOpened.noOfChannels = 2;
+				m_unitOpened.hasAdvancedTriggering = true;
+				m_unitOpened.hasSignalGenerator = true;
+				m_unitOpened.hasEts = true;
+				m_unitOpened.hasFastStreaming = true;
+				m_unitOpened.bufferSize = 8000;
 				break;
 
 			case MODEL_PS2204A:
-				unitOpened.model = MODEL_PS2204A;
-				unitOpened.firstRange = PS2000_50MV;
-				unitOpened.lastRange = PS2000_20V;
-				unitOpened.maxTimebase = PS2000_MAX_TIMEBASE;
-				unitOpened.timebases = unitOpened.maxTimebase;
-				unitOpened.noOfChannels = DUAL_SCOPE;
-				unitOpened.hasAdvancedTriggering = true;
-				unitOpened.hasSignalGenerator = true;
-				unitOpened.hasEts = true;
-				unitOpened.hasFastStreaming = true;
-				unitOpened.awgBufferSize = 4096;
-				unitOpened.bufferSize = 8000;
+				m_unitOpened.model = MODEL_PS2204A;
+				m_unitOpened.firstRange = PS2000_50MV;
+				m_unitOpened.lastRange = PS2000_20V;
+				m_unitOpened.maxTimebase = PS2000_MAX_TIMEBASE;
+				m_unitOpened.timebases = m_unitOpened.maxTimebase;
+				m_unitOpened.noOfChannels = DUAL_SCOPE;
+				m_unitOpened.hasAdvancedTriggering = true;
+				m_unitOpened.hasSignalGenerator = true;
+				m_unitOpened.hasEts = true;
+				m_unitOpened.hasFastStreaming = true;
+				m_unitOpened.awgBufferSize = 4096;
+				m_unitOpened.bufferSize = 8000;
 				break;
 
 			case MODEL_PS2205:
-				unitOpened.model = MODEL_PS2205;
-				unitOpened.firstRange = PS2000_50MV;
-				unitOpened.lastRange = PS2000_20V;
-				unitOpened.maxTimebase = PS2000_MAX_TIMEBASE;
-				unitOpened.timebases = unitOpened.maxTimebase;
-				unitOpened.noOfChannels = 2;
-				unitOpened.hasAdvancedTriggering = true;
-				unitOpened.hasSignalGenerator = true;
-				unitOpened.hasEts = true;
-				unitOpened.hasFastStreaming = true;
-				unitOpened.bufferSize = 16000;
+				m_unitOpened.model = MODEL_PS2205;
+				m_unitOpened.firstRange = PS2000_50MV;
+				m_unitOpened.lastRange = PS2000_20V;
+				m_unitOpened.maxTimebase = PS2000_MAX_TIMEBASE;
+				m_unitOpened.timebases = m_unitOpened.maxTimebase;
+				m_unitOpened.noOfChannels = 2;
+				m_unitOpened.hasAdvancedTriggering = true;
+				m_unitOpened.hasSignalGenerator = true;
+				m_unitOpened.hasEts = true;
+				m_unitOpened.hasFastStreaming = true;
+				m_unitOpened.bufferSize = 16000;
 				break;
 
 			case MODEL_PS2205A:
-				unitOpened.model = MODEL_PS2205A;
-				unitOpened.firstRange = PS2000_50MV;
-				unitOpened.lastRange = PS2000_20V;
-				unitOpened.maxTimebase = PS2000_MAX_TIMEBASE;
-				unitOpened.timebases = unitOpened.maxTimebase;
-				unitOpened.noOfChannels = DUAL_SCOPE;
-				unitOpened.hasAdvancedTriggering = true;
-				unitOpened.hasSignalGenerator = true;
-				unitOpened.hasEts = true;
-				unitOpened.hasFastStreaming = true;
-				unitOpened.awgBufferSize = 4096;
-				unitOpened.bufferSize = 16000;
+				m_unitOpened.model = MODEL_PS2205A;
+				m_unitOpened.firstRange = PS2000_50MV;
+				m_unitOpened.lastRange = PS2000_20V;
+				m_unitOpened.maxTimebase = PS2000_MAX_TIMEBASE;
+				m_unitOpened.timebases = m_unitOpened.maxTimebase;
+				m_unitOpened.noOfChannels = DUAL_SCOPE;
+				m_unitOpened.hasAdvancedTriggering = true;
+				m_unitOpened.hasSignalGenerator = true;
+				m_unitOpened.hasEts = true;
+				m_unitOpened.hasFastStreaming = true;
+				m_unitOpened.awgBufferSize = 4096;
+				m_unitOpened.bufferSize = 16000;
 				break;
 
 			default:
 				printf("Unit not supported");
 		}
 
-		unitOpened.channelSettings[PS2000_CHANNEL_A].enabled = 1;
-		unitOpened.channelSettings[PS2000_CHANNEL_A].DCcoupled = 1;
-		unitOpened.channelSettings[PS2000_CHANNEL_A].range = PS2000_5V;
+		m_unitOpened.channelSettings[PS2000_CHANNEL_A].enabled = 1;
+		m_unitOpened.channelSettings[PS2000_CHANNEL_A].DCcoupled = 1;
+		m_unitOpened.channelSettings[PS2000_CHANNEL_A].range = PS2000_5V;
 
-		if (unitOpened.noOfChannels == DUAL_SCOPE) {
-			unitOpened.channelSettings[PS2000_CHANNEL_B].enabled = 1;
+		if (m_unitOpened.noOfChannels == DUAL_SCOPE) {
+			m_unitOpened.channelSettings[PS2000_CHANNEL_B].enabled = 1;
 		} else {
-			unitOpened.channelSettings[PS2000_CHANNEL_B].enabled = 0;
+			m_unitOpened.channelSettings[PS2000_CHANNEL_B].enabled = 0;
 		}
 
-		unitOpened.channelSettings[PS2000_CHANNEL_B].DCcoupled = 1;
-		unitOpened.channelSettings[PS2000_CHANNEL_B].range = PS2000_5V;
+		m_unitOpened.channelSettings[PS2000_CHANNEL_B].DCcoupled = 1;
+		m_unitOpened.channelSettings[PS2000_CHANNEL_B].range = PS2000_5V;
 
 		set_defaults();
 
 	} else {
 		printf("Unit Not Opened\n");
 
-		ps2000_get_unit_info(unitOpened.handle, line, sizeof(line), 5);
+		ps2000_get_unit_info(m_unitOpened.handle, line, sizeof(line), 5);
 
 		printf("%s: %s\n", description[5], line);
-		unitOpened.model = MODEL_NONE;
-		unitOpened.firstRange = PS2000_100MV;
-		unitOpened.lastRange = PS2000_20V;
-		unitOpened.timebases = PS2105_MAX_TIMEBASE;
-		unitOpened.noOfChannels = SINGLE_CH_SCOPE;
+		m_unitOpened.model = MODEL_NONE;
+		m_unitOpened.firstRange = PS2000_100MV;
+		m_unitOpened.lastRange = PS2000_20V;
+		m_unitOpened.timebases = PS2105_MAX_TIMEBASE;
+		m_unitOpened.noOfChannels = SINGLE_CH_SCOPE;
 	}
 }
