@@ -317,6 +317,8 @@ void MainWindow::initDAQ() {
 		this,
 		SLOT(updateAcquisitionParameters(ACQUISITION_PARAMETERS))
 	);
+
+	QMetaObject::invokeMethod(m_dataAcquisition, "connect_daq", Qt::AutoConnection);
 };
 
 void MainWindow::on_actionAbout_triggered() {
