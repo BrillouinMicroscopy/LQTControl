@@ -772,14 +772,18 @@ void MainWindow::on_actionDisconnect_DAQ_triggered() {
 }
 
 void MainWindow::daqConnectionChanged(bool connected) {
+	m_isDAQConnected = connected;
 	if (connected) {
-		ui->actionConnect_DAQ->setEnabled(false);
-		ui->actionDisconnect_DAQ->setEnabled(true);
-		statusInfo->setText("Successfully connected");
+		statusInfo->setText("Successfully connected to data acquisition card.");
 	} else {
-		ui->actionConnect_DAQ->setEnabled(true);
-		ui->actionDisconnect_DAQ->setEnabled(false);
-		statusInfo->setText("Successfully disconnected");
+		statusInfo->setText("Successfully disconnected from data acquisition card.");
+	}
+	ui->actionConnect_DAQ->setEnabled(!connected);
+	ui->actionDisconnect_DAQ->setEnabled(connected);
+	ui->AcquisitionBox->setEnabled(connected);
+	if (m_isDAQConnected && m_isLaserConnected) {
+		ui->ScanBox->setEnabled(connected);
+		ui->LockingBox->setEnabled(connected);
 	}
 }
 
@@ -792,12 +796,18 @@ void MainWindow::on_actionDisconnect_Laser_triggered() {
 }
 
 void MainWindow::laserConnectionChanged(bool connected) {
+	m_isLaserConnected = connected;
 	if (connected) {
-		ui->actionConnect_Laser->setEnabled(false);
-		ui->actionDisconnect_Laser->setEnabled(true);
+		statusInfo->setText("Successfully connected to Laser.");
 	} else {
-		ui->actionConnect_Laser->setEnabled(true);
-		ui->actionDisconnect_Laser->setEnabled(false);
+		statusInfo->setText("Successfully disconnected from Laser.");
+	}
+	ui->actionConnect_Laser->setEnabled(!connected);
+	ui->actionDisconnect_Laser->setEnabled(connected);
+	ui->LaserTemperatureBox->setEnabled(connected);
+	if (m_isDAQConnected && m_isLaserConnected) {
+		ui->ScanBox->setEnabled(connected);
+		ui->LockingBox->setEnabled(connected);
 	}
 }
 

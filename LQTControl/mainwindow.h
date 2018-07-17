@@ -171,6 +171,8 @@ private:
 	void initDAQ();
 	std::vector<QMetaObject::Connection> m_daqConnections;
 	QDialog *settingsDialog;
+	bool m_isDAQConnected = false;
+	bool m_isLaserConnected = false;
 
     Ui::MainWindow *ui;
 	Thread m_acquisitionThread;
