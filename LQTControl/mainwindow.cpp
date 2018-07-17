@@ -254,6 +254,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	// start acquisition thread
 	m_acquisitionThread.startWorker(m_lockingControl);
 	m_acquisitionThread.startWorker(m_laserControl);
+
+	QMetaObject::invokeMethod(m_laserControl, "connect", Qt::AutoConnection);
 }
 
 MainWindow::~MainWindow() {
