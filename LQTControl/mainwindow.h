@@ -93,6 +93,8 @@ public:
     ~MainWindow();
 
 private slots:
+	void on_actionQuit_triggered();
+
 	void on_selectDisplay_activated(const int index);
 	void on_floatingViewCheckBox_clicked(const bool checked);
 

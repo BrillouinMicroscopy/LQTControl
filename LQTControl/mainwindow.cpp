@@ -262,6 +262,10 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
+void MainWindow::on_actionQuit_triggered() {
+	QApplication::quit();
+}
+
 void MainWindow::initDAQ() {
 	// deinitialize DAQ if necessary
 	if (m_dataAcquisition) {
