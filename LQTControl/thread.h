@@ -9,7 +9,11 @@ class Thread :public QThread {
 public:
 	void startWorker(QObject *worker) {
 		worker->moveToThread(this);
-		start();
+		if (!this->isRunning()) {
+			this->start();
+		}
+
+		QMetaObject::invokeMethod(worker, "init", Qt::AutoConnection);
 	}
 };
 

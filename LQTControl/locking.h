@@ -100,7 +100,7 @@ class Locking : public QObject {
 	Q_OBJECT
 
 	public:
-		explicit Locking(QObject *parent, daq *dataAcquisition, LQT *laserControl);
+		explicit Locking(QObject *parent, daq **dataAcquisition, LQT *laserControl);
 		void setLockState(LOCKSTATE lockstate = LOCKSTATE::INACTIVE);
 		void setScanParameters(SCANPARAMETERS type, double value);
 		void setLockParameters(LOCKPARAMETERS type, double value);
@@ -129,7 +129,7 @@ class Locking : public QObject {
 
 	private:
 		LQT *m_laserControl;
-		daq *m_dataAcquisition;
+		daq **m_dataAcquisition;
 		bool m_acquisitionRunning = false;
 		bool m_isAcquireLockingRunning = false;
 		QTimer *lockingTimer = nullptr;

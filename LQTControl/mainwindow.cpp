@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include "daq.h"
 #include "ui_mainwindow.h"
 #include "colors.h"
 #include <QtWidgets>
@@ -39,36 +38,6 @@ MainWindow::MainWindow(QWidget *parent) :
 		SIGNAL(settingsChanged(LQT_SETTINGS)),
 		this,
 		SLOT(updateLaserSettings(LQT_SETTINGS))
-	);
-
-	// slot daq connection
-	connection = QWidget::connect(
-		m_dataAcquisition,
-		SIGNAL(connected(bool)),
-		this,
-		SLOT(daqConnectionChanged(bool))
-	);
-
-	// slot daq acquisition running
-	connection = QWidget::connect(
-		m_dataAcquisition,
-		SIGNAL(s_acquisitionRunning(bool)),
-		this,
-		SLOT(showAcqRunning(bool))
-	);
-
-	QWidget::connect(
-		m_dataAcquisition,
-		SIGNAL(collectedBlockData()),
-		this,
-		SLOT(updateLiveView())
-	);
-
-	QWidget::connect(
-		m_dataAcquisition,
-		SIGNAL(acquisitionParametersChanged(ACQUISITION_PARAMETERS)),
-		this,
-		SLOT(updateAcquisitionParameters(ACQUISITION_PARAMETERS))
 	);
 
 	// slot daq acquisition running
@@ -279,12 +248,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->floatingViewLabel->hide();
 	ui->floatingViewCheckBox->hide();
 
+	initDAQ();
+	initSettingsDialog();
+
 	// start acquisition thread
-	QWidget::connect(&m_acquisitionThread, SIGNAL(started()), m_dataAcquisition, SLOT(init()));
-	m_acquisitionThread.startWorker(m_dataAcquisition);
-	QWidget::connect(&m_acquisitionThread, SIGNAL(started()), m_lockingControl, SLOT(init()));
 	m_acquisitionThread.startWorker(m_lockingControl);
-	QWidget::connect(&m_acquisitionThread, SIGNAL(started()), m_laserControl, SLOT(init()));
 	m_acquisitionThread.startWorker(m_laserControl);
 }
 
@@ -293,6 +261,71 @@ MainWindow::~MainWindow() {
 	m_acquisitionThread.wait();
     delete ui;
 }
+
+void MainWindow::initDAQ() {
+	// deinitialize DAQ if necessary
+	if (m_dataAcquisition) {
+		delete m_dataAcquisition;
+		m_dataAcquisition = nullptr;
+	}
+
+	// disconnect all connections to m_dataAcquisition
+	// in case the PS_TYPE is changed during runtime
+	while (!m_daqConnections.empty()) {
+		QWidget::disconnect(m_daqConnections.back());
+		m_daqConnections.pop_back();
+	}
+
+	// initialize correct DAQ type
+	switch (m_daqType) {
+	case PS_TYPES::MODEL_PS2000:
+		m_dataAcquisition = new daq_PS2000(nullptr);
+		break;
+	case PS_TYPES::MODEL_PS2000A:
+		m_dataAcquisition = new daq_PS2000A(nullptr);
+		break;
+	default:
+		m_dataAcquisition = new daq_PS2000(nullptr);
+		break;
+	}
+
+	// reestablish m_dataAcquisition connections and store them for
+	// possible disconnection
+	static QMetaObject::Connection connection = QWidget::connect(
+		m_dataAcquisition,
+		SIGNAL(connected(bool)),
+		this,
+		SLOT(daqConnectionChanged(bool))
+	);
+	m_daqConnections.push_back(connection);
+
+	connection = QWidget::connect(
+		m_dataAcquisition,
+		SIGNAL(s_acquisitionRunning(bool)),
+		this,
+		SLOT(showAcqRunning(bool))
+	);
+	m_daqConnections.push_back(connection);
+
+	connection = QWidget::connect(
+		m_dataAcquisition,
+		SIGNAL(collectedBlockData()),
+		this,
+		SLOT(updateLiveView())
+	);
+	m_daqConnections.push_back(connection);
+
+	connection = QWidget::connect(
+		m_dataAcquisition,
+		SIGNAL(acquisitionParametersChanged(ACQUISITION_PARAMETERS)),
+		this,
+		SLOT(updateAcquisitionParameters(ACQUISITION_PARAMETERS))
+	);
+	m_daqConnections.push_back(connection);
+
+	m_daqConnections.push_back(connection);
+	m_acquisitionThread.startWorker(m_dataAcquisition);
+};
 
 void MainWindow::on_actionAbout_triggered() {
 	QString str = QString("LQTControl Version %1.%2.%3 <br> Build from commit: <a href='%4'>%5</a><br>Author: <a href='mailto:%6?subject=LQTControl'>%7</a><br>Date: %8")
@@ -306,6 +339,76 @@ void MainWindow::on_actionAbout_triggered() {
 		.arg(Version::Date.c_str());
 
 	QMessageBox::about(this, tr("About LQTControl"), str);
+}
+
+void MainWindow::on_actionSettings_triggered() {
+	settingsDialog->show();
+}
+
+void MainWindow::closeSettings() {
+	settingsDialog->hide();
+}
+
+void MainWindow::initSettingsDialog() {
+	settingsDialog = new QDialog(0, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowStaysOnTopHint);
+	settingsDialog->setWindowTitle("Settings");
+	settingsDialog->setWindowModality(Qt::ApplicationModal);
+
+	QVBoxLayout *vLayout = new QVBoxLayout(settingsDialog);
+
+	QWidget *daqWidget = new QWidget();
+	daqWidget->setMinimumHeight(100);
+	daqWidget->setMinimumWidth(400);
+	QGroupBox *box = new QGroupBox(daqWidget);
+	box->setTitle("Data Acquisition card");
+	box->setMinimumHeight(100);
+	box->setMinimumWidth(400);
+
+	vLayout->addWidget(daqWidget);
+
+	QWidget *buttonWidget = new QWidget();
+	vLayout->addWidget(buttonWidget);
+
+	QHBoxLayout *layout = new QHBoxLayout(box);
+
+	QLabel *label = new QLabel("Currently selected DAQ");
+	layout->addWidget(label);
+
+	QComboBox *dropdown = new QComboBox();
+	layout->addWidget(dropdown);
+	int i = 0;
+	for (auto type : m_dataAcquisition->PS_NAMES) {
+		dropdown->insertItem(i, QString::fromStdString(type));
+		i++;
+	}
+	dropdown->setCurrentIndex((int)m_daqType);
+
+	static QMetaObject::Connection connection = QWidget::connect(
+		dropdown,
+		SIGNAL(currentIndexChanged(int)),
+		this,
+		SLOT(selectDAQ(int))
+	);
+
+	QPushButton *okButton = new QPushButton(buttonWidget);
+	okButton->setText(tr("OK"));
+	okButton->setMaximumWidth(100);
+	vLayout->addWidget(okButton);
+	vLayout->setAlignment(okButton, Qt::AlignRight);
+
+	connection = QWidget::connect(
+		okButton,
+		SIGNAL(clicked()),
+		this,
+		SLOT(closeSettings())
+	);
+
+	settingsDialog->layout()->setSizeConstraint(QLayout::SetFixedSize);
+}
+
+void MainWindow::selectDAQ(int index) {
+	m_daqType = (PS_TYPES)index;
+	initDAQ();
 }
 
 void MainWindow::connectMarkers() {
@@ -657,11 +760,11 @@ void MainWindow::on_floatingViewCheckBox_clicked(const bool checked) {
 }
 
 void MainWindow::on_actionConnect_DAQ_triggered() {
-	QMetaObject::invokeMethod(m_dataAcquisition, "connect", Qt::AutoConnection);
+	QMetaObject::invokeMethod(m_dataAcquisition, "connect_daq", Qt::AutoConnection);
 }
 
 void MainWindow::on_actionDisconnect_DAQ_triggered() {
-	QMetaObject::invokeMethod(m_dataAcquisition, "disconnect", Qt::AutoConnection);
+	QMetaObject::invokeMethod(m_dataAcquisition, "disconnect_daq", Qt::AutoConnection);
 }
 
 void MainWindow::daqConnectionChanged(bool connected) {

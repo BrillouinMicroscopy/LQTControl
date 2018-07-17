@@ -3,7 +3,7 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMainWindow>
 
-Locking::Locking(QObject *parent, daq *dataAcquisition, LQT *laserControl) :
+Locking::Locking(QObject *parent, daq **dataAcquisition, LQT *laserControl) :
 	QObject(parent), m_dataAcquisition(dataAcquisition), m_laserControl(laserControl) {
 }
 
@@ -93,7 +93,7 @@ void Locking::startScan() {
 		std::fill(scanData.quotient.begin(), scanData.quotient.end(), NAN);
 		std::fill(scanData.transmission.begin(), scanData.transmission.end(), NAN);
 
-		m_dataAcquisition->setAcquisitionParameters();
+		(*m_dataAcquisition)->setAcquisitionParameters();
 
 		scanData.pass = 0;
 		scanData.m_running = true;
@@ -128,7 +128,7 @@ void Locking::scan() {
 	passTimer.start();
 
 	// acquire detector and reference signal, store and process it
-	std::array<std::vector<int32_t>, DAQ_MAX_CHANNELS> values = m_dataAcquisition->collectBlockData();
+	std::array<std::vector<int32_t>, DAQ_MAX_CHANNELS> values = (*m_dataAcquisition)->collectBlockData();
 
 	double absorption_mean = generalmath::mean(values[0]) / 1e3;
 	double reference_mean = generalmath::mean(values[1]) / 1e3;
@@ -160,7 +160,7 @@ LOCK_SETTINGS Locking::getLockSettings() {
 }
 
 void Locking::lock() {
-	std::array<std::vector<int32_t>, DAQ_MAX_CHANNELS> values = m_dataAcquisition->collectBlockData();
+	std::array<std::vector<int32_t>, DAQ_MAX_CHANNELS> values = (*m_dataAcquisition)->collectBlockData();
 
 	std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
 
