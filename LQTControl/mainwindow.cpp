@@ -269,15 +269,8 @@ void MainWindow::on_actionQuit_triggered() {
 void MainWindow::initDAQ() {
 	// deinitialize DAQ if necessary
 	if (m_dataAcquisition) {
-		delete m_dataAcquisition;
+		m_dataAcquisition->deleteLater();
 		m_dataAcquisition = nullptr;
-	}
-
-	// disconnect all connections to m_dataAcquisition
-	// in case the PS_TYPE is changed during runtime
-	while (!m_daqConnections.empty()) {
-		QWidget::disconnect(m_daqConnections.back());
-		m_daqConnections.pop_back();
 	}
 
 	// initialize correct DAQ type
@@ -293,15 +286,16 @@ void MainWindow::initDAQ() {
 		break;
 	}
 
+	m_acquisitionThread.startWorker(m_dataAcquisition);
+
 	// reestablish m_dataAcquisition connections and store them for
 	// possible disconnection
-	static QMetaObject::Connection connection = QWidget::connect(
+	QMetaObject::Connection connection = QWidget::connect(
 		m_dataAcquisition,
 		SIGNAL(connected(bool)),
 		this,
 		SLOT(daqConnectionChanged(bool))
 	);
-	m_daqConnections.push_back(connection);
 
 	connection = QWidget::connect(
 		m_dataAcquisition,
@@ -309,7 +303,6 @@ void MainWindow::initDAQ() {
 		this,
 		SLOT(showAcqRunning(bool))
 	);
-	m_daqConnections.push_back(connection);
 
 	connection = QWidget::connect(
 		m_dataAcquisition,
@@ -317,7 +310,6 @@ void MainWindow::initDAQ() {
 		this,
 		SLOT(updateLiveView())
 	);
-	m_daqConnections.push_back(connection);
 
 	connection = QWidget::connect(
 		m_dataAcquisition,
@@ -325,10 +317,6 @@ void MainWindow::initDAQ() {
 		this,
 		SLOT(updateAcquisitionParameters(ACQUISITION_PARAMETERS))
 	);
-	m_daqConnections.push_back(connection);
-
-	m_daqConnections.push_back(connection);
-	m_acquisitionThread.startWorker(m_dataAcquisition);
 };
 
 void MainWindow::on_actionAbout_triggered() {

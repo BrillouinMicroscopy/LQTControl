@@ -169,7 +169,6 @@ public slots:
 private:
 	PS_TYPES m_daqType = PS_TYPES::MODEL_PS2000;
 	void initDAQ();
-	std::vector<QMetaObject::Connection> m_daqConnections;
 	QDialog *settingsDialog;
 	bool m_isDAQConnected = false;
 	bool m_isLaserConnected = false;

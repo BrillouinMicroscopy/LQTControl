@@ -32,7 +32,7 @@ typedef struct {
 } CHANNEL_SETTINGS;
 
 typedef struct {
-	int16_t			handle;
+	int16_t			handle = 0;
 	int				model;
 	int				firstRange;
 	int				lastRange;

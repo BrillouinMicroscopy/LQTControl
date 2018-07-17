@@ -141,11 +141,11 @@ void daq_PS2000A::set_defaults(void) {
 void daq_PS2000A::connect_daq() {
 	if (!m_isConnected) {
 		ps2000aOpenUnit(&m_unitOpened.handle, NULL);
-		get_info();
 
-		if (!m_unitOpened.handle) {
+		if (m_unitOpened.handle < 0) {
 			m_isConnected = false;
 		} else {
+			get_info();
 			setAcquisitionParameters();
 			m_isConnected = true;
 		}
