@@ -798,6 +798,7 @@ void MainWindow::laserConnectionChanged(bool connected) {
 	ui->actionConnect_Laser->setEnabled(!connected);
 	ui->actionDisconnect_Laser->setEnabled(connected);
 	ui->LaserTemperatureBox->setEnabled(connected);
+	ui->enableTemperatureControlCheckbox->setEnabled(connected);
 	if (m_isDAQConnected && m_isLaserConnected) {
 		ui->ScanBox->setEnabled(connected);
 		ui->LockingBox->setEnabled(connected);
