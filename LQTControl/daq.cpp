@@ -83,5 +83,5 @@ void daq::init() {
 	// create timers and connect their signals
 	// after moving daq_PS2000 to another thread
 	timer = new QTimer();
-	QWidget::connect(timer, SIGNAL(timeout()), this, SLOT(getBlockData()));
+	QMetaObject::Connection connection = QWidget::connect(timer, SIGNAL(timeout()), this, SLOT(getBlockData()));
 }

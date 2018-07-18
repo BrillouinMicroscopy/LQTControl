@@ -32,43 +32,43 @@ typedef enum class PSTypes {
 
 typedef struct {
 	int coupling = PS_DC;
-	int16_t range = 0;
+	int16_t range{ 0 };
 	bool enabled = false;
-	int16_t values[DAQ_BUFFER_SIZE];
+	int16_t values[DAQ_BUFFER_SIZE]{ 0 };
 } CHANNEL_SETTINGS;
 
 typedef struct {
-	int16_t			handle = 0;
-	int				model;
-	int				firstRange;
-	int				lastRange;
-	int16_t			maxTimebase;
-	int16_t			timebases;
-	int16_t			noOfChannels;
+	int16_t			handle{ 0 };
+	int				model{ 0 };
+	int				firstRange{ 0 };
+	int				lastRange{ 0 };
+	int16_t			maxTimebase{ 0 };
+	int16_t			timebases{ 0 };
+	int16_t			noOfChannels{ 0 };
 	CHANNEL_SETTINGS channelSettings[DAQ_MAX_CHANNELS];
-	int16_t			hasAdvancedTriggering;
-	int16_t			hasFastStreaming;
-	int16_t			hasEts;
-	int16_t			hasSignalGenerator;
-	int16_t			awgBufferSize;
-	int16_t			bufferSize;
+	int16_t			hasAdvancedTriggering{ 0 };
+	int16_t			hasFastStreaming{ 0 };
+	int16_t			hasEts{ 0 };
+	int16_t			hasSignalGenerator{ 0 };
+	int16_t			awgBufferSize{ 0 };
+	int16_t			bufferSize{ 0 };
 } UNIT_MODEL;
 
 typedef struct {
 	int coupling = PS_DC;
-	int16_t range = 0;
+	int16_t range{ 0 };
 	bool enabled = false;
 } DEFAULT_CHANNEL_SETTINGS;
 
 typedef struct {
-	int16_t 	auto_trigger_ms = 0;
-	int32_t 	time_interval;
-	int16_t 	time_units;
-	int16_t 	oversample;
-	uint32_t 	no_of_samples = 1000;
-	int32_t 	max_samples;
-	int32_t 	time_indisposed_ms;
-	int16_t		timebase = 10;
+	int16_t 	auto_trigger_ms{ 0 };
+	int32_t 	time_interval{ 0 };
+	int16_t 	time_units{ 0 };
+	int16_t 	oversample{ 0 };
+	uint32_t 	no_of_samples{ 1000 };
+	int32_t 	max_samples{ 0 };
+	int32_t 	time_indisposed_ms{ 0 };
+	int16_t		timebase{ 10 };
 	DEFAULT_CHANNEL_SETTINGS channelSettings[2] = {
 		{PS_DC, 4, true},
 		{PS_DC, 5, true}
@@ -122,8 +122,8 @@ class daq : public QObject {
 		int16_t mv_to_adc(int16_t mv, int16_t ch);
 		QTimer *timer = nullptr;
 		ACQUISITION_PARAMETERS acquisitionParameters;
-		int16_t m_overflow;
-		bool m_scale_to_mv = 1;
+		int16_t m_overflow = 0;
+		bool m_scale_to_mv = true;
 };
 
 #endif // DAQ_H

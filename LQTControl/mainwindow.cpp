@@ -15,7 +15,7 @@
 #include <QtCharts/QXYLegendMarker>
 #include "version.h"
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(QWidget *parent) noexcept :
     QMainWindow(parent),
     ui(new Ui::MainWindow) {
 
@@ -56,21 +56,21 @@ MainWindow::MainWindow(QWidget *parent) :
 		SLOT(showScanRunning(bool))
 	);
 
-	QWidget::connect(
+	connection = QWidget::connect(
 		m_lockingControl,
 		SIGNAL(s_scanPassAcquired()),
 		this, 
 		SLOT(updateScanView())
 	);
 
-	QWidget::connect(
+	connection = QWidget::connect(
 		m_lockingControl,
 		SIGNAL(locked()),
 		this,
 		SLOT(updateLockView())
 	);
 
-	QWidget::connect(
+	connection = QWidget::connect(
 		m_lockingControl,
 		SIGNAL(lockStateChanged(LOCKSTATE)),
 		this,
@@ -255,7 +255,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_acquisitionThread.startWorker(m_lockingControl);
 	m_acquisitionThread.startWorker(m_laserControl);
 
-	QMetaObject::invokeMethod(m_laserControl, "connect", Qt::AutoConnection);
+	QMetaObject::invokeMethod(m_laserControl, "connect_lqt", Qt::AutoConnection);
 }
 
 MainWindow::~MainWindow() {
@@ -409,20 +409,21 @@ void MainWindow::selectDAQ(int index) {
 
 void MainWindow::connectMarkers() {
 	// Connect all markers to handler
+	QMetaObject::Connection connection;
 	foreach(QtCharts::QLegendMarker* marker, liveViewChart->legend()->markers()) {
 		// Disconnect possible existing connection to avoid multiple connections
 		QWidget::disconnect(marker, SIGNAL(clicked()), this, SLOT(handleMarkerClicked()));
-		QWidget::connect(marker, SIGNAL(clicked()), this, SLOT(handleMarkerClicked()));
+		connection = QWidget::connect(marker, SIGNAL(clicked()), this, SLOT(handleMarkerClicked()));
 	}
 	foreach(QtCharts::QLegendMarker* marker, lockViewChart->legend()->markers()) {
 		// Disconnect possible existing connection to avoid multiple connections
 		QWidget::disconnect(marker, SIGNAL(clicked()), this, SLOT(handleMarkerClicked()));
-		QWidget::connect(marker, SIGNAL(clicked()), this, SLOT(handleMarkerClicked()));
+		connection = QWidget::connect(marker, SIGNAL(clicked()), this, SLOT(handleMarkerClicked()));
 	}
 	foreach(QtCharts::QLegendMarker* marker, scanViewChart->legend()->markers()) {
 		// Disconnect possible existing connection to avoid multiple connections
 		QWidget::disconnect(marker, SIGNAL(clicked()), this, SLOT(handleMarkerClicked()));
-		QWidget::connect(marker, SIGNAL(clicked()), this, SLOT(handleMarkerClicked()));
+		connection = QWidget::connect(marker, SIGNAL(clicked()), this, SLOT(handleMarkerClicked()));
 	}
 }
 
@@ -780,11 +781,11 @@ void MainWindow::daqConnectionChanged(bool connected) {
 }
 
 void MainWindow::on_actionConnect_Laser_triggered() {
-	QMetaObject::invokeMethod(m_laserControl, "connect", Qt::AutoConnection);
+	QMetaObject::invokeMethod(m_laserControl, "connect_lqt", Qt::AutoConnection);
 }
 
 void MainWindow::on_actionDisconnect_Laser_triggered() {
-	QMetaObject::invokeMethod(m_laserControl, "disconnect", Qt::AutoConnection);
+	QMetaObject::invokeMethod(m_laserControl, "disconnect_lqt", Qt::AutoConnection);
 }
 
 void MainWindow::laserConnectionChanged(bool connected) {

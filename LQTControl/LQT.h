@@ -25,7 +25,7 @@ private:
 	void readSettings();
 
 public:
-	LQT();
+	LQT() noexcept;
 	~LQT();
 
 	/*
@@ -69,8 +69,8 @@ public:
 
 public slots:
 	void init();
-	void connect();
-	void disconnect();
+	void connect_lqt();
+	void disconnect_lqt();
 
 	// control temperature feature
 	void enableTemperatureControl(bool enable);

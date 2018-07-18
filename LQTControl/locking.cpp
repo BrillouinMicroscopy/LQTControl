@@ -230,6 +230,6 @@ void Locking::init() {
 	// after moving locking to another thread
 	lockingTimer = new QTimer();
 	scanTimer = new QTimer();
-	QWidget::connect(lockingTimer, SIGNAL(timeout()), this, SLOT(lock()));
-	QWidget::connect(scanTimer, SIGNAL(timeout()), this, SLOT(scan()));
+	QMetaObject::Connection connection = QWidget::connect(lockingTimer, SIGNAL(timeout()), this, SLOT(lock()));
+	connection = QWidget::connect(scanTimer, SIGNAL(timeout()), this, SLOT(scan()));
 }

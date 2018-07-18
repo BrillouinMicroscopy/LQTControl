@@ -20,7 +20,7 @@ class IndicatorWidget : public QWidget {
 	Q_OBJECT
 		Q_PROPERTY(bool on READ isOn WRITE setOn)
 public:
-	IndicatorWidget(const QColor &color = QColor(246, 180, 0), QWidget *parent = 0)
+	IndicatorWidget(const QColor &color = QColor(246, 180, 0), QWidget *parent = 0) noexcept
 		: QWidget(parent), m_color(color), m_on(false) {}
 
 	bool isOn() const {
@@ -62,10 +62,10 @@ private:
 
 typedef struct {
 	bool automatic = true;
-	double xmin;
-	double xmax;
-	double ymin;
-	double ymax;
+	double xmin{ -2.0 };
+	double xmax{ 2.0 };
+	double ymin{ 0 };
+	double ymax{ 1000 };
 } AXIS_RANGE;
 
 typedef struct {
@@ -89,7 +89,7 @@ class MainWindow : public QMainWindow {
 	Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = 0) noexcept;
     ~MainWindow();
 
 private slots:
@@ -169,7 +169,7 @@ public slots:
 private:
 	PS_TYPES m_daqType = PS_TYPES::MODEL_PS2000;
 	void initDAQ();
-	QDialog *settingsDialog;
+	QDialog *settingsDialog = nullptr;
 	bool m_isDAQConnected = false;
 	bool m_isLaserConnected = false;
 

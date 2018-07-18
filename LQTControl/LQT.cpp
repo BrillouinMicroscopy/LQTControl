@@ -1,17 +1,17 @@
 #include "LQT.h"
 #include <windows.h>
 
-LQT::LQT() {}
+LQT::LQT() noexcept {}
 
 LQT::~LQT() {
-	disconnect();
+	disconnect_lqt();
 }
 
 void LQT::init() {
 	m_laserPort = new QSerialPort();
 }
 
-void LQT::connect() {
+void LQT::connect_lqt() {
 	if (!m_isConnected) {
 		m_laserPort->setPortName("COM1");
 		m_laserPort->setBaudRate(QSerialPort::Baud19200);
@@ -23,7 +23,7 @@ void LQT::connect() {
 	emit(connected(m_isConnected));
 }
 
-void LQT::disconnect() {
+void LQT::disconnect_lqt() {
 	if (m_isConnected) {
 		m_laserPort->close();
 	}
@@ -155,10 +155,11 @@ void LQT::setMaxTemperatureForce(double temperature) {
  */
 
 void LQT::setFeature(std::string feature, bool value) {
+	std::string msg;
 	if (value) {
-		receive(feature + "=on");
+		msg = receive(feature + "=on");
 	} else {
-		receive(feature + "=off");
+		msg = receive(feature + "=off");
 	}
 }
 
