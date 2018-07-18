@@ -178,7 +178,7 @@ void Locking::lock() {
 	double error = lockData.transmission.back() - lockSettings.transmissionSetpoint;
 
 	// write data to struct for storage
-
+	double actualTempOffset;
 	if (lockSettings.state == LOCKSTATE::ACTIVE) {
 		double dError = 0;
 		if (lockData.error.size() > 0) {
@@ -194,10 +194,10 @@ void Locking::lock() {
 		}
 
 		// set laser temperature
-		m_laserControl->setTemperatureForce(lockData.currentTempOffset);
+		actualTempOffset = m_laserControl->setTemperatureForce(lockData.currentTempOffset);
+	} else {
+		actualTempOffset = m_laserControl->getTemperature();
 	}
-
-	double actualTempOffset = m_laserControl->getTemperature();
 
 	// write data to struct for storage
 	lockData.time.push_back(now);

@@ -76,8 +76,8 @@ public slots:
 	void enableTemperatureControl(bool enable);
 
 	// force setting the temperature
-	void setTemperatureForce(double temperature);
-	void setMaxTemperatureForce(double temperature);
+	double setTemperatureForce(double temperature);
+	double setMaxTemperatureForce(double temperature);
 
 signals:
 	void connected(bool);

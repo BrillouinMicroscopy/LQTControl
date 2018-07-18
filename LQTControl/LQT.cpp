@@ -57,7 +57,7 @@ std::string LQT::receive(std::string request) {
 		// read response
 		if (m_laserPort->waitForReadyRead(1000)) {
 			QByteArray responseData = m_laserPort->readAll();
-			while (m_laserPort->waitForReadyRead(50))
+			while (m_laserPort->waitForReadyRead(10))
 				responseData += m_laserPort->readAll();
 
 			response = responseData;
@@ -134,20 +134,22 @@ double LQT::getMaxTemperature() {
 
 // The laser sometimes does not accept the temperature setting on the first try.
 // These functions set the temperature until it has the correct value or it fails for the 10th time.
-void LQT::setTemperatureForce(double temperature) {
+double LQT::setTemperatureForce(double temperature) {
 	double setTemp = setTemperature(temperature);
 	gsl::index i{ 0 };
 	while (abs(setTemp - temperature) > 0.001 && i++ < 10) {
 		setTemp = setTemperature(temperature);
 	}
+	return setTemp;
 }
 
-void LQT::setMaxTemperatureForce(double temperature) {
+double LQT::setMaxTemperatureForce(double temperature) {
 	double setTemp = setMaxTemperature(temperature);
 	gsl::index i{ 0 };
 	while (abs(setTemp - temperature) > 0.001  && i++ < 10) {
 		setTemp = setMaxTemperature(temperature);
 	}
+	return setTemp;
 }
 
 /*
