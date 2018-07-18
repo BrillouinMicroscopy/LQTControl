@@ -9,6 +9,7 @@
 #include <chrono>
 #include <ctime>
 
+#include <gsl/gsl>
 #include "ps2000aApi.h"
 #include "daq.h"
 #include "LQT.h"

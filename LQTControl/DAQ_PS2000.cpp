@@ -13,7 +13,7 @@ void daq_PS2000::setAcquisitionParameters() {
 
 	int16_t maxChannels = (2 < m_unitOpened.noOfChannels) ? 2 : m_unitOpened.noOfChannels;
 
-	for (int16_t ch(0); ch < maxChannels; ch++) {
+	for (gsl::index ch{ 0 }; ch < maxChannels; ch++) {
 		m_unitOpened.channelSettings[ch].enabled = acquisitionParameters.channelSettings[ch].enabled;
 		m_unitOpened.channelSettings[ch].coupling = acquisitionParameters.channelSettings[ch].coupling;
 		m_unitOpened.channelSettings[ch].range = acquisitionParameters.channelSettings[ch].range;
@@ -84,8 +84,8 @@ std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq_PS2000::collectBlockDa
 
 	// create vector of voltage values
 	std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values;
-	for (int i(0); i < acquisitionParameters.no_of_samples; i++) {
-		for (int ch(0); ch < m_unitOpened.noOfChannels; ch++) {
+	for (gsl::index i{ 0 }; i < acquisitionParameters.no_of_samples; i++) {
+		for (gsl::index ch{ 0 }; ch < m_unitOpened.noOfChannels; ch++) {
 			if (m_unitOpened.channelSettings[ch].enabled) {
 				values[ch].push_back(adc_to_mv(m_unitOpened.channelSettings[ch].values[i], m_unitOpened.channelSettings[ch].range));
 			}
@@ -98,10 +98,9 @@ std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq_PS2000::collectBlockDa
 * set_defaults - restore default settings
 ****************************************************************************/
 void daq_PS2000::set_defaults(void) {
-	int16_t ch = 0;
 	ps2000_set_ets(m_unitOpened.handle, PS2000_ETS_OFF, 0, 0);
 
-	for (ch = 0; ch < m_unitOpened.noOfChannels; ch++) {
+	for (gsl::index ch{ 0 }; ch < m_unitOpened.noOfChannels; ch++) {
 		ps2000_set_channel(
 			m_unitOpened.handle,
 			ch,
@@ -151,12 +150,12 @@ void daq_PS2000::get_info(void) {
 		"Error Code       ",
 		"Kernel Driver    " 
 	};
-	int16_t	i;
+
 	int8_t	line[80];
 	int32_t	variant;
 
 	if (m_unitOpened.handle) {
-		for (i = 0; i < 6; i++) {
+		for (gsl::index i{ 0 }; i < 6; i++) {
 			ps2000_get_unit_info(m_unitOpened.handle, line, sizeof(line), i);
 
 			if (i == 3) {

@@ -211,7 +211,7 @@ void Locking::lock() {
 
 	// write data to array for plotting
 	m_lockDataPlot[static_cast<int>(lockViewPlotTypes::TRANSMISSION)].clear();
-	for (int j{ 0 }; j < lockData.transmission.size(); j++) {
+	for (gsl::index j{ 0 }; j < lockData.transmission.size(); j++) {
 		m_lockDataPlot[static_cast<int>(lockViewPlotTypes::TRANSMISSION)].append(QPointF(lockData.relTime[j], lockData.transmission[j]));
 	}
 

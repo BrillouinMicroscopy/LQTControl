@@ -61,8 +61,8 @@ void daq::getBlockData() {
 
 	m_liveBuffer->m_freeBuffers->acquire();
 	int16_t **buffer = m_liveBuffer->getWriteBuffer();
-	for (int channel(0); channel < values.size(); channel++) {
-		for (int jj(0); jj < values[channel].size(); jj++) {
+	for (gsl::index channel{ 0 }; channel < values.size(); channel++) {
+		for (gsl::index jj{ 0 }; jj < values[channel].size(); jj++) {
 			buffer[channel][jj] = values[channel][jj];
 		}
 	}

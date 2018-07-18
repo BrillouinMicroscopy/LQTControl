@@ -13,7 +13,7 @@ void daq_PS2000A::setAcquisitionParameters() {
 
 	int16_t maxChannels = (2 < m_unitOpened.noOfChannels) ? 2 : m_unitOpened.noOfChannels;
 
-	for (int16_t ch(0); ch < maxChannels; ch++) {
+	for (gsl::index ch{ 0 }; ch < maxChannels; ch++) {
 		m_unitOpened.channelSettings[ch].enabled = acquisitionParameters.channelSettings[ch].enabled;
 		m_unitOpened.channelSettings[ch].coupling = acquisitionParameters.channelSettings[ch].coupling;
 		m_unitOpened.channelSettings[ch].range = acquisitionParameters.channelSettings[ch].range;
@@ -76,7 +76,7 @@ std::array<std::vector<int32_t>, PS2000A_MAX_CHANNELS> daq_PS2000A::collectBlock
 		ps2000aIsReady(m_unitOpened.handle, &ready);
 	}
 
-	for (int16_t ch(0); ch < 4; ch++) {
+	for (gsl::index ch{ 0 }; ch < 4; ch++) {
 		ps2000aSetDataBuffers(
 			m_unitOpened.handle,
 			(int16_t)ch,
@@ -102,8 +102,8 @@ std::array<std::vector<int32_t>, PS2000A_MAX_CHANNELS> daq_PS2000A::collectBlock
 
 	// create vector of voltage values
 	std::array<std::vector<int32_t>, PS2000A_MAX_CHANNELS> values;
-	for (int32_t i(0); i < static_cast<int32_t>(acquisitionParameters.no_of_samples); i++) {
-		for (int ch(0); ch < m_unitOpened.noOfChannels; ch++) {
+	for (gsl::index i{ 0 }; i < static_cast<int32_t>(acquisitionParameters.no_of_samples); i++) {
+		for (gsl::index ch{ 0 }; ch < m_unitOpened.noOfChannels; ch++) {
 			if (m_unitOpened.channelSettings[ch].enabled) {
 				values[ch].push_back(adc_to_mv(buffers[ch * 2][i], m_unitOpened.channelSettings[ch].range));
 			}
@@ -116,7 +116,6 @@ std::array<std::vector<int32_t>, PS2000A_MAX_CHANNELS> daq_PS2000A::collectBlock
 * set_defaults - restore default settings
 ****************************************************************************/
 void daq_PS2000A::set_defaults(void) {
-	int16_t ch = 0;
 
 	ps2000aSetEts(
 		m_unitOpened.handle,
@@ -126,7 +125,7 @@ void daq_PS2000A::set_defaults(void) {
 		NULL
 	);
 
-	for (ch = 0; ch < m_unitOpened.noOfChannels; ch++) {
+	for (gsl::index ch{ 0 }; ch < m_unitOpened.noOfChannels; ch++) {
 		ps2000aSetChannel(
 			m_unitOpened.handle,
 			PS2000A_CHANNEL(ch),

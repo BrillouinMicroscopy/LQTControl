@@ -3,6 +3,7 @@
 
 #include <QSerialPort>
 #include "fmt/format.h"
+#include <gsl/gsl>
 
 typedef struct {
 	double temperature = 0;

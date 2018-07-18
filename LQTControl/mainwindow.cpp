@@ -372,7 +372,7 @@ void MainWindow::initSettingsDialog() {
 
 	QComboBox *dropdown = new QComboBox();
 	layout->addWidget(dropdown);
-	int i = 0;
+	gsl::index i{ 0 };
 	for (auto type : m_dataAcquisition->PS_NAMES) {
 		dropdown->insertItem(i, QString::fromStdString(type));
 		i++;
@@ -594,14 +594,14 @@ void MainWindow::updateLiveView() {
 		int16_t **buffer = m_dataAcquisition->m_liveBuffer->getReadBuffer();
 
 		std::array<QVector<QPointF>, PS2000_MAX_CHANNELS> data;
-		for (int channel(0); channel < 4; channel++) {
+		for (gsl::index channel{ 0 }; channel < 4; channel++) {
 			data[channel].resize(1000);
-			for (int jj(0); jj < 1000; jj++) {
+			for (gsl::index jj{ 0 }; jj < 1000; jj++) {
 				data[channel][jj] = QPointF(jj, buffer[channel][jj] / static_cast<double>(1e3));
 			}
 		}
 
-		int channel = 0;
+		gsl::index channel{ 0 };
 		foreach(QtCharts::QLineSeries* series, liveViewPlots) {
 			if (series->isVisible()) {
 				series->replace(data[channel]);
@@ -648,7 +648,7 @@ void MainWindow::updateScanView() {
 void MainWindow::updateLockView() {
 	if (m_selectedView == VIEWS::LOCK) {
 		std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> data = m_lockingControl->m_lockDataPlot;
-		int channel = 0;
+		gsl::index channel{ 0 };
 		foreach(QtCharts::QLineSeries* series, lockViewPlots) {
 			if (series->isVisible()) {
 				series->replace(data[channel]);

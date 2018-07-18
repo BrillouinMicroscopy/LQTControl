@@ -136,7 +136,7 @@ double LQT::getMaxTemperature() {
 // These functions set the temperature until it has the correct value or it fails for the 10th time.
 void LQT::setTemperatureForce(double temperature) {
 	double setTemp = setTemperature(temperature);
-	int i{ 0 };
+	gsl::index i{ 0 };
 	while (abs(setTemp - temperature) > 0.001 && i++ < 10) {
 		setTemp = setTemperature(temperature);
 	}
@@ -144,7 +144,7 @@ void LQT::setTemperatureForce(double temperature) {
 
 void LQT::setMaxTemperatureForce(double temperature) {
 	double setTemp = setMaxTemperature(temperature);
-	int i{ 0 };
+	gsl::index i{ 0 };
 	while (abs(setTemp - temperature) > 0.001  && i++ < 10) {
 		setTemp = setMaxTemperature(temperature);
 	}
