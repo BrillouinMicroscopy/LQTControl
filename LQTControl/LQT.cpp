@@ -99,7 +99,7 @@ std::string LQT::stripCRLF(std::string msg) {
 double LQT::setTemperature(double temperature) {
 	std::string temp = receive(fmt::format("utempoffset={:06.3f}", temperature));
 	if (temp.size() == 0) {
-		return NAN;
+		return nan("1");
 	} else {
 		return stod(temp);
 	}
@@ -108,7 +108,7 @@ double LQT::setTemperature(double temperature) {
 double LQT::getTemperature() {
 	std::string temp = receive("utempoffset?");
 	if (temp.size() == 0) {
-		return NAN;
+		return nan("1");
 	} else {
 		return stod(temp);
 	}
@@ -117,7 +117,7 @@ double LQT::getTemperature() {
 double LQT::setMaxTemperature(double temperature) {
 	std::string temp =  receive(fmt::format("maxutempoffset={:06.3f}", temperature));
 	if (temp.size() == 0) {
-		return NAN;
+		return nan("1");
 	} else {
 		return stod(temp);
 	}
@@ -126,7 +126,7 @@ double LQT::setMaxTemperature(double temperature) {
 double LQT::getMaxTemperature() {
 	std::string temp = receive("maxutempoffset?");
 	if (temp.size() == 0) {
-		return NAN;
+		return nan("1");
 	} else {
 		return stod(temp);
 	}
