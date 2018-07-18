@@ -684,6 +684,8 @@ void MainWindow::updateLaserSettings(LQT_SETTINGS settings) {
 	ui->temperatureOffset->setValue(settings.temperature);
 	if (!settings.lock && !settings.lockEnabled && !settings.modEnabled) {
 		ui->enableTemperatureControlCheckbox->setChecked(true);
+	} else {
+		ui->enableTemperatureControlCheckbox->setChecked(false);
 	}
 }
 
