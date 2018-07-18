@@ -19,15 +19,20 @@
 
 #define DAQ_MAX_CHANNELS 4
 
+typedef enum enPSCoupling {
+	PS_AC,
+	PS_DC
+} PS_COUPLING;
+
 typedef enum class PSTypes {
 	MODEL_PS2000 = 0,
 	MODEL_PS2000A = 1
 } PS_TYPES;
 
 typedef struct {
-	int16_t DCcoupled = 0;
+	int coupling = PS_DC;
 	int16_t range = 0;
-	int16_t enabled = 0;
+	bool enabled = false;
 	int16_t values[DAQ_BUFFER_SIZE];
 } CHANNEL_SETTINGS;
 
@@ -49,9 +54,9 @@ typedef struct {
 } UNIT_MODEL;
 
 typedef struct {
-	int16_t DCcoupled = 0;
+	int coupling = PS_DC;
 	int16_t range = 0;
-	int16_t enabled = 0;
+	bool enabled = false;
 } DEFAULT_CHANNEL_SETTINGS;
 
 typedef struct {
@@ -64,8 +69,8 @@ typedef struct {
 	int32_t 	time_indisposed_ms;
 	int16_t		timebase = 10;
 	DEFAULT_CHANNEL_SETTINGS channelSettings[2] = {
-		{0, 4, true},
-		{0, 5, true}
+		{PS_DC, 4, true},
+		{PS_DC, 5, true}
 	};
 } ACQUISITION_PARAMETERS;
 
@@ -79,7 +84,7 @@ class daq : public QObject {
 		virtual std::array<std::vector<int32_t>, DAQ_MAX_CHANNELS> collectBlockData() = 0;
 
 		void setSampleRate(int index);
-		void setCoupling(int index, int ch);
+		void setCoupling(int coupling, int ch);
 		void setRange(int index, int ch);
 		void setNumberSamples(int32_t no_of_samples);
 

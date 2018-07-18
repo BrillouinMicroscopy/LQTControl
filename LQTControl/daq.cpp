@@ -35,9 +35,9 @@ void daq::setNumberSamples(int32_t no_of_samples) {
 	setAcquisitionParameters();
 }
 
-void daq::setCoupling(int index, int ch) {
-	acquisitionParameters.channelSettings[ch].DCcoupled = index;
-	m_unitOpened.channelSettings[ch].DCcoupled = (bool)index;
+void daq::setCoupling(int coupling, int ch) {
+	acquisitionParameters.channelSettings[ch].coupling = coupling;
+	m_unitOpened.channelSettings[ch].coupling = coupling;
 	set_defaults();
 }
 

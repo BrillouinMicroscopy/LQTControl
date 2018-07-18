@@ -15,7 +15,7 @@ void daq_PS2000::setAcquisitionParameters() {
 
 	for (int16_t ch(0); ch < maxChannels; ch++) {
 		m_unitOpened.channelSettings[ch].enabled = acquisitionParameters.channelSettings[ch].enabled;
-		m_unitOpened.channelSettings[ch].DCcoupled = acquisitionParameters.channelSettings[ch].DCcoupled;
+		m_unitOpened.channelSettings[ch].coupling = acquisitionParameters.channelSettings[ch].coupling;
 		m_unitOpened.channelSettings[ch].range = acquisitionParameters.channelSettings[ch].range;
 	}
 	
@@ -102,10 +102,11 @@ void daq_PS2000::set_defaults(void) {
 	ps2000_set_ets(m_unitOpened.handle, PS2000_ETS_OFF, 0, 0);
 
 	for (ch = 0; ch < m_unitOpened.noOfChannels; ch++) {
-		ps2000_set_channel(m_unitOpened.handle,
+		ps2000_set_channel(
+			m_unitOpened.handle,
 			ch,
-			m_unitOpened.channelSettings[ch].enabled,
-			m_unitOpened.channelSettings[ch].DCcoupled,
+			(int16_t)m_unitOpened.channelSettings[ch].enabled,
+			(int16_t)m_unitOpened.channelSettings[ch].coupling,
 			m_unitOpened.channelSettings[ch].range
 		);
 	}
@@ -289,17 +290,17 @@ void daq_PS2000::get_info(void) {
 				printf("Unit not supported");
 		}
 
-		m_unitOpened.channelSettings[PS2000_CHANNEL_A].enabled = 1;
-		m_unitOpened.channelSettings[PS2000_CHANNEL_A].DCcoupled = 1;
+		m_unitOpened.channelSettings[PS2000_CHANNEL_A].enabled = true;
+		m_unitOpened.channelSettings[PS2000_CHANNEL_A].coupling = PS_DC;
 		m_unitOpened.channelSettings[PS2000_CHANNEL_A].range = PS2000_5V;
 
 		if (m_unitOpened.noOfChannels == DUAL_SCOPE) {
-			m_unitOpened.channelSettings[PS2000_CHANNEL_B].enabled = 1;
+			m_unitOpened.channelSettings[PS2000_CHANNEL_B].enabled = true;
 		} else {
-			m_unitOpened.channelSettings[PS2000_CHANNEL_B].enabled = 0;
+			m_unitOpened.channelSettings[PS2000_CHANNEL_B].enabled = false;
 		}
 
-		m_unitOpened.channelSettings[PS2000_CHANNEL_B].DCcoupled = 1;
+		m_unitOpened.channelSettings[PS2000_CHANNEL_B].coupling = PS_DC;
 		m_unitOpened.channelSettings[PS2000_CHANNEL_B].range = PS2000_5V;
 
 		set_defaults();
