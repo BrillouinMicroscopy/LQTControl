@@ -10,7 +10,6 @@
 #include <ctime>
 
 #include <gsl/gsl>
-#include "LQT.h"
 #include "circularBuffer.h"
 #include "generalmath.h"
 
