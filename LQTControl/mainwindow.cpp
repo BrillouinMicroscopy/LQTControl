@@ -320,8 +320,33 @@ void MainWindow::initDAQ() {
 		SLOT(updateAcquisitionParameters(ACQUISITION_PARAMETERS))
 	);
 
+	updateSamplingRates();
+
 	QMetaObject::invokeMethod(m_dataAcquisition, "connect_daq", Qt::AutoConnection);
 };
+
+void MainWindow::updateSamplingRates() {
+	std::vector<double> samplingRates = m_dataAcquisition->getSamplingRates();
+	ui->sampleRate->clear();
+	std::for_each(samplingRates.begin(), samplingRates.end(),
+		[this](double samplingRate) {
+			std::string string = getSamplingRateString(samplingRate);
+			ui->sampleRate->addItem(QString::fromStdString(string));
+		}
+	);
+	ACQUISITION_PARAMETERS acquisitionParameters = m_dataAcquisition->getAcquisitionParameters();
+	ui->sampleRate->setCurrentIndex(acquisitionParameters.timebaseIndex);
+}
+
+std::string MainWindow::getSamplingRateString(double samplingRate) {
+	if (samplingRate > 1e6) {
+		return std::to_string((int)(samplingRate / 1e6)) + " MS/s";
+	} else if (samplingRate > 1e3) {
+		return std::to_string((int)(samplingRate / 1e3)) + " kS/s";
+	} else {
+		return std::to_string((int)(samplingRate)) + " S/s";
+	}
+}
 
 void MainWindow::on_actionAbout_triggered() {
 	QString str = QString("LQTControl Version %1.%2.%3 <br> Build from commit: <a href='%4'>%5</a><br>Author: <a href='mailto:%6?subject=LQTControl'>%7</a><br>Date: %8")

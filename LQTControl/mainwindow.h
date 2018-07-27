@@ -169,6 +169,8 @@ public slots:
 private:
 	PS_TYPES m_daqType = PS_TYPES::MODEL_PS2000;
 	void initDAQ();
+	void updateSamplingRates();
+	std::string getSamplingRateString(double samplingRate);
 	QDialog *settingsDialog = nullptr;
 	bool m_isDAQConnected = false;
 	bool m_isLaserConnected = false;
