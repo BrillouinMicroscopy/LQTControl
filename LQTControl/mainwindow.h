@@ -154,7 +154,8 @@ private slots:
 	void on_actionAbout_triggered();
 
 	void on_actionSettings_triggered();
-	void closeSettings();
+	void saveSettings();
+	void cancelSettings();
 	void initSettingsDialog();
 
 	void selectDAQ(int index);
@@ -168,7 +169,10 @@ public slots:
 
 private:
 	PS_TYPES m_daqType = PS_TYPES::MODEL_PS2000;
+	PS_TYPES m_daqTypeTemporary = m_daqType;
 	void initDAQ();
+	QComboBox *m_daqDropdown;
+
 	void updateSamplingRates();
 	std::string getSamplingRateString(double samplingRate);
 	QDialog *settingsDialog = nullptr;
