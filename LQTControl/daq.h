@@ -54,7 +54,7 @@ typedef struct {
 } UNIT_MODEL;
 
 typedef struct {
-	int coupling = PS_DC;
+	int coupling = PS_AC;
 	int16_t range{ 0 };
 	bool enabled = false;
 } DEFAULT_CHANNEL_SETTINGS;
@@ -67,10 +67,11 @@ typedef struct {
 	uint32_t 	no_of_samples{ 1000 };
 	int32_t 	max_samples{ 0 };
 	int32_t 	time_indisposed_ms{ 0 };
-	int16_t		timebase{ 10 };
+	int16_t		timebase{ 0 };
+	int			timebaseIndex{ 0 };
 	DEFAULT_CHANNEL_SETTINGS channelSettings[2] = {
-		{PS_DC, 4, true},
-		{PS_DC, 5, true}
+		{PS_AC, 4, true},
+		{PS_AC, 5, true}
 	};
 } ACQUISITION_PARAMETERS;
 
@@ -79,20 +80,24 @@ class daq : public QObject {
 
 	public:
 		explicit daq(QObject *parent);
-		explicit daq(QObject *parent, std::vector<int32_t> ranges);
+		explicit daq(QObject *parent, std::vector<int32_t> ranges, std::vector<int> timebases, double maxSamplingRate);
 		virtual void setAcquisitionParameters() = 0;
+		ACQUISITION_PARAMETERS getAcquisitionParameters();
 		virtual std::array<std::vector<int32_t>, DAQ_MAX_CHANNELS> collectBlockData() = 0;
 
 		void setSampleRate(int index);
 		void setCoupling(int coupling, int ch);
 		void setRange(int index, int ch);
 		void setNumberSamples(int32_t no_of_samples);
+		virtual void setOutputVoltage(double voltage) = 0;
 
 		CircularBuffer<int16_t> *m_liveBuffer = new CircularBuffer<int16_t>(4, DAQ_MAX_CHANNELS, 8000);
 
 		std::vector<int32_t> m_input_ranges;
 
 		std::vector<std::string> PS_NAMES = { "PS2000", "PS2000A" };
+
+		std::vector<double> getSamplingRates();
 
 	public slots:
 		virtual void connect_daq() = 0;
@@ -120,9 +125,13 @@ class daq : public QObject {
 		int32_t adc_to_mv(int32_t raw, int32_t ch);
 		int16_t mv_to_adc(int16_t mv, int16_t ch);
 		QTimer *timer = nullptr;
-		ACQUISITION_PARAMETERS acquisitionParameters;
+		ACQUISITION_PARAMETERS m_acquisitionParameters;
 		int16_t m_overflow = 0;
 		bool m_scale_to_mv = true;
+
+		double m_maxSamplingRate{ 0 };
+		std::vector<int> m_availableTimebases;
+		std::vector<double> m_availableSamplingRates;
 };
 
 #endif // DAQ_H

@@ -9,8 +9,8 @@ daq::daq(QObject *parent) :
 	QObject(parent) {
 }
 
-daq::daq(QObject *parent, std::vector<int32_t> ranges) :
-	QObject(parent), m_input_ranges(ranges) {
+daq::daq(QObject *parent, std::vector<int32_t> ranges, std::vector<int> timebases, double maxSamplingRate) :
+	QObject(parent), m_input_ranges(ranges), m_availableTimebases(timebases), m_maxSamplingRate(maxSamplingRate) {
 }
 
 void daq::startStopAcquisition() {
@@ -26,31 +26,36 @@ void daq::startStopAcquisition() {
 }
 
 void daq::setSampleRate(int index) {
-	acquisitionParameters.timebase = index;
+	m_acquisitionParameters.timebaseIndex = index;
+	m_acquisitionParameters.timebase = m_availableTimebases[index];
 	setAcquisitionParameters();
 }
 
 void daq::setNumberSamples(int32_t no_of_samples) {
-	acquisitionParameters.no_of_samples = no_of_samples;
+	m_acquisitionParameters.no_of_samples = no_of_samples;
 	setAcquisitionParameters();
 }
 
 void daq::setCoupling(int coupling, int ch) {
-	acquisitionParameters.channelSettings[ch].coupling = coupling;
+	m_acquisitionParameters.channelSettings[ch].coupling = coupling;
 	m_unitOpened.channelSettings[ch].coupling = coupling;
 	set_defaults();
 }
 
+ACQUISITION_PARAMETERS daq::getAcquisitionParameters() {
+	return m_acquisitionParameters;
+}
+
 void daq::setRange(int index, int ch) {
 	if (index < 9) {
-		acquisitionParameters.channelSettings[ch].enabled = true;
+		m_acquisitionParameters.channelSettings[ch].enabled = true;
 		m_unitOpened.channelSettings[ch].enabled = true;
-		acquisitionParameters.channelSettings[ch].range = index + 2;
+		m_acquisitionParameters.channelSettings[ch].range = index + 2;
 		m_unitOpened.channelSettings[ch].range = index + 2;
 	} else if (index == 9) {
 		// set auto range
 	} else {
-		acquisitionParameters.channelSettings[ch].enabled = false;
+		m_acquisitionParameters.channelSettings[ch].enabled = false;
 		m_unitOpened.channelSettings[ch].enabled = false;
 	}
 	set_defaults();
@@ -77,6 +82,10 @@ int32_t daq::adc_to_mv(int32_t raw, int32_t ch) {
 
 int16_t daq::mv_to_adc(int16_t mv, int16_t ch) {
 	return ((mv * 32767) / m_input_ranges[ch]);
+}
+
+std::vector<double> daq::getSamplingRates() {
+	return m_availableSamplingRates;
 }
 
 void daq::init() {

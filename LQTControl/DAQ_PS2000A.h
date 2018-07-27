@@ -12,7 +12,6 @@
 #include <gsl/gsl>
 #include "ps2000aApi.h"
 #include "daq.h"
-#include "LQT.h"
 #include "circularBuffer.h"
 #include "generalmath.h"
 
@@ -42,6 +41,7 @@ class daq_PS2000A : public daq {
 		~daq_PS2000A();
 		void setAcquisitionParameters();
 		std::array<std::vector<int32_t>, DAQ_MAX_CHANNELS> collectBlockData();
+		void setOutputVoltage(double voltage);
 
 	public slots:
 		void connect_daq();
@@ -51,7 +51,9 @@ class daq_PS2000A : public daq {
 		void set_defaults(void);
 		void get_info(void);
 
-		int16_t buffers[PS2000A_MAX_CHANNEL_BUFFERS][DAQ_BUFFER_SIZE * sizeof(int16_t)];
+		int m_defaultTimebaseIndex = 12;
+
+		int16_t buffers[PS2000A_MAX_CHANNEL_BUFFERS][DAQ_BUFFER_SIZE * sizeof(int16_t)]{ 0 };
 };
 
 #endif // DAQ_PS2000A_H

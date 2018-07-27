@@ -3,7 +3,22 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMainWindow>
 
-daq_PS2000::daq_PS2000(QObject *parent) : daq(parent, { 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000 }) {}
+daq_PS2000::daq_PS2000(QObject *parent) :
+	daq(parent,
+		{ 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000 },
+		{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 },
+		200e6 // this is only valid for the 2205, needs to be changed, when an other model is used
+	) {
+	m_acquisitionParameters.timebaseIndex = m_defaultTimebaseIndex;
+	m_acquisitionParameters.timebase = m_availableTimebases[m_defaultTimebaseIndex];
+	// calculate sampling rates
+	m_availableSamplingRates.resize(m_availableTimebases.size());
+	std::transform(m_availableTimebases.begin(), m_availableTimebases.end(), m_availableSamplingRates.begin(),
+		[this](int timebase) {
+			return this->m_maxSamplingRate / pow(2, timebase);
+		}
+	);
+}
 
 daq_PS2000::~daq_PS2000() {
 	disconnect_daq();
@@ -14,34 +29,34 @@ void daq_PS2000::setAcquisitionParameters() {
 	int16_t maxChannels = (2 < m_unitOpened.noOfChannels) ? 2 : m_unitOpened.noOfChannels;
 
 	for (gsl::index ch{ 0 }; ch < maxChannels; ch++) {
-		m_unitOpened.channelSettings[ch].enabled = acquisitionParameters.channelSettings[ch].enabled;
-		m_unitOpened.channelSettings[ch].coupling = acquisitionParameters.channelSettings[ch].coupling;
-		m_unitOpened.channelSettings[ch].range = acquisitionParameters.channelSettings[ch].range;
+		m_unitOpened.channelSettings[ch].enabled = m_acquisitionParameters.channelSettings[ch].enabled;
+		m_unitOpened.channelSettings[ch].coupling = m_acquisitionParameters.channelSettings[ch].coupling;
+		m_unitOpened.channelSettings[ch].range = m_acquisitionParameters.channelSettings[ch].range;
 	}
 	
 	// initialize the ADC
 	set_defaults();
 
 	/* Trigger disabled */
-	ps2000_set_trigger(m_unitOpened.handle, PS2000_NONE, 0, PS2000_RISING, 0, acquisitionParameters.auto_trigger_ms);
+	ps2000_set_trigger(m_unitOpened.handle, PS2000_NONE, 0, PS2000_RISING, 0, m_acquisitionParameters.auto_trigger_ms);
 
 	/*  find the maximum number of samples, the time interval (in time_units),
 	*		 the most suitable time units, and the maximum oversample at the current timebase
 	*/
-	acquisitionParameters.oversample = 1;
+	m_acquisitionParameters.oversample = 1;
 	while (!ps2000_get_timebase(
 		m_unitOpened.handle,
-		acquisitionParameters.timebase,
-		acquisitionParameters.no_of_samples,
-		&acquisitionParameters.time_interval,
-		&acquisitionParameters.time_units,
-		acquisitionParameters.oversample,
-		&acquisitionParameters.max_samples)
+		m_acquisitionParameters.timebase,
+		m_acquisitionParameters.no_of_samples,
+		&m_acquisitionParameters.time_interval,
+		&m_acquisitionParameters.time_units,
+		m_acquisitionParameters.oversample,
+		&m_acquisitionParameters.max_samples)
 		) {
-		acquisitionParameters.timebase++;
+		m_acquisitionParameters.timebase++;
 	};
 
-	emit acquisitionParametersChanged(acquisitionParameters);
+	emit acquisitionParametersChanged(m_acquisitionParameters);
 }
 
 std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq_PS2000::collectBlockData() {
@@ -52,10 +67,10 @@ std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq_PS2000::collectBlockDa
 	*  wait for completion */
 	ps2000_run_block(
 		m_unitOpened.handle,
-		acquisitionParameters.no_of_samples,
-		acquisitionParameters.timebase,
-		acquisitionParameters.oversample,
-		&acquisitionParameters.time_indisposed_ms
+		m_acquisitionParameters.no_of_samples,
+		m_acquisitionParameters.timebase,
+		m_acquisitionParameters.oversample,
+		&m_acquisitionParameters.time_indisposed_ms
 	);
 
 	while (!ps2000_ready(m_unitOpened.handle)) {
@@ -77,14 +92,14 @@ std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq_PS2000::collectBlockDa
 		NULL,
 		NULL,
 		&m_overflow,
-		acquisitionParameters.time_units,
-		acquisitionParameters.no_of_samples
+		m_acquisitionParameters.time_units,
+		m_acquisitionParameters.no_of_samples
 	);
 
 
 	// create vector of voltage values
 	std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> values;
-	for (gsl::index i{ 0 }; i < acquisitionParameters.no_of_samples; i++) {
+	for (gsl::index i{ 0 }; i < m_acquisitionParameters.no_of_samples; i++) {
 		for (gsl::index ch{ 0 }; ch < m_unitOpened.noOfChannels; ch++) {
 			if (m_unitOpened.channelSettings[ch].enabled) {
 				values[ch].push_back(adc_to_mv(m_unitOpened.channelSettings[ch].values[i], m_unitOpened.channelSettings[ch].range));
@@ -92,6 +107,21 @@ std::array<std::vector<int32_t>, PS2000_MAX_CHANNELS> daq_PS2000::collectBlockDa
 		}
 	}
 	return values;
+}
+
+void daq_PS2000::setOutputVoltage(double voltage) {
+	ps2000_set_sig_gen_built_in(
+		m_unitOpened.handle,			// handle of the oscilloscope
+		voltage * 1e6,					// offsetVoltage in microvolt
+		0,								// peak to peak voltage in microvolt
+		(PS2000_WAVE_TYPE)5,			// type of waveform
+		(float)0,						// startFrequency in Hertz
+		(float)0,						// stopFrequency in Hertz
+		0,								// increment
+		0,								// dwellTime, time in seconds between frequency changes in sweep mode
+		PS2000_UPDOWN,					// sweepType
+		0								// sweeps, number of times to sweep the frequency
+	);
 }
 
 /****************************************************************************
