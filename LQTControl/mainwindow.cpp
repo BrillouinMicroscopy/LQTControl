@@ -259,6 +259,10 @@ MainWindow::MainWindow(QWidget *parent) noexcept :
 }
 
 MainWindow::~MainWindow() {
+	if (m_dataAcquisition) {
+		m_dataAcquisition->deleteLater();
+		m_dataAcquisition = nullptr;
+	}
 	m_acquisitionThread.exit();
 	m_acquisitionThread.wait();
     delete ui;
