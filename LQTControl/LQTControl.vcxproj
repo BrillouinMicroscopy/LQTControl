@@ -98,6 +98,7 @@
     </ResourceCompile>
     <PostBuildEvent>
       <Command>copy "$(ProgramW6432)\Pico Technology\SDK\lib\ps2000.DLL" "$(TargetDir)"
+copy "$(ProgramW6432)\Pico Technology\SDK\lib\ps2000a.DLL" "$(TargetDir)"
 copy "$(QTDIR)\bin\Qt5Charts.dll" "$(TargetDir)"
 copy "$(QTDIR)\bin\Qt5Core.dll" "$(TargetDir)"
 copy "$(QTDIR)\bin\Qt5Gui.dll" "$(TargetDir)"
@@ -154,6 +155,7 @@ copy "$(ProjectDir)assets\loader.gif" "$(TargetDir)"
     </ResourceCompile>
     <PostBuildEvent>
       <Command>copy "$(ProgramW6432)\Pico Technology\SDK\lib\ps2000.DLL" "$(TargetDir)"
+copy "$(ProgramW6432)\Pico Technology\SDK\lib\ps2000a.DLL" "$(TargetDir)"
 copy "$(QTDIR)\bin\Qt5Chartsd.dll" "$(TargetDir)"
 copy "$(QTDIR)\bin\Qt5Cored.dll" "$(TargetDir)"
 copy "$(QTDIR)\bin\Qt5Guid.dll" "$(TargetDir)"
