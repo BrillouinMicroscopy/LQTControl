@@ -24,8 +24,8 @@ private:
 	const int m_bufferNumber;
 	const int m_bufferLength;
 	const int m_bufferWidth;
-	unsigned int m_writeCount = 0;
-	unsigned int m_readCount = 0;
+	unsigned int m_writeCount{ 0 };
+	unsigned int m_readCount{ 0 };
 };
 
 template<class T>
@@ -55,7 +55,7 @@ inline int CircularBuffer<T>::checkBufferNumber(int bufferNumber) {
 
 template<class T>
 inline CircularBuffer<T>::~CircularBuffer() {
-	for (gsl::index i = 0; i < m_bufferNumber; i++) {
+	for (gsl::index i{ 0 }; i < m_bufferNumber; i++) {
 		delete[] m_buffers[i];
 	}
 	delete[] m_buffers;

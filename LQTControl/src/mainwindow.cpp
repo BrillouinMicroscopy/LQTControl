@@ -256,7 +256,7 @@ MainWindow::MainWindow(QWidget *parent) noexcept :
 	m_acquisitionThread.startWorker(m_lockingControl);
 	m_acquisitionThread.startWorker(m_laserControl);
 
-	QMetaObject::invokeMethod(m_laserControl, &LQT::connect_lqt, Qt::AutoConnection);
+	QMetaObject::invokeMethod(m_laserControl, &LQT::connect, Qt::AutoConnection);
 }
 
 MainWindow::~MainWindow() {
@@ -327,8 +327,8 @@ void MainWindow::initDAQ() {
 
 	updateSamplingRates();
 
-	QMetaObject::invokeMethod(m_dataAcquisition, &daq::connect_daq, Qt::AutoConnection);
-};
+	QMetaObject::invokeMethod(m_dataAcquisition, &daq::connect, Qt::AutoConnection);
+}
 
 void MainWindow::updateSamplingRates() {
 	std::vector<double> samplingRates = m_dataAcquisition->getSamplingRates();
@@ -842,11 +842,11 @@ void MainWindow::on_floatingViewCheckBox_clicked(const bool checked) {
 }
 
 void MainWindow::on_actionConnect_DAQ_triggered() {
-	QMetaObject::invokeMethod(m_dataAcquisition, &daq::connect_daq, Qt::AutoConnection);
+	QMetaObject::invokeMethod(m_dataAcquisition, &daq::connect, Qt::AutoConnection);
 }
 
 void MainWindow::on_actionDisconnect_DAQ_triggered() {
-	QMetaObject::invokeMethod(m_dataAcquisition, &daq::disconnect_daq, Qt::AutoConnection);
+	QMetaObject::invokeMethod(m_dataAcquisition, &daq::disconnect, Qt::AutoConnection);
 }
 
 void MainWindow::daqConnectionChanged(bool connected) {
@@ -866,11 +866,11 @@ void MainWindow::daqConnectionChanged(bool connected) {
 }
 
 void MainWindow::on_actionConnect_Laser_triggered() {
-	QMetaObject::invokeMethod(m_laserControl, &LQT::connect_lqt, Qt::AutoConnection);
+	QMetaObject::invokeMethod(m_laserControl, &LQT::connect, Qt::AutoConnection);
 }
 
 void MainWindow::on_actionDisconnect_Laser_triggered() {
-	QMetaObject::invokeMethod(m_laserControl, &LQT::disconnect_lqt, Qt::AutoConnection);
+	QMetaObject::invokeMethod(m_laserControl, &LQT::disconnect, Qt::AutoConnection);
 }
 
 void MainWindow::laserConnectionChanged(bool connected) {
