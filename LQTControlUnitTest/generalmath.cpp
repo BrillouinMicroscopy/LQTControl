@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "..\LQTControl\generalmath.h"
+#include "..\LQTControl\src\generalmath.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

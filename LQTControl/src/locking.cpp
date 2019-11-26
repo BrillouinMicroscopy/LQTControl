@@ -211,7 +211,7 @@ void Locking::lock() {
 
 	// write data to array for plotting
 	m_lockDataPlot[static_cast<int>(lockViewPlotTypes::TRANSMISSION)].clear();
-	for (gsl::index j{ 0 }; j < lockData.transmission.size(); j++) {
+	for (gsl::index j{ 0 }; j < (gsl::index)lockData.transmission.size(); j++) {
 		m_lockDataPlot[static_cast<int>(lockViewPlotTypes::TRANSMISSION)].append(QPointF(lockData.relTime[j], lockData.transmission[j]));
 	}
 
@@ -230,6 +230,16 @@ void Locking::init() {
 	// after moving locking to another thread
 	lockingTimer = new QTimer();
 	scanTimer = new QTimer();
-	QMetaObject::Connection connection = QWidget::connect(lockingTimer, SIGNAL(timeout()), this, SLOT(lock()));
-	connection = QWidget::connect(scanTimer, SIGNAL(timeout()), this, SLOT(scan()));
+	QMetaObject::Connection connection = QWidget::connect(
+		lockingTimer,
+		&QTimer::timeout,
+		this,
+		&Locking::lock
+	);
+	connection = QWidget::connect(
+		scanTimer,
+		&QTimer::timeout,
+		this,
+		&Locking::scan
+	);
 }

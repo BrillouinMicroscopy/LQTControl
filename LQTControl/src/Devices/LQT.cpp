@@ -4,14 +4,14 @@
 LQT::LQT() noexcept {}
 
 LQT::~LQT() {
-	disconnect_lqt();
+	disconnect();
 }
 
 void LQT::init() {
 	m_laserPort = new QSerialPort();
 }
 
-void LQT::connect_lqt() {
+void LQT::connect() {
 	if (!m_isConnected) {
 		m_laserPort->setPortName("COM1");
 		m_laserPort->setBaudRate(QSerialPort::Baud19200);
@@ -23,7 +23,7 @@ void LQT::connect_lqt() {
 	emit(connected(m_isConnected));
 }
 
-void LQT::disconnect_lqt() {
+void LQT::disconnect() {
 	if (m_isConnected) {
 		m_laserPort->close();
 	}
@@ -52,7 +52,7 @@ std::string LQT::receive(std::string request) {
 	request = request + m_terminator;
 	writeToDevice(request.c_str());
 
-	std::string response = "";
+	std::string response{ "" };
 	if (m_laserPort->waitForBytesWritten(1000)) {
 		// read response
 		if (m_laserPort->waitForReadyRead(1000)) {

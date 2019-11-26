@@ -9,22 +9,22 @@
 #include <chrono>
 #include <ctime>
 
-#include "daq.h"
-#include "LQT.h"
+#include "Devices\daq.h"
+#include "Devices\LQT.h"
 #include "generalmath.h"
 
 typedef struct {
-	double low = -5;		// [K] offset start
-	double high = 5;		// [K] offset end
-	int32_t	nrSteps = 100;	// number of steps
-	int interval = 10;		// [s] interval between steps
+	double low{ -5 };		// [K] offset start
+	double high{ 5 };		// [K] offset end
+	int32_t	nrSteps{ 100 };	// number of steps
+	int interval{ 10 };		// [s] interval between steps
 } SCAN_SETTINGS;
 
 typedef struct {
-	bool m_running = false;				// is the scan currently running
-	bool m_abort = false;				// should the scan be aborted
-	int pass = 0;
-	int32_t nrSteps = 0;
+	bool m_running{ false };				// is the scan currently running
+	bool m_abort{ false };				// should the scan be aborted
+	int pass{ 0 };
+	int32_t nrSteps{ 0 };
 	std::vector<double> temperatures;	// [K] temperature offset
 	std::vector<double> reference;		// [µV] measured voltage of reference detector
 	std::vector<double> absorption;	// [µV] measured voltage behind absorption cell
@@ -39,11 +39,11 @@ typedef enum enLockState {
 } LOCKSTATE;
 
 typedef struct {
-	double proportional = 0.007;			//		control parameter of the proportional part
-	double integral = 0.000;				//		control parameter of the integral part
-	double derivative = 0.0;				//		control parameter of the derivative part
-	LOCKSTATE state = LOCKSTATE::INACTIVE;	//		locking enabled?
-	double transmissionSetpoint = 0.5;		//	[1]	target transmission setpoint
+	double proportional{ 0.007 };			//		control parameter of the proportional part
+	double integral{ 0.000 };				//		control parameter of the integral part
+	double derivative{ 0.0 };				//		control parameter of the derivative part
+	LOCKSTATE state{ LOCKSTATE::INACTIVE };	//		locking enabled?
+	double transmissionSetpoint{ 0.5 };		//	[1]	target transmission setpoint
 } LOCK_SETTINGS;
 
 typedef struct {
@@ -55,8 +55,8 @@ typedef struct {
 	std::vector<double> quotient;		// [1]	quotient of absorption and reference
 	std::vector<double> transmission;	// [1]	transmission behind cell, i.e. the quotient normalized to maximum quotient
 	std::vector<double> error;			// [1]	PDH error signal
-	double iError = 0;					// [1]	integral value of the error signal
-	double currentTempOffset = 0;		// [K] current temperature offset
+	double iError{ 0 };					// [1]	integral value of the error signal
+	double currentTempOffset{ 0 };		// [K] current temperature offset
 } LOCK_DATA;
 
 enum class liveViewPlotTypes {
@@ -116,6 +116,18 @@ class Locking : public QObject {
 		void startStopAcquireLocking();
 		void startStopLocking();
 
+	private:
+		LQT* m_laserControl;
+		daq** m_dataAcquisition;
+		bool m_acquisitionRunning{ false };
+		bool m_isAcquireLockingRunning{ false };
+		QTimer* lockingTimer{ nullptr };
+		QTimer* scanTimer{ nullptr };
+		QElapsedTimer passTimer;
+		SCAN_SETTINGS scanSettings;
+		LOCK_SETTINGS lockSettings;
+		LOCK_DATA lockData;
+
 	private slots:
 		void lock();
 		void scan();
@@ -126,18 +138,6 @@ class Locking : public QObject {
 		void s_acquireLockingRunning(bool);
 		void locked();
 		void lockStateChanged(LOCKSTATE);
-
-	private:
-		LQT *m_laserControl;
-		daq **m_dataAcquisition;
-		bool m_acquisitionRunning = false;
-		bool m_isAcquireLockingRunning = false;
-		QTimer *lockingTimer = nullptr;
-		QTimer *scanTimer = nullptr;
-		QElapsedTimer passTimer;
-		SCAN_SETTINGS scanSettings;
-		LOCK_SETTINGS lockSettings;
-		LOCK_DATA lockData;
 };
 
 #endif // LOCKING_H

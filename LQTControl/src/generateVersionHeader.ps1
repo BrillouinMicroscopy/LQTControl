@@ -5,9 +5,9 @@ Param (
   [String]$VERSION_PATCH = 0,
   [String]$Namespace = 'Version',
   [String]$GitRoot,
-  $Author = "Raimund Schlüßler",
+  $Author = "Raimund Schlï¿½ï¿½ler",
   $AuthorEmail = "raimund.schluessler@tu-dresden.de",
-  [String]$HeaderFile = "version.h",
+  [String]$HeaderFile = "src/version.h",
   [String]$VerPrefix = "https://github.com/BrillouinMicroscopy/LQTControl/commit/"
 )
 

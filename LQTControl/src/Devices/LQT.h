@@ -6,23 +6,15 @@
 #include <gsl/gsl>
 
 typedef struct {
-	double temperature = 0;
-	double maxTemperature = 5;
-	bool modEnabled = false;
-	bool lockEnabled = false;
-	bool lock = false;
+	double temperature{ 0 };
+	double maxTemperature{ 5 };
+	bool modEnabled{ false };
+	bool lockEnabled{ false };
+	bool lock{ false };
 } LQT_SETTINGS;
 
 class LQT : public QObject {
 	Q_OBJECT
-
-private:
-	QSerialPort *m_laserPort = nullptr;
-	bool m_isConnected = false;
-	std::string m_terminator = "\r";
-
-	LQT_SETTINGS m_settings;
-	void readSettings();
 
 public:
 	LQT() noexcept;
@@ -69,8 +61,8 @@ public:
 
 public slots:
 	void init();
-	void connect_lqt();
-	void disconnect_lqt();
+	void connect();
+	void disconnect();
 
 	// control temperature feature
 	void enableTemperatureControl(bool enable);
@@ -78,6 +70,14 @@ public slots:
 	// force setting the temperature
 	double setTemperatureForce(double temperature);
 	double setMaxTemperatureForce(double temperature);
+
+private:
+	QSerialPort* m_laserPort{ nullptr };
+	bool m_isConnected{ false };
+	std::string m_terminator{ "\r" };
+
+	LQT_SETTINGS m_settings;
+	void readSettings();
 
 signals:
 	void connected(bool);
