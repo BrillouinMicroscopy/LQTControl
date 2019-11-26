@@ -9,8 +9,8 @@
 #include <chrono>
 #include <ctime>
 
-#include "daq.h"
-#include "LQT.h"
+#include "Devices\daq.h"
+#include "Devices\LQT.h"
 #include "generalmath.h"
 
 typedef struct {
