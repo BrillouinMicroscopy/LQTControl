@@ -54,7 +54,7 @@ typedef struct UNIT_MODEL {
 } UNIT_MODEL;
 
 typedef struct DEFAULT_CHANNEL_SETTINGS {
-	int coupling{ PS_AC };
+	int coupling{ PS_DC };
 	int16_t range{ 0 };
 	bool enabled{ false };
 } DEFAULT_CHANNEL_SETTINGS;
@@ -70,8 +70,8 @@ typedef struct ACQUISITION_PARAMETERS {
 	int16_t		timebase{ 0 };
 	int			timebaseIndex{ 0 };
 	DEFAULT_CHANNEL_SETTINGS channelSettings[2] = {
-		{PS_AC, 2, true},
-		{PS_AC, 5, true}
+		{PS_DC, 4, true},
+		{PS_DC, 5, true}
 	};
 } ACQUISITION_PARAMETERS;
 
