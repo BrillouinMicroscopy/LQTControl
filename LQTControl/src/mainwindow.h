@@ -60,7 +60,7 @@ private:
 	}
 };
 
-typedef struct {
+typedef struct AXIS_RANGE {
 	bool automatic = true;
 	double xmin{ -2.0 };
 	double xmax{ 2.0 };
@@ -68,7 +68,7 @@ typedef struct {
 	double ymax{ 1000 };
 } AXIS_RANGE;
 
-typedef struct {
+typedef struct VIEW_SETTINGS {
 	bool floatingView = false;
 	AXIS_RANGE liveView;
 	AXIS_RANGE lockView;

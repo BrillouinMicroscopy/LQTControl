@@ -5,7 +5,7 @@
 #include "fmt/format.h"
 #include <gsl/gsl>
 
-typedef struct {
+typedef struct LQT_SETTINGS {
 	double temperature{ 0 };
 	double maxTemperature{ 5 };
 	bool modEnabled{ false };

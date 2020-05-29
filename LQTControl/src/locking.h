@@ -13,14 +13,14 @@
 #include "Devices\LQT.h"
 #include "generalmath.h"
 
-typedef struct {
+typedef struct SCAN_SETTINGS {
 	double low{ -5 };		// [K] offset start
 	double high{ 5 };		// [K] offset end
 	int32_t	nrSteps{ 100 };	// number of steps
 	int interval{ 10 };		// [s] interval between steps
 } SCAN_SETTINGS;
 
-typedef struct {
+typedef struct SCAN_DATA {
 	bool m_running{ false };				// is the scan currently running
 	bool m_abort{ false };				// should the scan be aborted
 	int pass{ 0 };
@@ -38,7 +38,7 @@ typedef enum enLockState {
 	FAILURE
 } LOCKSTATE;
 
-typedef struct {
+typedef struct LOCK_SETTINGS {
 	double proportional{ 0.007 };			//		control parameter of the proportional part
 	double integral{ 0.000 };				//		control parameter of the integral part
 	double derivative{ 0.0 };				//		control parameter of the derivative part
@@ -46,7 +46,7 @@ typedef struct {
 	double transmissionSetpoint{ 0.5 };		//	[1]	target transmission setpoint
 } LOCK_SETTINGS;
 
-typedef struct {
+typedef struct LOCK_DATA {
 	std::vector<std::chrono::time_point<std::chrono::system_clock>> time;		// [s]	time vector
 	std::vector<double> relTime;		// [s]	time passed since beginning of measurement
 	std::vector<double> tempOffset;		// [K]	timeline of the temperature offset
