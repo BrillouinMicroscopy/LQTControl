@@ -755,22 +755,78 @@ void MainWindow::updateScanView() {
 
 void MainWindow::updateLockView() {
 	if (m_selectedView == VIEWS::LOCK) {
-		std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> data = m_lockingControl->m_lockDataPlot;
-		gsl::index channel{ 0 };
-		foreach(QtCharts::QLineSeries* series, lockViewPlots) {
-			if (series->isVisible()) {
-				series->replace(data[channel]);
-			}
-			++channel;
-		}
-		if (viewSettings.floatingView) {
-			// show last 60 seconds
-			double minX = data[0].back().x() - 60;
-			minX = (minX < 0) ? 0 : minX;
-			lockViewChart->axisX()->setRange(minX, data[0].back().x());
+
+		auto prevIndex = generalmath::indexWrapped((int)m_lockingControl->lockData.nextIndex - 1, m_lockingControl->lockData.storageSize);
+		auto passed = std::chrono::duration_cast<std::chrono::milliseconds>(
+			m_lockingControl->lockData.time[prevIndex] - m_lockingControl->lockData.startTime
+			).count() / 1e3;
+
+
+		lockViewPlots[static_cast<int>(lockViewPlotTypes::ABSORPTION)]->append(
+			QPointF(passed, m_lockingControl->lockData.absorption[prevIndex])
+		);
+		lockViewPlots[static_cast<int>(lockViewPlotTypes::REFERENCE)]->append(
+			QPointF(passed, m_lockingControl->lockData.reference[prevIndex])
+		);
+
+		// Replace the transmission array in the correct order
+		auto transmission = QList<QPointF>{};
+		auto size{ 0 };
+		if (m_lockingControl->lockData.wrapped) {
+			size = m_lockingControl->lockData.storageSize;
 		} else {
-			lockViewChart->axisX()->setRange(data[0][0].x(), data[0].back().x());
+			size = m_lockingControl->lockData.nextIndex;
 		}
+		transmission.reserve(size);
+		if (m_lockingControl->lockData.wrapped) {
+			for (gsl::index i{ m_lockingControl->lockData.nextIndex }; i < m_lockingControl->lockData.storageSize; i++) {
+				auto time = std::chrono::duration_cast<std::chrono::milliseconds>(
+					m_lockingControl->lockData.time[i] - m_lockingControl->lockData.startTime
+				).count() / 1e3;
+				transmission.append(QPointF(time, m_lockingControl->lockData.transmission[i]));
+			}
+		}
+		for (gsl::index i{ 0 }; i < m_lockingControl->lockData.nextIndex; i++) {
+			auto time = std::chrono::duration_cast<std::chrono::milliseconds>(
+				m_lockingControl->lockData.time[i] - m_lockingControl->lockData.startTime
+			).count() / 1e3;
+			transmission.append(QPointF(time, m_lockingControl->lockData.transmission[i]));
+		}
+		lockViewPlots[static_cast<int>(lockViewPlotTypes::TRANSMISSION)]->replace(transmission);
+
+
+		lockViewPlots[static_cast<int>(lockViewPlotTypes::ERRORSIGNAL)]->append(
+			QPointF(passed, m_lockingControl->lockData.error[prevIndex])
+		);
+		lockViewPlots[static_cast<int>(lockViewPlotTypes::TEMPERATUREOFFSET)]->append(
+			QPointF(passed, m_lockingControl->lockData.tempOffset[prevIndex])
+		);
+
+		auto offset = m_lockingControl->lockData.storageSize - m_lockingControl->lockData.nextIndex;
+		lockViewPlots[static_cast<int>(lockViewPlotTypes::ERRORSIGNALMEAN)]->append(
+			QPointF(passed, generalmath::floatingMean(m_lockingControl->lockData.error, 50, offset))
+		);
+		lockViewPlots[static_cast<int>(lockViewPlotTypes::ERRORSIGNALSTD)]->append(
+			QPointF(passed, generalmath::floatingStandardDeviation(m_lockingControl->lockData.error, 50, offset))
+		);
+
+		// If there are more points than desired, remove the first one
+		foreach(QtCharts::QLineSeries *series, lockViewPlots) {
+			if (series->count() >= m_lockingControl->lockData.storageSize) {
+				series->remove(0);
+			}
+		}
+
+		auto minX = lockViewPlots[0]->at(0).x();
+		auto maxX = lockViewPlots[0]->at(lockViewPlots[0]->count() - 1).x();
+		// Only show last 60 seconds in floating view
+		if (viewSettings.floatingView) {
+			auto tmp = maxX - 60;
+			if (tmp > minX) {
+				minX = tmp;
+			}
+		}
+		lockViewChart->axisX()->setRange(minX, maxX);
 	}
 }
 
