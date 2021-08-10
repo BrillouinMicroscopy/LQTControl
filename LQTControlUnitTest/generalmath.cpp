@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "..\LQTControl\src\generalmath.h"
+#include <gsl/gsl>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-namespace LQTControlUnitTest {		
+namespace FPIControlUnitTest {		
 	TEST_CLASS(UnitTest1) {
 		public:
 			// Tests for mean()
@@ -39,7 +40,8 @@ namespace LQTControlUnitTest {
 					1.0, 2.0, 3.0, 4.0, 5.0,
 					6.0, 7.0, 8.0, 9.0, 10.0
 				};
-				Assert::AreEqual(5.5, generalmath::floatingMean(vector,10));
+				Assert::AreEqual(5.5, generalmath::floatingMean(vector, 10));
+				Assert::AreEqual(5.5, generalmath::floatingMean(vector, 12));
 			}
 
 			TEST_METHOD(TestMethodFloatingMeanDoubleShort) {
@@ -48,6 +50,8 @@ namespace LQTControlUnitTest {
 					6.0, 7.0, 8.0, 9.0, 10.0
 				};
 				Assert::AreEqual(8.0, generalmath::floatingMean(vector, 5));
+				Assert::AreEqual(5.0, generalmath::floatingMean(vector, 5, vector.size() - 7));
+				Assert::AreEqual(5.0, generalmath::floatingMean(vector, 5, vector.size() - 3));
 			}
 
 			TEST_METHOD(TestMethodFloatingMeanDoubleLong) {
@@ -107,10 +111,12 @@ namespace LQTControlUnitTest {
 
 			TEST_METHOD(TestMethodFloatingStandardDeviationDoubleHalfShort) {
 				std::vector<double> vector = {
-					0.0, 1.0, 2.0, 1.0, 2.0, 1.0,
-					2.0, 1.0, 2.0, 1.0, 2.0, 1.5
+					2.0, 1.0, 2.0, 1.0, 2.0, 1.0,
+					2.0, 1.0, 2.0, 1.5, 2.0, 1.0
 				};
 				Assert::AreEqual(0.5, generalmath::floatingStandardDeviation(vector, 11));
+				Assert::AreEqual(0.5, generalmath::floatingStandardDeviation(vector, 9, 2));
+				Assert::AreEqual(0.5, generalmath::floatingStandardDeviation(vector, 11, 4));
 			}
 
 			TEST_METHOD(TestMethodFloatingStandardDeviationDoubleEmpty) {
@@ -174,7 +180,7 @@ namespace LQTControlUnitTest {
 			}
 
 			TEST_METHOD(TestMethodMinDouble) {
-				std::vector<double> vector = {-1.0, 1.0, 2.0, -6.0};
+				std::vector<double> vector = { -1.0, 1.0, 2.0, -6.0 };
 				Assert::AreEqual(-6.0, generalmath::min(vector));
 			}
 
@@ -191,6 +197,14 @@ namespace LQTControlUnitTest {
 			TEST_METHOD(TestMethodMaxInt) {
 				std::vector<int> vector = { -1, 1, 2, -6 };
 				Assert::AreEqual(2, generalmath::max(vector));
+			}
+
+			TEST_METHOD(TestMethodPrevIndexWrapped) {
+				Assert::AreEqual(gsl::index{ 9 }, generalmath::indexWrapped(-1, 10));
+				Assert::AreEqual(gsl::index{ 0 }, generalmath::indexWrapped(0, 10));
+				Assert::AreEqual(gsl::index{ 1 }, generalmath::indexWrapped(1, 10));
+				Assert::AreEqual(gsl::index{ 9 }, generalmath::indexWrapped(9, 10));
+				Assert::AreEqual(gsl::index{ 0 }, generalmath::indexWrapped(10, 10));
 			}
 	};
 }
