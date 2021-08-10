@@ -16,10 +16,18 @@
 #include "version.h"
 
 MainWindow::MainWindow(QWidget *parent) noexcept :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow) {
+	QMainWindow(parent), ui(new Ui::MainWindow) {
+	ui->setupUi(this);
 
-    ui->setupUi(this);
+	// Set window title
+	auto title = QString{ "LQTControl v%1.%2.%3" }.arg(Version::MAJOR).arg(Version::MINOR).arg(Version::PATCH);
+	if (Version::PRERELEASE.length() > 0) {
+		title += "-" + QString::fromStdString(Version::PRERELEASE);
+	}
+#ifdef _DEBUG
+	title += QString{ " - Debug" };
+#endif
+	this->setWindowTitle(title);
 
 	qRegisterMetaType<ACQUISITION_PARAMETERS>("ACQUISITION_PARAMETERS");
 	qRegisterMetaType<LOCKSTATE>("LOCKSTATE");
@@ -202,8 +210,8 @@ MainWindow::MainWindow(QWidget *parent) noexcept :
 	scanViewChart->layout()->setContentsMargins(0, 0, 0, 0);
 
 	// set live view chart as default chart
-    ui->plotAxes->setChart(liveViewChart);
-    ui->plotAxes->setRenderHint(QPainter::Antialiasing);
+	ui->plotAxes->setChart(liveViewChart);
+	ui->plotAxes->setRenderHint(QPainter::Antialiasing);
 	ui->plotAxes->setRubberBand(QtCharts::QChartView::RectangleRubberBand);
 
 	// set default values of GUI elements
@@ -266,7 +274,7 @@ MainWindow::~MainWindow() {
 	}
 	m_acquisitionThread.exit();
 	m_acquisitionThread.wait();
-    delete ui;
+	delete ui;
 }
 
 void MainWindow::on_actionQuit_triggered() {
@@ -354,15 +362,31 @@ std::string MainWindow::getSamplingRateString(double samplingRate) {
 }
 
 void MainWindow::on_actionAbout_triggered() {
-	QString str = QString("LQTControl Version %1.%2.%3 <br> Build from commit: <a href='%4'>%5</a><br>Author: <a href='mailto:%6?subject=LQTControl'>%7</a><br>Date: %8")
+	QString clean = "Yes";
+	if (Version::VerDirty) {
+		clean = "No";
+	}
+	auto preRelease = QString{ "" };
+	if (Version::PRERELEASE.length() > 0) {
+		preRelease = QString::fromStdString("-" + Version::PRERELEASE);
+	}
+
+	auto debugString = QString{ "" };
+#ifdef _DEBUG
+	debugString = QString{ " - Debug" };
+#endif
+	QString str = QString("LQTControl v%1.%2.%3%4%11 <br> Build from commit: <a href='%5'>%6</a><br>Clean build: %7<br>Author: <a href='mailto:%8?subject=LQTControl'>%9</a><br>Date: %10")
 		.arg(Version::MAJOR)
 		.arg(Version::MINOR)
 		.arg(Version::PATCH)
+		.arg(preRelease)
 		.arg(Version::Url.c_str())
 		.arg(Version::Commit.c_str())
+		.arg(clean)
 		.arg(Version::AuthorEmail.c_str())
 		.arg(Version::Author.c_str())
-		.arg(Version::Date.c_str());
+		.arg(Version::Date.c_str())
+		.arg(debugString);
 
 	QMessageBox::about(this, tr("About LQTControl"), str);
 }
@@ -652,7 +676,7 @@ void MainWindow::on_scanInterval_valueChanged(const int value) {
 }
 
 /***********************************
- * Set parameters for cavity locking 
+ * Set parameters for cavity locking
  ***********************************/
 void MainWindow::on_proportionalTerm_valueChanged(const double value) {
 	m_lockingControl->setLockParameters(LOCKPARAMETERS::P, value);
@@ -673,7 +697,7 @@ void MainWindow::on_temperatureOffset_valueChanged(const double offset) {
 
 void MainWindow::updateLiveView() {
 	if (m_selectedView == VIEWS::LIVE) {
-		
+
 		m_dataAcquisition->m_liveBuffer->m_usedBuffers->acquire();
 		int16_t **buffer = m_dataAcquisition->m_liveBuffer->getReadBuffer();
 
@@ -702,7 +726,7 @@ void MainWindow::updateScanView() {
 	if (m_selectedView == VIEWS::SCAN) {
 		SCAN_DATA scanData = m_lockingControl->scanData;
 		SCAN_SETTINGS scanSettings = m_lockingControl->getScanSettings();
-		
+
 		QVector<QPointF> absorption;
 		QVector<QPointF> reference;
 		QVector<QPointF> quotient;
