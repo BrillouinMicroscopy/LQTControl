@@ -42,6 +42,7 @@ typedef struct LOCK_SETTINGS {
 	double proportional{ 0.007 };			//		control parameter of the proportional part
 	double integral{ 0.000 };				//		control parameter of the integral part
 	double derivative{ 0.0 };				//		control parameter of the derivative part
+	int lockingTimeout{ 100 };				// [ms]	time until next locking run
 	LOCKSTATE state{ LOCKSTATE::INACTIVE };	//		locking enabled?
 	double transmissionSetpoint{ 0.5 };		//	[1]	target transmission setpoint
 } LOCK_SETTINGS;
@@ -55,8 +56,14 @@ typedef struct LOCK_DATA {
 	std::vector<double> quotient;		// [1]	quotient of absorption and reference
 	std::vector<double> transmission;	// [1]	transmission behind cell, i.e. the quotient normalized to maximum quotient
 	std::vector<double> error;			// [1]	PDH error signal
+	double quotient_max{ 0 };			// [1]	the maximum measured quotient
 	double iError{ 0 };					// [1]	integral value of the error signal
 	double currentTempOffset{ 0 };		// [K] current temperature offset
+	int storageDuration{ 4 * 3600 };	// [s]	maximum time to store data for (after this time, data from the start will be overwritten)
+	int storageSize;					//		size of the storage array (depends on storageDuration and lockSettings.lockingTimeout)
+	gsl::index nextIndex{ 0 };			//		the index to write to next
+	bool wrapped{ false };				//		Whether we already wrapped once (and now use the full vector)
+	std::chrono::time_point<std::chrono::system_clock> startTime;
 } LOCK_DATA;
 
 enum class liveViewPlotTypes {
@@ -108,7 +115,7 @@ class Locking : public QObject {
 		SCAN_DATA scanData;
 		LOCK_SETTINGS getLockSettings();
 
-		std::array<QVector<QPointF>, static_cast<int>(lockViewPlotTypes::COUNT)> m_lockDataPlot;
+		LOCK_DATA lockData;
 
 	public slots:
 		void init();
@@ -126,7 +133,6 @@ class Locking : public QObject {
 		QElapsedTimer passTimer;
 		SCAN_SETTINGS scanSettings;
 		LOCK_SETTINGS lockSettings;
-		LOCK_DATA lockData;
 
 	private slots:
 		void lock();
