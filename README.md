@@ -21,3 +21,13 @@ Please install the following dependencies to the default paths:
 - PicoTech SDK
 
 Build the LQTControl project using Visual Studio.
+
+
+# How to cite
+
+If you use LQTControl in a scientific publication, please cite it with:
+
+> Raimund Schlüßler and others (2018), LQTControl version X.X.X: C++ program to control the cavity temperature of a solid state laser [Software]. Available at https://github.com/BrillouinMicroscopy/LQTControl.
+
+If the journal does not accept ``and others``, you can fill in the missing
+names from the [credits file](https://github.com/BrillouinMicroscopy/LQTControl/blob/master/CREDITS).
